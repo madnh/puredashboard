@@ -1,0 +1,28 @@
+/* puredashboard-menu — styles for the menu() dropdown (menu.js). BEM, block = .puredashboard-menu.
+ *
+ * The menu is appended to <body> (top layer), so the --pd-* theme tokens are defined
+ * on .puredashboard-menu itself. They default to your app tokens, then to neutral system
+ * colours (Canvas / CanvasText) — works with no config, adapts to light/dark.
+ */
+.puredashboard-menu {
+  --pd-accent:  var(--accent,  #3b82f6);
+  --pd-text:    var(--text,    CanvasText);
+  --pd-muted:   var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:   var(--panel,   Canvas);
+  --pd-panel-2: var(--panel-2, color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-border:  var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-red:     var(--red,     #dc2626);
+
+  display: flex; flex-direction: column; min-width: 160px;
+  background: var(--pd-panel); color: var(--pd-text);
+  border: 1px solid var(--pd-border); border-radius: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, .28);
+}
+.puredashboard-menu:not(:popover-open):not([style*="z-index"]) { display: none; }   /* popover hidden state */
+.puredashboard-menu__item { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 9px; cursor: pointer;
+  padding: 8px 12px; border-radius: 7px; font: inherit; color: var(--pd-text); }
+.puredashboard-menu__item:hover, .puredashboard-menu__item:focus-visible { background: var(--pd-panel-2); outline: none; }
+.puredashboard-menu__item--danger { color: var(--pd-red); }
+.puredashboard-menu__item[aria-disabled="true"] { opacity: .45; cursor: default; }
+.puredashboard-menu__icon { display: inline-flex; align-items: center; color: var(--pd-muted); }
+.puredashboard-menu__label { flex: 1; min-width: 0; }
+.puredashboard-menu__separator { height: 1px; background: var(--pd-border); margin: 4px 6px; }

@@ -1,0 +1,652 @@
+// Tests for the admin component library: table.js, menu.js, upload.js.
+// Run in isolation via Docker (no host install): `make -C test`.
+// jsdom gives a real DOM so we exercise the actual elements, events and logic.
+import { JSDOM } from "jsdom";
+const dom = new JSDOM("<!doctype html><body></body>", {
+  runScripts: "outside-only",
+});
+const w = dom.window;
+for (const k of [
+  "document",
+  "HTMLElement",
+  "customElements",
+  "NodeFilter",
+  "CustomEvent",
+  "Node",
+  "Event",
+  "MouseEvent",
+  "File",
+  "FormData",
+])
+  global[k] = w[k];
+global.window = w;
+global.queueMicrotask = queueMicrotask;
+
+let pass = 0,
+  fail = 0;
+const ok = (c, m) => {
+  if (c) pass++;
+  else {
+    fail++;
+    console.log("FAIL:", m);
+  }
+};
+const tick = () => new Promise((r) => queueMicrotask(() => queueMicrotask(r)));
+const mount = (tag) => {
+  const el = document.createElement(tag);
+  document.body.appendChild(el);
+  return el;
+};
+const fire = (el, type, init = {}) =>
+  el.dispatchEvent(new w.Event(type, { bubbles: true, ...init }));
+
+const { PuredashboardTable } = await import("../src/table.js");
+const { menu } = await import("../src/menu.js");
+const { PuredashboardUpload, uploadFile } = await import("../src/upload.js");
+void PuredashboardTable;
+void PuredashboardUpload;
+void uploadFile;
+
+// ============================ table.js ============================
+{
+  const t = mount("puredashboard-table");
+  t.columns = [
+    { key: "name", label: "Name", sortable: true },
+    { key: "n", label: "N", sortable: true, align: "right" },
+  ];
+  t.rows = [
+    { name: "web", n: 3 },
+    { name: "api", n: 10 },
+    { name: "db", n: 1 },
+  ];
+  t.rowKey = (r) => r.name;
+  t.getHref = (r) => `#/nodes/${r.name}`;
+  t.actions = [{ name: "delete", label: "Delete", danger: true }];
+  await tick();
+
+  let bodyRows = t.querySelectorAll("tbody tr");
+  ok(bodyRows.length === 3, "table renders 3 rows, got " + bodyRows.length);
+  ok(
+    t.querySelector(".puredashboard-table__open").getAttribute("href") ===
+      "#/nodes/web",
+    "first row Open is a real <a href>",
+  );
+  ok(
+    t.querySelectorAll(".puredashboard-table__action--danger").length === 3,
+    "each row has a danger action button",
+  );
+
+  // sort ascending by name: api, db, web
+  t.querySelector('[data-sort="name"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  let firstName = t.querySelector("tbody tr td").textContent;
+  ok(
+    firstName === "api",
+    "sort by name asc → first row 'api', got " + firstName,
+  );
+  ok(
+    t.querySelector('th[aria-sort="ascending"]'),
+    "aria-sort=ascending set on sorted header",
+  );
+
+  // toggle to descending → web first
+  t.querySelector('[data-sort="name"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    t.querySelector("tbody tr td").textContent === "web",
+    "sort toggle desc → first row 'web'",
+  );
+
+  // numeric sort by n asc → 1,3,10 (db, web, api)
+  t.querySelector('[data-sort="n"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    t.querySelector("tbody tr td").textContent === "db",
+    "numeric sort asc → 'db' (n=1) first",
+  );
+
+  // filter
+  const search = t.querySelector(".puredashboard-table__search");
+  search.value = "ap";
+  fire(search, "input");
+  await tick();
+  ok(t.querySelectorAll("tbody tr").length === 1, "filter 'ap' → 1 row");
+  ok(
+    t.querySelector("tbody tr td").textContent === "api",
+    "filter keeps 'api'",
+  );
+  search.value = "";
+  fire(search, "input");
+  await tick();
+
+  // action event
+  let acted = null;
+  t.addEventListener("rowaction", (e) => {
+    acted = e.detail;
+  });
+  t.querySelector(".puredashboard-table__action").dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    acted && acted.name === "delete" && acted.row,
+    "rowaction emits { name, row }: " + JSON.stringify(acted && acted.name),
+  );
+
+  // empty state
+  const t2 = mount("puredashboard-table");
+  t2.columns = [{ key: "name", label: "Name" }];
+  t2.rows = [];
+  t2.labels = { empty: "No nodes" };
+  await tick();
+  ok(
+    t2.querySelector(".puredashboard-table__empty") &&
+      t2.querySelector(".puredashboard-table__empty").textContent ===
+        "No nodes",
+    "empty state shows labels.empty",
+  );
+}
+
+// ============================ menu.js ============================
+{
+  const anchor = mount("button");
+  const p = menu(anchor, [
+    { label: "Rename", value: "rename" },
+    { separator: true },
+    { label: "Delete", value: "delete", danger: true },
+    { label: "Nope", value: "nope", disabled: true },
+  ]);
+  const el = document.querySelector(".puredashboard-menu");
+  ok(el, "menu element appended to body");
+  ok(
+    el.querySelectorAll(".puredashboard-menu__item").length === 3,
+    "3 menu items (separator excluded)",
+  );
+  ok(el.querySelector(".puredashboard-menu__separator"), "separator rendered");
+  ok(
+    el.querySelector(".puredashboard-menu__item--danger"),
+    "danger item styled",
+  );
+  ok(
+    el.querySelector('[aria-disabled="true"]'),
+    "disabled item marked aria-disabled",
+  );
+
+  // click Delete resolves the promise with its value
+  const items = el.querySelectorAll(".puredashboard-menu__item");
+  items[1].dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  const picked = await p;
+  ok(
+    picked === "delete",
+    "menu resolves selected value 'delete', got " + picked,
+  );
+  ok(
+    !document.querySelector(".puredashboard-menu"),
+    "menu removed from DOM after select",
+  );
+
+  // dismiss path resolves null
+  const a2 = mount("button");
+  const p2 = menu(a2, [{ label: "X", value: "x" }]);
+  document.dispatchEvent(
+    w.KeyboardEvent
+      ? new w.KeyboardEvent("keydown", { key: "Escape" })
+      : new w.Event("keydown"),
+  );
+  // if Escape didn't register in this jsdom, force-close via an outside pointerdown
+  if (document.querySelector(".puredashboard-menu"))
+    document.dispatchEvent(new w.MouseEvent("pointerdown", { bubbles: true }));
+  const r2 = await p2;
+  ok(r2 === null, "dismiss resolves null, got " + r2);
+}
+
+// ============================ upload.js ============================
+{
+  const u = mount("puredashboard-upload");
+  u.accept = "image/*,.pdf";
+  u.multiple = true;
+  u.maxSize = 1000;
+  u.labels = { browse: "Drop here" };
+  await tick();
+  ok(u.querySelector(".puredashboard-upload__zone"), "upload zone renders");
+  ok(
+    u.querySelector(".puredashboard-upload__input").getAttribute("accept") ===
+      "image/*,.pdf",
+    "accept passed to input",
+  );
+
+  const png = new w.File([new Uint8Array(500)], "pic.png", {
+    type: "image/png",
+  });
+  const big = new w.File([new Uint8Array(2000)], "big.png", {
+    type: "image/png",
+  });
+  const txt = new w.File([new Uint8Array(10)], "note.txt", {
+    type: "text/plain",
+  });
+
+  let emitted = null;
+  u.addEventListener("files", (e) => {
+    emitted = e.detail;
+  });
+
+  u._add([png]);
+  await tick();
+  ok(
+    u.files.length === 1 && u.files[0].name === "pic.png",
+    "accepts a valid png",
+  );
+  ok(emitted && emitted.length === 1, "emits files event");
+  ok(
+    u.querySelector(".puredashboard-upload__file .puredashboard-upload__name")
+      .textContent === "pic.png",
+    "renders file row",
+  );
+
+  u._add([big]);
+  await tick();
+  ok(
+    u.error && /too large/.test(u.error),
+    "rejects oversize file with error: " + u.error,
+  );
+
+  u._add([txt]);
+  await tick();
+  ok(
+    u.error && /not allowed/.test(u.error),
+    "rejects disallowed type: " + u.error,
+  );
+
+  // multiple accumulates; remove works
+  ok(u.files.length === 1, "rejected files not added (still 1)");
+  const png2 = new w.File([new Uint8Array(100)], "two.png", {
+    type: "image/png",
+  });
+  u._add([png2]);
+  await tick();
+  ok(u.files.length === 2, "multiple=true accumulates → 2 files");
+  u.querySelector("[data-rm]").dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(u.files.length === 1, "remove button drops a file → 1");
+
+  // single-mode replaces
+  const s = mount("puredashboard-upload");
+  s.multiple = false;
+  await tick();
+  s._add([png]);
+  s._add([png2]);
+  await tick();
+  ok(
+    s.files.length === 1 && s.files[0].name === "two.png",
+    "single mode keeps only the last file",
+  );
+
+  ok(typeof uploadFile === "function", "uploadFile helper exported");
+}
+
+// ============================ table: pagination ============================
+{
+  const t = mount("puredashboard-table");
+  t.columns = [{ key: "n", label: "N", sortable: true }];
+  t.rows = Array.from({ length: 12 }, (_, i) => ({ n: i }));
+  t.pageSize = 5;
+  t.pageSizes = [5, 10];
+  await tick();
+  ok(
+    t.querySelectorAll("tbody tr").length === 5,
+    "pageSize=5 → 5 rows, got " + t.querySelectorAll("tbody tr").length,
+  );
+  ok(t.querySelector(".puredashboard-table__pager"), "pager renders");
+  ok(
+    t
+      .querySelector(".puredashboard-table__range")
+      .textContent.includes("of 12"),
+    "range shows total 12: " +
+      t.querySelector(".puredashboard-table__range").textContent,
+  );
+
+  t.querySelector('[data-page="next"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    t.querySelector("tbody tr td").textContent === "5",
+    "next page → first row n=5, got " +
+      t.querySelector("tbody tr td").textContent,
+  );
+
+  t.page = 3;
+  await tick();
+  ok(
+    t.querySelectorAll("tbody tr").length === 2,
+    "last page → 2 rows (12=5+5+2)",
+  );
+  ok(
+    t.querySelector('[data-page="next"]').disabled,
+    "next disabled on last page",
+  );
+
+  let pc = null;
+  t.addEventListener("pagechange", (e) => (pc = e.detail));
+  t.querySelector('[data-page="prev"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(pc && pc.page === 2, "pagechange emits page 2: " + JSON.stringify(pc));
+
+  // filtering resets to page 1
+  const s = t.querySelector(".puredashboard-table__search");
+  s.value = "1";
+  fire(s, "input");
+  await tick();
+  ok((t.page || 1) === 1, "filter resets to page 1");
+}
+
+// ============================ isolation: two instances ============================
+{
+  const a = mount("puredashboard-table"),
+    b = mount("puredashboard-table");
+  const cols = [{ key: "name", label: "Name", sortable: true }];
+  a.columns = cols;
+  b.columns = cols;
+  a.rows = [{ name: "c" }, { name: "a" }, { name: "b" }];
+  b.rows = [{ name: "z" }, { name: "y" }, { name: "x" }];
+  await tick();
+  a.querySelector('[data-sort="name"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    a.querySelector("tbody tr td").textContent === "a",
+    "table A sorted → 'a' first",
+  );
+  ok(
+    b.querySelector("tbody tr td").textContent === "z",
+    "table B unaffected → 'z' first",
+  );
+  ok(
+    !b.sortKey,
+    "table B keeps its own (empty) sort state — instances isolated",
+  );
+
+  // two uploads keep independent selections
+  const ua = mount("puredashboard-upload"),
+    ub = mount("puredashboard-upload");
+  ua.multiple = true;
+  ub.multiple = true;
+  await tick();
+  ua._add([new w.File([new Uint8Array(5)], "a1.png", { type: "image/png" })]);
+  ub._add([
+    new w.File([new Uint8Array(5)], "b1.png", { type: "image/png" }),
+    new w.File([new Uint8Array(5)], "b2.png", { type: "image/png" }),
+  ]);
+  await tick();
+  ok(
+    ua.files.length === 1 && ub.files.length === 2,
+    "two uploads hold independent file sets",
+  );
+}
+
+// ============================ upload: managed upload (transport + status/events) ============================
+{
+  const u = mount("puredashboard-upload");
+  u.multiple = true;
+  u.uploader = (file, onProgress) => {
+    onProgress(0.5);
+    return Promise.resolve({ response: { ok: true, name: file.name } });
+  };
+  u._add([
+    new w.File([new Uint8Array(10)], "a.png", { type: "image/png" }),
+    new w.File([new Uint8Array(10)], "b.png", { type: "image/png" }),
+  ]);
+  await tick();
+  const evs = [];
+  ["uploadstart", "uploadprogress", "uploaddone", "uploadcomplete"].forEach(
+    (n) => u.addEventListener(n, () => evs.push(n)),
+  );
+  const results = await u.upload("/x");
+  await tick();
+  ok(
+    results.length === 2 && results.every((r) => r.ok),
+    "upload → 2 ok results",
+  );
+  ok(
+    u.items.every((it) => it.status === "done"),
+    "all items status=done",
+  );
+  ok(
+    ["uploadstart", "uploadprogress", "uploaddone", "uploadcomplete"].every(
+      (n) => evs.includes(n),
+    ),
+    "lifecycle events fired: " + evs.join(","),
+  );
+  ok(
+    u.querySelector('.puredashboard-upload__file[data-status="done"]'),
+    "done status reflected in DOM",
+  );
+
+  const u2 = mount("puredashboard-upload");
+  u2.uploader = () => Promise.reject(new Error("boom"));
+  u2._add([new w.File([new Uint8Array(10)], "x.png", { type: "image/png" })]);
+  await tick();
+  let errEvt = null;
+  u2.addEventListener("uploaderror", (e) => (errEvt = e.detail));
+  await u2.upload("/x");
+  await tick();
+  ok(u2.items[0].status === "error", "failed upload → status=error");
+  ok(
+    errEvt && /boom/.test(errEvt.error),
+    "uploaderror event fired: " + (errEvt && errEvt.error),
+  );
+}
+
+// ============================ table: row selection ============================
+{
+  const t = mount("puredashboard-table");
+  t.columns = [{ key: "name", label: "Name", sortable: true }];
+  t.rows = [{ name: "a" }, { name: "b" }, { name: "c" }];
+  t.rowKey = (r) => r.name;
+  t.selectable = true;
+  await tick();
+  ok(
+    t.querySelector(".js-puredashboard-table__check-all"),
+    "select-all checkbox renders",
+  );
+  ok(
+    t.querySelectorAll(".js-puredashboard-table__check").length === 3,
+    "a checkbox per row",
+  );
+
+  let sc = null;
+  t.addEventListener("selectionchange", (e) => (sc = e.detail));
+  const cb = t.querySelector('.js-puredashboard-table__check[data-i="0"]');
+  cb.checked = true;
+  cb.dispatchEvent(new w.Event("change", { bubbles: true }));
+  await tick();
+  ok(
+    t.selected.length === 1 && t.selected[0].name === "a",
+    "select row 0 → selected=[a]",
+  );
+  ok(sc && sc.keys.length === 1, "selectionchange emitted");
+  ok(
+    t.querySelector("tr.puredashboard-table__row--selected"),
+    "selected row gets .selected class",
+  );
+
+  const all = t.querySelector(".js-puredashboard-table__check-all");
+  all.checked = true;
+  all.dispatchEvent(new w.Event("change", { bubbles: true }));
+  await tick();
+  ok(t.selected.length === 3, "select-all → 3 selected");
+
+  t.querySelector('[data-sort="name"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(t.selected.length === 3, "selection survives sort (keyed by rowKey)");
+
+  t.clearSelection();
+  await tick();
+  ok(t.selected.length === 0, "clearSelection → 0 selected");
+}
+
+// ============================ upload: form-associated (multipart) ============================
+{
+  // jsdom has no ElementInternals; stub attachInternals to capture setFormValue so we
+  // can verify _syncForm builds the right multipart FormData under the field name.
+  // (The native form serialisation of that value on submit is a browser guarantee.)
+  const captured = new WeakMap();
+  const orig = w.HTMLElement.prototype.attachInternals;
+  w.HTMLElement.prototype.attachInternals = function () {
+    const el = this;
+    return {
+      setFormValue(v) {
+        captured.set(el, v);
+      },
+    };
+  };
+  const u = document.createElement("puredashboard-upload");
+  u.setAttribute("name", "attachments");
+  u.multiple = true;
+  document.body.appendChild(u);
+  await tick();
+  u._add([
+    new w.File([new Uint8Array(10)], "a.png", { type: "image/png" }),
+    new w.File([new Uint8Array(20)], "b.png", { type: "image/png" }),
+  ]);
+  await tick();
+  const fv = captured.get(u);
+  ok(
+    fv instanceof w.FormData,
+    "form-associated: setFormValue called with a FormData",
+  );
+  const files = fv ? [...fv.getAll("attachments")] : [];
+  ok(
+    files.length === 2,
+    "2 files set under name 'attachments', got " + files.length,
+  );
+  ok(files[0] && files[0].name === "a.png", "first form file is a.png");
+  u.remove(u.items[0].id);
+  await tick();
+  ok(
+    [...captured.get(u).getAll("attachments")].length === 1,
+    "removing a file updates the form value → 1",
+  );
+  w.HTMLElement.prototype.attachInternals = orig;
+}
+
+// ============================ table: bulk actions on selected ============================
+{
+  const t = mount("puredashboard-table");
+  t.columns = [{ key: "name", label: "Name" }];
+  t.rows = [{ name: "a" }, { name: "b" }, { name: "c" }];
+  t.rowKey = (r) => r.name;
+  t.selectable = true;
+  t.bulkActions = [{ name: "delete", label: "Delete selected", danger: true }];
+  await tick();
+  ok(!t.querySelector("[data-bulk]"), "bulk bar hidden when nothing selected");
+  const all = t.querySelector(".js-puredashboard-table__check-all");
+  all.checked = true;
+  all.dispatchEvent(new w.Event("change", { bubbles: true }));
+  await tick();
+  ok(
+    t.querySelector('[data-bulk="delete"]'),
+    "bulk button appears once rows are selected",
+  );
+  let bulk = null;
+  t.addEventListener("bulkaction", (e) => (bulk = e.detail));
+  t.querySelector('[data-bulk="delete"]').dispatchEvent(
+    new w.MouseEvent("click", { bubbles: true }),
+  );
+  await tick();
+  ok(
+    bulk && bulk.name === "delete" && bulk.rows.length === 3,
+    "bulkaction emits { name, rows(3) }: " +
+      JSON.stringify(bulk && [bulk.name, bulk.rows.length]),
+  );
+}
+
+// ============================ i18n: labels override ============================
+{
+  const t = mount("puredashboard-table");
+  t.columns = [{ key: "name", label: "Name" }];
+  t.rows = [];
+  t.labels = { filter: "Lọc…", empty: "Trống", actions: "Thao tác" };
+  await tick();
+  ok(
+    t
+      .querySelector(".puredashboard-table__search")
+      .getAttribute("placeholder") === "Lọc…",
+    "table filter placeholder localised",
+  );
+  ok(
+    t.querySelector(".puredashboard-table__empty").textContent === "Trống",
+    "table empty text localised",
+  );
+
+  const u = mount("puredashboard-upload");
+  u.maxSize = 5;
+  u.labels = { browse: "Kéo & thả tệp", tooLarge: (m) => "quá lớn " + m };
+  await tick();
+  ok(
+    u.querySelector(".puredashboard-upload__label").textContent ===
+      "Kéo & thả tệp",
+    "upload prompt localised via labels.browse",
+  );
+  u._add([new w.File([new Uint8Array(10)], "big.png", { type: "image/png" })]);
+  await tick();
+  ok(/quá lớn/.test(u.error), "upload error localised: " + u.error);
+  // defaults still apply for keys not overridden
+  const u2 = mount("puredashboard-upload");
+  await tick();
+  ok(
+    u2.querySelector(".puredashboard-upload__label").textContent ===
+      "Drag & drop files here, or click to browse",
+    "default English when no labels set",
+  );
+}
+
+// ============================ <puredashboard-markdown> inside a Reactive component ===
+{
+  const { Reactive, html } = await import("../src/reactive.js");
+  await import("../src/md.js"); // defines <puredashboard-markdown>
+  class MdHost extends Reactive {
+    static properties = { body: {} };
+    render() {
+      return html`<div class="wrap">
+        <puredashboard-markdown
+          .value=${this.body || ""}
+        ></puredashboard-markdown>
+      </div>`;
+    }
+  }
+  MdHost.define("md-host-test");
+  const h = mount("md-host-test");
+  h.body = "# Hello\n\n**bold**";
+  await tick();
+  const md = h.querySelector("puredashboard-markdown");
+  ok(
+    md && md.querySelector("h1")?.textContent === "Hello",
+    "<puredashboard-markdown .value=…> renders inside a Reactive template",
+  );
+  ok(md.querySelector("strong")?.textContent === "bold", "inline rendered too");
+  // reactive update: change the bound value → re-renders in place
+  h.body = "## Changed";
+  await tick();
+  ok(
+    h.querySelector("puredashboard-markdown h2")?.textContent === "Changed" &&
+      !h.querySelector("puredashboard-markdown h1"),
+    "re-renders reactively when the bound value changes",
+  );
+}
+
+console.log(`components.test.mjs: ${pass} passed, ${fail} failed`);
+if (fail) process.exit(1);

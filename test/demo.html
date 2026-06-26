@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Plexus demo</title>
+        <link rel="stylesheet" href="../src/dialog.css" />
+        <link rel="stylesheet" href="../src/toast.css" />
+        <style>
+            :root {
+                color-scheme: dark;
+                --dlg-primary-bg: #7c5cff;
+                --dlg-bg: #20202b;
+                --toast-bg: #20202b;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: #14141b;
+                color: #e8e8f0;
+                font-family: system-ui, sans-serif;
+            }
+            #app {
+                height: 100vh;
+            }
+            demo-dash {
+                display: flex;
+                height: 100vh;
+            }
+            .sidebar {
+                width: 210px;
+                background: #1c1c26;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .brand {
+                font-weight: 700;
+                font-size: 1.2rem;
+                margin-bottom: 8px;
+            }
+            .sidebar nav {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+            .sidebar a {
+                color: #cdd;
+                text-decoration: none;
+                padding: 7px 10px;
+                border-radius: 7px;
+            }
+            .sidebar a:hover {
+                background: #262633;
+            }
+            .sidebar a[aria-current="page"] {
+                background: #7c5cff;
+                color: #fff;
+            }
+            .badge {
+                margin-top: auto;
+                opacity: 0.65;
+                font-size: 0.85rem;
+            }
+            .dash-main {
+                flex: 1;
+                padding: 28px;
+                overflow: auto;
+            }
+            .card {
+                margin-top: 14px;
+                background: #20202b;
+                padding: 14px 16px;
+                border-radius: 10px;
+                display: inline-block;
+            }
+            .node-list {
+                list-style: none;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-width: 460px;
+            }
+            .node-list li {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                background: #20202b;
+                padding: 9px 12px;
+                border-radius: 9px;
+            }
+            .nid {
+                font-weight: 600;
+            }
+            .nmsg {
+                opacity: 0.65;
+                flex: 1;
+            }
+            .puredashboard-dialog__button {
+                font: inherit;
+                cursor: pointer;
+                padding: 6px 12px;
+                border-radius: 7px;
+                border: 1px solid #3a3a48;
+                background: transparent;
+                color: inherit;
+            }
+            .puredashboard-dialog__button.puredashboard-dialog__button--primary {
+                background: var(--dlg-primary-bg);
+                border-color: transparent;
+                color: #fff;
+            }
+            .login-card {
+                max-width: 320px;
+                margin: 16vh auto;
+                text-align: center;
+                background: #20202b;
+                padding: 28px;
+                border-radius: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+        <script type="module" src="./demo.js"></script>
+    </body>
+</html>

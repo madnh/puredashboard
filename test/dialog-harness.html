@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>dialog.js — real-browser harness</title>
+        <link rel="stylesheet" href="../src/dialog.css" />
+        <style>
+            /* Simulate an app's own theme: the overlay INHERITS this (font/color/scheme) and
+     reads our brand via mapped --dlg-* tokens — no overlay edits needed. */
+            :root {
+                color-scheme: dark;
+                --brand: #7c5cff;
+                --dlg-primary-bg: var(--brand);
+                --dlg-radius: 14px;
+            }
+            body {
+                background: #14141b;
+                color: #e8e8f0;
+                font-family: system-ui, sans-serif;
+                padding: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <h3>dialog.js focus-trap / Esc / light-dismiss harness</h3>
+        <button id="outside">Outside button</button>
+        <div id="log"></div>
+        <script type="module">
+            import { dialog, confirm } from "../src/dialog.js";
+            window.__confirm = () => {
+                window.__result = "pending";
+                confirm("Delete it?", { title: "Confirm", danger: true }).then(
+                    (v) => (window.__result = v),
+                );
+                return true;
+            };
+            window.__open = () => {
+                const d = dialog({
+                    title: "Test dialog",
+                    content: (body) => {
+                        const i = document.createElement("input");
+                        i.id = "inside-input";
+                        i.value = "hi";
+                        body.append(i);
+                        const b = document.createElement("button");
+                        b.id = "inside-btn";
+                        b.textContent = "Inside";
+                        body.append(b);
+                    },
+                });
+                d.closed.then((v) => {
+                    document.getElementById("log").textContent =
+                        "closed:" + (v ?? "");
+                });
+                window.__d = d.show();
+                return true;
+            };
+        </script>
+    </body>
+</html>

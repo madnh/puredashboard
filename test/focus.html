@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>reactive.js — real-browser focus/caret test</title>
+    </head>
+    <body>
+        <h3>repeat() focus/caret survival harness</h3>
+        <div id="app"></div>
+        <script type="module">
+            // Imports the REAL engine (not a copy) so the browser exercises the same code
+            // the jsdom tests do. Serve the repo over HTTP and open this page.
+            import { html, repeat, renderResult } from "../src/reactive.js";
+
+            const app = document.getElementById("app");
+            let data = [{ id: "a" }, { id: "b" }, { id: "c" }];
+
+            const view = () =>
+                html`<div>
+                    ${repeat(
+                        data,
+                        (d) => d.id,
+                        (d) =>
+                            html`<div
+                                class="row"
+                                data-k="${d.id}"
+                                style="margin:4px 0"
+                            >
+                                <label style="display:inline-block;width:1.5em"
+                                    >${d.id}</label
+                                >
+                                <input id="in-${d.id}" value="text-${d.id}" />
+                            </div>`,
+                    )}
+                </div>`;
+
+            const render = () => renderResult(view(), app);
+            render();
+
+            // Driver hook: reorder by id list, then re-render via the keyed reconciler.
+            window.__reorder = (order) => {
+                data = order.map((id) => ({ id }));
+                render();
+            };
+        </script>
+    </body>
+</html>

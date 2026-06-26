@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureDashboard — showcase</title>
+    <!-- component CSS -->
+    <link rel="stylesheet" href="../src/table.css" />
+    <link rel="stylesheet" href="../src/menu.css" />
+    <link rel="stylesheet" href="../src/upload.css" />
+    <link rel="stylesheet" href="../src/dialog.css" />
+    <link rel="stylesheet" href="../src/toast.css" />
+    <link rel="stylesheet" href="../src/md.css" />
+    <!-- the OPT-IN theme: tokens + base + shell, all in one -->
+    <link rel="stylesheet" href="../src/theme/dashboard.css" />
+    <style>
+      /* showcase-only helpers (not part of the library) */
+      .gal-wrap { min-height: 100vh; display: grid; place-items: center; padding: 32px; }
+      .cell { width: min(640px, 92vw); }
+      .center { min-height: 100vh; display: grid; place-items: center; }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import "../src/table.js";
+      import "../src/upload.js";
+      import "../src/md.js";   // defines <puredashboard-markdown>
+      import { menu } from "../src/menu.js";
+      import { dialog } from "../src/dialog.js";
+      import { toast } from "../src/toast.js";
+
+      const params = new URLSearchParams(location.search);
+      const shot = params.get("shot") || "hero";
+      const theme = params.get("theme");
+      if (theme) document.documentElement.dataset.theme = theme;
+      const lang = params.get("lang") || "en";
+      const vi = lang === "vi";
+      if (vi) document.documentElement.lang = "vi";
+
+      // Vietnamese overrides for the table's user-facing strings (all via `labels`).
+      const VI_LABELS = {
+        filter: "Lọc…",
+        filterAria: "Lọc dòng",
+        actions: "Thao tác",
+        open: "Mở",
+        empty: "Chưa có dữ liệu.",
+        rows: "Số dòng",
+        page: (p, n) => `Trang ${p} / ${n}`,
+        range: (a, b, total) => `${a}–${b} trên ${total}`,
+        selected: (n) => `đã chọn ${n}`,
+        selectAll: "Chọn tất cả",
+        selectRow: "Chọn dòng",
+        prevPage: "Trang trước",
+        nextPage: "Trang sau",
+      };
+      // Column headers + row actions, localised.
+      const T = vi
+        ? { service: "Dịch vụ", region: "Khu vực", reqs: "Lượt / ngày", status: "Trạng thái",
+            edit: "Sửa", delete: "Xoá", restart: "Khởi động lại",
+            navServices: "Dịch vụ", navOverview: "Tổng quan", navLogs: "Nhật ký",
+            online: "Trực tuyến", brandSuffix: "· Dịch vụ",
+            title: "Dịch vụ", sub: "14 dịch vụ · đã chọn 2 — sắp xếp, lọc, phân trang, chọn và thao tác, tất cả phía client." }
+        : { service: "Service", region: "Region", reqs: "Requests / day", status: "Status",
+            edit: "Edit", delete: "Delete", restart: "Restart",
+            navServices: "Services", navOverview: "Overview", navLogs: "Logs",
+            online: "Online", brandSuffix: "· Services",
+            title: "Services", sub: "14 services · 2 selected — sort, filter, paginate, select and act, all client-side." };
+
+      const ICON_PENCIL = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+      const ICON_DUP = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+      const ICON_TRASH = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+      const SAMPLE = [
+        { name: "api-gateway",    region: "us-east-1",  reqs: 184203, status: "online" },
+        { name: "auth-service",   region: "eu-west-1",  reqs: 91044,  status: "online" },
+        { name: "worker-batch",   region: "us-east-1",  reqs: 12876,  status: "paused" },
+        { name: "image-resizer",  region: "ap-south-1", reqs: 44120,  status: "online" },
+        { name: "billing-cron",   region: "eu-west-1",  reqs: 873,    status: "offline" },
+        { name: "search-index",   region: "us-west-2",  reqs: 60912,  status: "online" },
+        { name: "notify-fanout",  region: "us-east-1",  reqs: 30188,  status: "online" },
+        { name: "report-builder", region: "eu-west-1",  reqs: 5421,   status: "paused" },
+        { name: "media-cdn",      region: "ap-south-1", reqs: 220934, status: "online" },
+        { name: "audit-log",      region: "us-west-2",  reqs: 18250,  status: "online" },
+        { name: "webhook-relay",  region: "eu-west-1",  reqs: 7733,   status: "offline" },
+        { name: "thumb-worker",   region: "ap-south-1", reqs: 26604,  status: "online" },
+        { name: "rate-limiter",   region: "us-east-1",  reqs: 132770, status: "online" },
+        { name: "session-store",  region: "us-west-2",  reqs: 98410,  status: "online" },
+      ];
+      const fmt = (n) => n.toLocaleString("en-US");
+
+      function makeTable({ preselect = [] } = {}) {
+        const t = document.createElement("puredashboard-table");
+        t.columns = [
+          { key: "name", label: T.service, sortable: true },
+          { key: "region", label: T.region, sortable: true },
+          { key: "reqs", label: T.reqs, sortable: true, align: "right", render: (r) => fmt(r.reqs) },
+          { key: "status", label: T.status, sortable: true },
+        ];
+        t.rows = SAMPLE;
+        t.rowKey = (r) => r.name;
+        t.getHref = (r) => "#/services/" + r.name;
+        t.selectable = true;
+        t.actions = [
+          { name: "edit", label: T.edit },
+          { name: "delete", label: T.delete, danger: true },
+        ];
+        t.bulkActions = [
+          { name: "restart", label: T.restart },
+          { name: "delete", label: T.delete, danger: true },
+        ];
+        t.pageSize = 6;                 // turn on pagination …
+        t.pageSizes = [6, 10, 25];      // … with a rows-per-page selector
+        if (vi) t.labels = VI_LABELS;   // localise every built-in string
+        if (preselect.length) t._sel = new Set(preselect);   // seed selection (showcase only)
+        return t;
+      }
+
+      const MD_SOURCE =
+        "## Release notes\n\n" +
+        "**v1.4** ships safe Markdown — rendered with `textContent` only, so it's\n" +
+        "XSS-safe for untrusted input.\n\n" +
+        "- Headings, **bold**, _italic_, `code`\n" +
+        "- Lists, quotes, tables, links\n" +
+        "- Fenced code blocks\n\n" +
+        "> Links are whitelisted to http/https/mailto — [see the docs](https://example.com).\n\n" +
+        "| Module | Lines |\n|---|---:|\n| reactive.js | 330 |\n| router.js | 260 |\n";
+
+      // Build the full dashboard shell (used by the hero shot).
+      function shell(pageTitle, pageSub, cardKids) {
+        document.body.innerHTML = `
+          <header>
+            <div class="brand"><span class="logo">P</span> PureDashboard <small></small></div>
+            <nav class="tabs">
+              <a class="tab" href="#/overview"></a>
+              <a class="tab" aria-current="page" href="#/services"></a>
+              <a class="tab" href="#/logs"></a>
+            </nav>
+            <div class="header-right"><span class="health"><span class="dot up"></span> <span class="health-text"></span></span></div>
+          </header>
+          <main><div class="page">
+            <h1 class="page-title"></h1>
+            <p class="page-sub"></p>
+            <div class="card"></div>
+          </div></main>`;
+        document.querySelector(".brand small").textContent = T.brandSuffix;
+        const tabs = document.querySelectorAll(".tab");
+        tabs[0].textContent = T.navOverview;
+        tabs[1].textContent = T.navServices;
+        tabs[2].textContent = T.navLogs;
+        document.querySelector(".health-text").textContent = T.online;
+        document.querySelector(".page-title").textContent = pageTitle;
+        document.querySelector(".page-sub").textContent = pageSub;
+        document.querySelector(".card").append(...cardKids);
+      }
+
+      // A centered card for the gallery close-ups.
+      function gallery(kids, { wide = false } = {}) {
+        const wrap = document.createElement("div");
+        wrap.className = "gal-wrap";
+        const card = document.createElement("div");
+        card.className = "card cell";
+        if (wide) card.style.width = "min(980px, 94vw)";
+        card.append(...kids);
+        wrap.append(card);
+        document.body.append(wrap);
+      }
+      function centerStage() {
+        const d = document.createElement("div");
+        d.className = "center";
+        document.body.append(d);
+        return d;
+      }
+
+      if (shot === "hero") {
+        shell(T.title, T.sub, [makeTable({ preselect: ["auth-service", "worker-batch"] })]);
+        const toastMsg = vi ? "Đã triển khai api-gateway · 184k lượt/ngày" : "Deployed api-gateway · 184k req/day";
+        setTimeout(() => toast.success(toastMsg, { duration: 0 }), 60);
+      } else if (shot === "table") {
+        gallery([makeTable({ preselect: ["auth-service"] })], { wide: true });
+      } else if (shot === "upload") {
+        const up = document.createElement("puredashboard-upload");
+        up.multiple = true; up.accept = "image/*";
+        up.labels = { browse: "Drag & drop images, or click to browse" };
+        gallery([up]);
+      } else if (shot === "markdown") {
+        const md = document.createElement("puredashboard-markdown");
+        md.value = MD_SOURCE;
+        gallery([md]);
+      } else if (shot === "menu") {
+        const host = centerStage();
+        const btn = document.createElement("button");
+        btn.textContent = "Row actions ▾";
+        host.append(btn);
+        setTimeout(() => menu(btn, [
+          { label: "Edit", value: "edit", icon: ICON_PENCIL },
+          { label: "Duplicate", value: "dup", icon: ICON_DUP },
+          { separator: true },
+          { label: "Delete", value: "del", danger: true, icon: ICON_TRASH },
+        ]), 60);
+      } else if (shot === "toast") {
+        centerStage();
+        setTimeout(() => {
+          toast.success("Service restarted", { duration: 0 });
+          toast.info("New version available — v1.4.0", { duration: 0 });
+          toast.error("billing-cron failed health check", { duration: 0 });
+        }, 60);
+      } else if (shot === "dialog") {
+        centerStage();
+        setTimeout(() => dialog({
+          title: "Restart service",
+          content: (body) => {
+            const p = document.createElement("p");
+            p.style.cssText = "margin:0 0 16px;color:var(--muted)";
+            p.textContent = "This will restart auth-service in eu-west-1. In-flight requests drain first.";
+            const row = document.createElement("div");
+            row.style.cssText = "display:flex;gap:8px;justify-content:flex-end";
+            const cancel = Object.assign(document.createElement("button"), { textContent: "Cancel" });
+            const ok = Object.assign(document.createElement("button"), { className: "primary", textContent: "Restart" });
+            row.append(cancel, ok); body.append(p, row);
+          },
+        }).show(), 60);
+      }
+
+      // signal readiness for the screenshot driver
+      requestAnimationFrame(() => requestAnimationFrame(() => { document.documentElement.dataset.ready = "1"; }));
+    </script>
+  </body>
+</html>

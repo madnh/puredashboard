@@ -1,0 +1,83 @@
+/* PureDashboard theme — design tokens (OPTIONAL).
+ *
+ * The single source of truth for the visual language: palette, spacing, type.
+ * Every PureDashboard component themes itself from these variables (with its own
+ * --pd-* fallbacks), so linking ONLY this file already makes the components look
+ * polished and cohesive instead of falling back to bare system colours.
+ *
+ * Zero-dependency, no build, CSP-safe — plain CSS custom properties. Dark by
+ * default; light is applied automatically via prefers-color-scheme. Force a mode
+ * regardless of the OS with `<html data-theme="light">` / `data-theme="dark">`.
+ * Override any token from your own stylesheet to retheme everything at once.
+ */
+:root, :root[data-theme="dark"] {
+  color-scheme: light dark;
+
+  /* surfaces */
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1d212b;
+  --panel-3: #232834;
+  --border: #2a2f3a;
+  --border-2: #353b48;
+
+  /* text */
+  --text: #e6e9ef;
+  --muted: #99a0ad;
+  --faint: #6b7280;
+
+  /* accent + status */
+  --accent: #4f9cf9;
+  --accent-ink: #07101f;     /* readable text on an --accent fill */
+  --green: #3fb950;
+  --amber: #d29922;
+  --red: #f85149;
+  --teal: #2dd4bf;
+  --purple: #a98bff;
+  --danger: var(--red);
+
+  /* shape */
+  --radius: 10px;
+  --radius-sm: 8px;
+
+  /* spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+
+  /* type */
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* light palette — auto when the OS prefers light (and no explicit override) … */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg: #f4f6fa;
+    --panel: #ffffff;
+    --panel-2: #f7f9fc;
+    --panel-3: #eef1f6;
+    --border: #e1e5ec;
+    --border-2: #d2d8e2;
+    --text: #1a1f2b;
+    --muted: #5b6472;
+    --faint: #8b93a1;
+    --accent-ink: #ffffff;
+  }
+}
+/* … or forced, regardless of OS, via <html data-theme="light"> */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6fa;
+  --panel: #ffffff;
+  --panel-2: #f7f9fc;
+  --panel-3: #eef1f6;
+  --border: #e1e5ec;
+  --border-2: #d2d8e2;
+  --text: #1a1f2b;
+  --muted: #5b6472;
+  --faint: #8b93a1;
+  --accent-ink: #ffffff;
+}

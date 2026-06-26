@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>components demo</title>
+    <link rel="stylesheet" href="../src/theme/dashboard.css" />
+    <link rel="stylesheet" href="../src/table.css" />
+    <link rel="stylesheet" href="../src/menu.css" />
+    <link rel="stylesheet" href="../src/upload.css" />
+    <style>
+      body {
+        padding: 24px;
+        overflow: auto;
+        height: auto;
+        display: block;
+      }
+      .demo-sect {
+        margin-bottom: 32px;
+      }
+      .demo-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 820px) {
+        .demo-2col {
+          grid-template-columns: 1fr;
+        }
+      }
+      .demo-inst {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        background: var(--panel);
+      }
+      .demo-inst > h4 {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: var(--faint);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .demo-log {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+        min-height: 16px;
+      }
+      .trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-sect">
+      <h3 class="section-title">
+        @layer cascade — utility beats component (no !important)
+      </h3>
+      <div id="cascade" class="card p-2">
+        .card + .p-2 → padding should be 8px (utility wins)
+      </div>
+    </div>
+
+    <div class="demo-sect">
+      <h3 class="section-title">menu (dropdown) — two independent instances</h3>
+      <div class="demo-2col">
+        <div class="demo-inst">
+          <h4>Instance A</h4>
+          <button id="menuA" type="button" class="trigger">
+            Actions
+            <svg
+              class="cic"
+              viewBox="0 0 24 24"
+              width="1em"
+              height="1em"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <span id="resA" class="demo-log"></span>
+        </div>
+        <div class="demo-inst">
+          <h4>Instance B</h4>
+          <button id="menuB" type="button" class="trigger">
+            More
+            <svg
+              class="cic"
+              viewBox="0 0 24 24"
+              width="1em"
+              height="1em"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <span id="resB" class="demo-log"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-sect">
+      <h3 class="section-title">
+        table — paginated + sortable (A, debug on) vs simple (B), independent
+        state
+      </h3>
+      <div class="demo-2col">
+        <div class="demo-inst">
+          <h4>Instance A — 12 rows, 5/page</h4>
+          <puredashboard-table id="tblA"></puredashboard-table>
+        </div>
+        <div class="demo-inst">
+          <h4>Instance B — routes, no pager</h4>
+          <puredashboard-table id="tblB"></puredashboard-table>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-sect">
+      <h3 class="section-title">
+        upload — select then submit, thumbnails + progress (A, debug on) vs
+        single (B)
+      </h3>
+      <div class="demo-2col">
+        <div class="demo-inst">
+          <h4>Instance A — images, multiple</h4>
+          <puredashboard-upload id="upA"></puredashboard-upload>
+          <div
+            style="
+              margin-top: 12px;
+              display: flex;
+              gap: 8px;
+              align-items: center;
+            "
+          >
+            <button id="submitA" class="primary" type="button" disabled>
+              Submit upload
+            </button>
+            <button id="clearA" type="button">Clear</button>
+            <span id="uplogA" class="demo-log"></span>
+          </div>
+        </div>
+        <div class="demo-inst">
+          <h4>Instance B — any file, single</h4>
+          <puredashboard-upload id="upB"></puredashboard-upload>
+          <span id="uplogB" class="demo-log"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-sect">
+      <h3 class="section-title">
+        upload inside a &lt;form&gt; — native multipart submit (form-associated)
+      </h3>
+      <form
+        id="theForm"
+        class="demo-inst"
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          max-width: 520px;
+        "
+      >
+        <label
+          >Title
+          <input
+            name="title"
+            type="text"
+            placeholder="Attachment title"
+            style="width: 100%; margin-top: 5px"
+        /></label>
+        <puredashboard-upload
+          name="attachments"
+          id="upForm"
+        ></puredashboard-upload>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <button class="primary" type="submit">Submit form</button>
+          <span id="formlog" class="demo-log"></span>
+        </div>
+      </form>
+    </div>
+
+    <script type="module">
+      import { menu } from "../src/menu.js";
+      import "../src/table.js";
+      import "../src/upload.js";
+
+      // a couple of inline SVGs for menu items (copied from _icons/ — components/app own their icons)
+      const ICON_PENCIL =
+        '<svg class="cic" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+      const ICON_TRASH =
+        '<svg class="cic" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+      // ---- menus: two independent instances ----
+      const mkMenu = (btn, out, items) =>
+        btn.addEventListener("click", async () => {
+          const picked = await menu(btn, items);
+          out.textContent = picked ? "picked: " + picked : "dismissed";
+        });
+      mkMenu(
+        document.getElementById("menuA"),
+        document.getElementById("resA"),
+        [
+          { label: "Rename", value: "rename", icon: ICON_PENCIL },
+          { separator: true },
+          {
+            label: "Delete",
+            value: "delete",
+            danger: true,
+            icon: ICON_TRASH,
+          },
+        ],
+      );
+      mkMenu(
+        document.getElementById("menuB"),
+        document.getElementById("resB"),
+        [
+          { label: "Refresh", value: "refresh" },
+          { label: "Export", value: "export" },
+          { label: "Disabled", value: "x", disabled: true },
+        ],
+      );
+
+      // ---- tables: A paginated+debug, B simple — fully isolated ----
+      const tblA = document.getElementById("tblA");
+      tblA.columns = [
+        { key: "name", label: "Node", sortable: true },
+        { key: "msgs", label: "Msgs", sortable: true, align: "right" },
+        { key: "status", label: "Status", sortable: true },
+      ];
+      tblA.rows = Array.from({ length: 12 }, (_, i) => ({
+        name: "node-" + String(i + 1).padStart(2, "0"),
+        msgs: (i * 37) % 100,
+        status: ["online", "offline", "paused"][i % 3],
+      }));
+      tblA.getHref = (r) => "#/nodes/" + r.name;
+      tblA.actions = [{ name: "delete", label: "Delete", danger: true }];
+      tblA.pageSize = 5;
+      tblA.pageSizes = [5, 10, 25];
+      tblA.debug = true;
+      tblA.rowKey = (r) => r.name;
+      tblA.selectable = true;
+      tblA.bulkActions = [
+        { name: "delete", label: "Delete selected", danger: true },
+        { name: "export", label: "Export" },
+      ];
+      tblA.addEventListener("rowaction", (e) =>
+        console.log("[demo] tblA rowaction", e.detail.name, e.detail.row.name),
+      );
+      tblA.addEventListener("selectionchange", (e) =>
+        console.log("[demo] tblA selection", e.detail.keys),
+      );
+      tblA.addEventListener("bulkaction", (e) => {
+        console.log("[demo] tblA bulk", e.detail.name, e.detail.keys);
+        alert(
+          `Bulk "${e.detail.name}" on ${e.detail.rows.length} rows: ${e.detail.keys.join(", ")}`,
+        );
+      });
+
+      const tblB = document.getElementById("tblB");
+      tblB.columns = [
+        { key: "route", label: "Route", sortable: true },
+        {
+          key: "count",
+          label: "Count",
+          sortable: true,
+          align: "right",
+        },
+      ];
+      tblB.rows = [
+        { route: "claude/web", count: 12 },
+        { route: "codex/api", count: 4 },
+        { route: "claude/db", count: 27 },
+      ];
+      tblB.getHref = (r) => "#/routes/" + r.route;
+      tblB.labels = {
+        filter: "Lọc…",
+        open: "Mở",
+        actions: "Thao tác",
+        empty: "Chưa có dữ liệu",
+      }; // ← localised to Vietnamese
+
+      // ---- uploads: A images+submit+progress (simulated transport), B single ----
+      const upA = document.getElementById("upA");
+      upA.accept = "image/*";
+      upA.multiple = true;
+      upA.maxSize = 5 * 1024 * 1024;
+      upA.debug = true;
+      upA.labels = { browse: "Drag & drop images, or click to browse" };
+      // simulated transport so progress animates without a POST server (real apps omit this)
+      upA.uploader = (file, onProgress) =>
+        new Promise((resolve) => {
+          let p = 0;
+          const step = () => {
+            p += 0.08 + Math.random() * 0.13;
+            if (p >= 1) {
+              onProgress(1);
+              resolve({
+                status: 200,
+                response: { name: file.name },
+              });
+            } else {
+              onProgress(p);
+              setTimeout(step, 130);
+            }
+          };
+          setTimeout(step, 130);
+        });
+      const uplogA = document.getElementById("uplogA");
+      upA.addEventListener("files", (e) => {
+        document.getElementById("submitA").disabled = !e.detail.length;
+      });
+      upA.addEventListener("uploadprogress", (e) => {
+        uplogA.textContent = `${e.detail.file.name}: ${Math.round(e.detail.progress * 100)}%`;
+      });
+      upA.addEventListener("uploadcomplete", (e) => {
+        uplogA.textContent = `done: ${e.detail.results.filter((r) => r.ok).length}/${e.detail.results.length} ok`;
+      });
+      document
+        .getElementById("submitA")
+        .addEventListener("click", () => upA.upload("/sink"));
+      document
+        .getElementById("clearA")
+        .addEventListener("click", () => upA.clear());
+
+      const upB = document.getElementById("upB");
+      upB.multiple = false;
+      upB.labels = {
+        // all strings via labels
+        browse: "Kéo & thả, hoặc bấm để chọn một tệp",
+        remove: (n) => "Xoá " + n,
+        tooLarge: (m) => "quá lớn (tối đa " + m + ")",
+      };
+      upB.addEventListener("files", (e) => {
+        document.getElementById("uplogB").textContent = e.detail.length
+          ? "selected: " + e.detail[0].name
+          : "none";
+      });
+
+      // form-associated upload: submitting the form serialises the files into the form's
+      // FormData (multipart) under name="attachments" — no JS wiring needed for that.
+      const upForm = document.getElementById("upForm");
+      upForm.multiple = true;
+      upForm.accept = "image/*";
+      upForm.labels = { browse: "Attach images" };
+      document.getElementById("theForm").addEventListener("submit", (e) => {
+        e.preventDefault(); // demo: don't navigate; show what WOULD be POSTed as multipart
+        const fd = new FormData(e.target);
+        const parts = [...fd.entries()].map(
+          ([k, v]) =>
+            k + "=" + (v instanceof File ? `${v.name}(${v.size}b)` : v),
+        );
+        document.getElementById("formlog").textContent =
+          "FormData → " + parts.join(", ");
+        console.log("[demo] form multipart entries", parts);
+      });
+
+      window.__ready = true;
+    </script>
+  </body>
+</html>

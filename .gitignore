@@ -1,0 +1,24 @@
+# PureDashboard has NO build and NO runtime dependencies — there should be no
+# node_modules, lockfiles, or build output in this repo. The entries below are a
+# safety net (and tooling scratch), not things the project produces.
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Logs & local scratch
+*.log
+
+# Browser-automation scratch (Playwright/Chrome) — never commit
+.playwright-mcp/
+
+# Should never exist here — the runtime is zero-dependency, no bundler
+node_modules/
+dist/
+build/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

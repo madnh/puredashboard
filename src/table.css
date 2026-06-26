@@ -1,0 +1,69 @@
+/* puredashboard-table — styles for <puredashboard-table> (table.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours come from the --pd-* tokens below, which
+ * default to your app tokens (--accent, --panel, …) and finally to neutral system
+ * colours (Canvas / CanvasText) — so it looks right with NO config and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override --pd-*.
+ */
+puredashboard-table {
+  display: block;
+  --pd-accent:     var(--accent,     #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #fff);
+  --pd-text:       var(--text,       CanvasText);
+  --pd-muted:      var(--muted,      color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-faint:      var(--faint,      color-mix(in srgb, CanvasText 45%, Canvas));
+  --pd-panel:      var(--panel,      Canvas);
+  --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-panel-3:    var(--panel-3,    color-mix(in srgb, CanvasText 11%, Canvas));
+  --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:   var(--border-2,   color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:        var(--red,        #dc2626);
+  --pd-green:      var(--green,      #16a34a);
+  --pd-radius:     var(--radius,     8px);
+}
+
+.puredashboard-table__toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.puredashboard-table__search { flex: 1; min-width: 0; max-width: 280px; }
+.puredashboard-table__count { font-size: 12px; color: var(--pd-muted); flex: none; }
+.puredashboard-table__bulk { display: inline-flex; gap: 8px; margin-left: auto; }
+.puredashboard-table__bulk-btn { padding: 5px 11px; font-size: 12px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--pd-border); background: var(--pd-panel-2); color: var(--pd-text); }
+.puredashboard-table__bulk-btn:hover { background: var(--pd-panel-3); }
+.puredashboard-table__bulk-btn--danger { color: var(--pd-red); border-color: color-mix(in srgb, var(--pd-red) 40%, var(--pd-border)); }
+.puredashboard-table__bulk-btn--danger:hover { background: color-mix(in srgb, var(--pd-red) 12%, transparent); }
+.puredashboard-table__scroll { overflow-x: auto; border: 1px solid var(--pd-border); border-radius: var(--pd-radius); }
+.puredashboard-table__table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.puredashboard-table__th { padding: 9px 13px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--pd-faint); border-bottom: 1px solid var(--pd-border); background: var(--pd-panel-2); white-space: nowrap; }
+.puredashboard-table__th--sortable { padding: 0; }
+.puredashboard-table__sort { all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 9px 13px;
+  width: 100%; box-sizing: border-box; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; }
+.puredashboard-table__sort:hover { color: var(--pd-text); }
+.puredashboard-table__th[style*="right"] .puredashboard-table__sort { justify-content: flex-end; }
+.puredashboard-table__sort-icon { display: inline-flex; color: var(--pd-faint); opacity: .65; }
+.puredashboard-table__sort--active .puredashboard-table__sort-icon { color: var(--pd-accent); opacity: 1; }
+.puredashboard-table__th[aria-sort]:not([aria-sort="none"]) { color: var(--pd-accent); }
+.puredashboard-table__td { padding: 9px 13px; border-bottom: 1px solid var(--pd-border); vertical-align: middle; }
+.puredashboard-table__row:hover td { background: var(--pd-panel-2); }
+.puredashboard-table__row:last-child td { border-bottom: none; }
+.puredashboard-table__row--selected td { background: color-mix(in srgb, var(--pd-accent) 12%, transparent); }
+.puredashboard-table__actions, .puredashboard-table__actions-head { text-align: right; white-space: nowrap; }
+.puredashboard-table__open { display: inline-block; padding: 4px 11px; border-radius: 7px; border: 1px solid var(--pd-border);
+  background: var(--pd-panel-2); color: var(--pd-text); font-size: 12px; font-weight: 600; }
+.puredashboard-table__open:hover { background: var(--pd-panel-3); }
+.puredashboard-table__action { padding: 4px 10px; font-size: 12px; margin-left: 6px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--pd-border); background: var(--pd-panel-2); color: var(--pd-text); }
+.puredashboard-table__action:hover { background: var(--pd-panel-3); }
+.puredashboard-table__action--danger { color: var(--pd-red); border-color: color-mix(in srgb, var(--pd-red) 40%, var(--pd-border)); }
+.puredashboard-table__empty { padding: 30px 14px; text-align: center; color: var(--pd-faint); font-style: italic; }
+.puredashboard-table__check-head, .puredashboard-table__check-cell { width: 1px; white-space: nowrap; text-align: center; padding: 9px 4px 9px 13px; }
+.puredashboard-table__check-head input, .puredashboard-table__check-cell input { cursor: pointer; margin: 0; vertical-align: middle; }
+.puredashboard-table__pager { display: flex; align-items: center; gap: 16px; margin-top: 10px; font-size: 12.5px; flex-wrap: wrap; }
+.puredashboard-table__range { flex: none; color: var(--pd-muted); }
+.puredashboard-table__pages { display: flex; align-items: center; gap: 8px; }
+.puredashboard-table__page-btn { all: unset; cursor: pointer; display: inline-flex; padding: 4px; border-radius: 6px; color: var(--pd-text); }
+.puredashboard-table__page-btn:hover { background: var(--pd-panel-2); }
+.puredashboard-table__page-btn[disabled] { opacity: .3; cursor: default; }
+.puredashboard-table__page-no { color: var(--pd-muted); font-variant-numeric: tabular-nums; }
+.puredashboard-table__page-size { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--pd-muted); }
+.puredashboard-table__page-size-select { padding: 4px 8px; }

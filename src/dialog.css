@@ -1,0 +1,74 @@
+/* dialog.css — baseline skin for puredashboard/dialog.js. BEM, block = .puredashboard-dialog.
+ *
+ * Self-contained & theme-able, consistent with the rest of PureDashboard:
+ *   - Colours come from the --pd-* palette (default to your app tokens --accent/--panel/…,
+ *     then to neutral system colours) — set the app tokens once and every component themes
+ *     together; or override --pd-* on .puredashboard-dialog.
+ *   - Dialog-specific sizing knobs are --puredashboard-dialog-* (pad, gap, max-w,
+ *     drawer-w/h, backdrop). font/color-scheme inherit so dialogs match your typography
+ *     and dark/light mode.
+ *   - Or skip this file and style .puredashboard-dialog__* yourself; or pass
+ *     okClass/cancelClass/className to reuse your own button/dialog classes.
+ */
+
+.puredashboard-dialog {
+  --pd-accent:     var(--accent,     #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #fff);
+  --pd-text:       var(--text,       CanvasText);
+  --pd-panel:      var(--panel,      Canvas);
+  --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-red:        var(--red,        #dc2626);
+  --pd-radius:     var(--radius,     12px);
+  --puredashboard-dialog-pad:      16px 18px;
+  --puredashboard-dialog-gap:      14px;
+  --puredashboard-dialog-max-w:    min(92vw, 520px);
+  --puredashboard-dialog-drawer-w: min(92vw, 380px);
+  --puredashboard-dialog-drawer-h: 45vh;
+  --puredashboard-dialog-backdrop: rgba(0, 0, 0, .5);
+
+  color-scheme: inherit; font: inherit;
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
+  padding: 0;
+  max-width: var(--puredashboard-dialog-max-w);
+  max-height: 85vh;
+}
+.puredashboard-dialog::backdrop { background: var(--puredashboard-dialog-backdrop); }
+
+.puredashboard-dialog__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: var(--puredashboard-dialog-pad);
+  border-bottom: 1px solid var(--pd-border);
+}
+.puredashboard-dialog__title { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.puredashboard-dialog__close { all: unset; cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0 6px; border-radius: 6px; }
+.puredashboard-dialog__close:hover { background: var(--pd-panel-2); }
+
+.puredashboard-dialog__body { padding: var(--puredashboard-dialog-pad); display: flex; flex-direction: column; gap: var(--puredashboard-dialog-gap); overflow: auto; }
+.puredashboard-dialog__message { margin: 0; }
+.puredashboard-dialog__input {
+  font: inherit; color: inherit; background: transparent;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--pd-border);
+}
+
+.puredashboard-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.puredashboard-dialog__button {
+  font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;
+  border: 1px solid var(--pd-border); background: transparent; color: var(--pd-text);
+}
+.puredashboard-dialog__button:hover { background: var(--pd-panel-2); }
+.puredashboard-dialog__button--primary { background: var(--pd-accent); color: var(--pd-accent-ink); border-color: transparent; }
+.puredashboard-dialog__button--danger  { background: var(--pd-red);    color: #fff;                 border-color: transparent; }
+
+/* drawers: size + slide come from JS inline styles (themed via --puredashboard-dialog-drawer-*);
+ * here we only square off the side that meets the viewport edge. */
+.puredashboard-dialog.puredashboard-dialog--left, .puredashboard-dialog.puredashboard-dialog--right, .puredashboard-dialog.puredashboard-dialog--top, .puredashboard-dialog.puredashboard-dialog--bottom { border-radius: 0; max-width: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .puredashboard-dialog.puredashboard-dialog--center { animation: puredashboard-dialog-pop .15s ease; }
+  @keyframes puredashboard-dialog-pop { from { opacity: 0; transform: translateY(6px) scale(.98); } }
+}

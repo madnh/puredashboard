@@ -1,0 +1,57 @@
+/* PureDashboard theme — base primitives (OPTIONAL).
+ *
+ * Reset, typography, and the plain form controls (button / input / select /
+ * code) that the components sit alongside. Depends on tokens.css (link it first).
+ * Style classes here are generic element/utility names — your app CSS can freely
+ * override them.
+ */
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
+
+/* stroke-based icon class (follows currentColor; 1em → scales with font) */
+.ic {
+  width: 1em; height: 1em; display: inline-block; vertical-align: -0.14em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── buttons ── */
+button {
+  font: inherit; cursor: pointer; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+  padding: 7px 13px; transition: background .12s, border-color .12s, transform .04s;
+}
+button:hover { background: var(--panel-3); }
+button:active { transform: translateY(1px); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+button.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
+button.secondary { background: var(--panel-2); }
+button.danger { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, var(--border)); background: var(--panel-2); }
+button.danger:hover { background: color-mix(in srgb, var(--red) 14%, transparent); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ── inputs ── */
+input[type=text], input[type=number], input[type=search], input[type=password], input[type=email], select, textarea {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  border-radius: var(--radius-sm); padding: 8px 11px; font: inherit; outline: none; min-width: 0;
+}
+input::placeholder, textarea::placeholder { color: var(--faint); }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+input[type=checkbox], input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+code {
+  font-family: var(--mono); font-size: 12.5px; background: var(--panel-2);
+  border: 1px solid var(--border); padding: 1px 5px; border-radius: 5px;
+}

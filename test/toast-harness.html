@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>toast.js — real-browser harness</title>
+        <link rel="stylesheet" href="../src/dialog.css" />
+        <link rel="stylesheet" href="../src/toast.css" />
+        <style>
+            :root {
+                color-scheme: dark;
+                --dlg-primary-bg: #7c5cff;
+                --toast-bg: #20202b;
+            }
+            body {
+                background: #14141b;
+                color: #e8e8f0;
+                font-family: system-ui, sans-serif;
+                padding: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <h3>toast.js — top-layer over modal + stacking</h3>
+        <script type="module">
+            import { toast } from "../src/toast.js";
+            window.toast = toast;
+            // top-layer beats z-index: raise toasts over a fixed z-index:99999 panel.
+            window.__scene = () => {
+                const panel = document.createElement("div");
+                panel.id = "zpanel";
+                Object.assign(panel.style, {
+                    position: "fixed",
+                    inset: "0",
+                    zIndex: "99999",
+                    background: "rgba(124,92,255,.18)",
+                });
+                document.body.appendChild(panel);
+                toast.success("Above a z-index:99999 panel");
+                toast.error("Sticky error", { duration: 0 });
+                return true;
+            };
+        </script>
+    </body>
+</html>

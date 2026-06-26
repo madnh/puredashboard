@@ -1,0 +1,20 @@
+/* PureDashboard theme — all-in-one (OPTIONAL).
+ *
+ * The complete opt-in "dashboard" look in a single link: design tokens + base
+ * primitives + the app shell & layout. This is the harmonious default — link just
+ * this one file and your page is themed end to end:
+ *
+ *   <link rel="stylesheet" href="LIB/theme/dashboard.css">
+ *
+ * Prefer the pieces? Link them individually instead (tokens is the only required
+ * one for the components to look polished):
+ *
+ *   <link rel="stylesheet" href="LIB/theme/tokens.css">   <!-- palette (components theme from this) -->
+ *   <link rel="stylesheet" href="LIB/theme/base.css">     <!-- buttons / inputs / code           -->
+ *   <link rel="stylesheet" href="LIB/theme/shell.css">    <!-- header + page/card layout          -->
+ *
+ * @import must precede all other rules; these resolve relative to this file.
+ */
+@import "tokens.css";
+@import "base.css";
+@import "shell.css";

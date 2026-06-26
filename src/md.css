@@ -1,0 +1,39 @@
+/* puredashboard-markdown — styles for the <puredashboard-markdown> component (md.js). Block = the tag.
+ *
+ * Self-contained & theme-able: colours/font come from --pd-* tokens that default to
+ * your app tokens, then to neutral system colours (Canvas / CanvasText) — looks right
+ * with no config and adapts to light/dark. The element is the styling root; only its
+ * own descendants are styled (page-wide <h1>/<p>/<table> are never touched).
+ */
+puredashboard-markdown {
+  display: block;
+  --pd-accent:   var(--accent,   #3b82f6);
+  --pd-muted:    var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-faint:    var(--faint,    color-mix(in srgb, CanvasText 45%, Canvas));
+  --pd-panel-2:  var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-border:   var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2: var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-mono:     var(--mono,     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace);
+  line-height: 1.6; word-break: break-word;
+}
+puredashboard-markdown > :first-child { margin-top: 0; }
+puredashboard-markdown > :last-child { margin-bottom: 0; }
+puredashboard-markdown h1, puredashboard-markdown h2, puredashboard-markdown h3, puredashboard-markdown h4 { margin: 14px 0 7px; line-height: 1.3; }
+puredashboard-markdown h1 { font-size: 18px; } puredashboard-markdown h2 { font-size: 16px; } puredashboard-markdown h3 { font-size: 14px; }
+puredashboard-markdown h4 { font-size: 13px; color: var(--pd-muted); }
+puredashboard-markdown p { margin: 8px 0; }
+puredashboard-markdown ul, puredashboard-markdown ol { margin: 8px 0; padding-left: 22px; }
+puredashboard-markdown li { margin: 3px 0; }
+puredashboard-markdown code { font-family: var(--pd-mono); font-size: 12px; background: var(--pd-panel-2);
+  border: 1px solid var(--pd-border); border-radius: 5px; padding: 1px 5px; }
+puredashboard-markdown pre { background: var(--pd-panel-2); border: 1px solid var(--pd-border); border-radius: 8px;
+  padding: 11px 13px; overflow: auto; margin: 9px 0; }
+puredashboard-markdown pre code { background: none; border: none; padding: 0; font-size: 12.5px; line-height: 1.5; }
+puredashboard-markdown blockquote { margin: 9px 0; padding: 4px 14px; border-left: 3px solid var(--pd-border-2); color: var(--pd-muted); }
+puredashboard-markdown a { color: var(--pd-accent); text-decoration: underline; }
+puredashboard-markdown hr { border: none; border-top: 1px solid var(--pd-border); margin: 12px 0; }
+puredashboard-markdown strong { font-weight: 680; } puredashboard-markdown del { color: var(--pd-faint); }
+puredashboard-markdown table { border-collapse: collapse; margin: 10px 0; font-size: 12.5px; display: block; overflow-x: auto; max-width: 100%; }
+puredashboard-markdown th, puredashboard-markdown td { border: 1px solid var(--pd-border); padding: 6px 11px; text-align: left; vertical-align: top; }
+puredashboard-markdown thead th { background: var(--pd-panel-2); font-weight: 650; }
+puredashboard-markdown tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--pd-panel-2) 50%, transparent); }

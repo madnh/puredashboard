@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/madnh/puredashboard/security/advisories/new
+    about: Please report vulnerabilities privately — do not open a public issue. See SECURITY.md.
+  - name: Question / discussion
+    url: https://github.com/madnh/puredashboard/discussions
+    about: For open-ended questions and usage help (enable Discussions in repo settings).
