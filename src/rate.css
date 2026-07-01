@@ -1,0 +1,82 @@
+/* puredashboard-rate — styles for <puredashboard-rate> (rate.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens (--amber for
+ * the filled star, --accent, --border/--muted for the empty star, --focus-ring,
+ * --duration-fast, --disabled-opacity) via a --pd-* chain that falls back to your app
+ * tokens and finally to neutral system colours — so it looks right with NO config and
+ * adapts to light/dark automatically. Theme by defining the app tokens, or override
+ * --pd-rate-*.
+ *
+ * The WHOLE widget is one role="slider" (.puredashboard-rate__slider) — a single tab
+ * stop that owns the focus ring. Each star stacks two identical glyphs: an EMPTY one
+ * underneath and a FILLED one on top that is width-clipped (100% full, 50% half, 0%
+ * empty) so fractional ratings render a half star with no extra markup. Script hooks
+ * are SEPARATE js-… classes / data-* attrs — never restyle or remove those.
+ */
+puredashboard-rate {
+  display: inline-block;
+  --pd-accent:   var(--accent, #3b82f6);
+  --pd-amber:    var(--amber, #d29922);
+  --pd-muted:    var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-border:   var(--border, color-mix(in srgb, CanvasText 24%, Canvas));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-radius:   var(--radius-sm, 8px);
+  --pd-duration: var(--duration-fast, 120ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+
+  /* component knobs */
+  --pd-rate-size:   1.5rem;             /* star glyph size */
+  --pd-rate-gap:    var(--sp-1, 4px);   /* gap between stars */
+  --pd-rate-filled: var(--pd-amber);    /* filled star colour */
+  --pd-rate-empty:  var(--pd-border);   /* empty star colour */
+}
+
+/* The single focusable slider — owns the focus ring, lays out the stars in a row. */
+.puredashboard-rate__slider {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pd-rate-gap);
+  padding: 2px;
+  border-radius: var(--pd-radius);
+  outline: none;
+  cursor: pointer;
+  font-size: var(--pd-rate-size);
+  line-height: 1;
+}
+.puredashboard-rate__slider:focus-visible { box-shadow: var(--pd-focus-ring); }
+
+.puredashboard-rate__slider[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: var(--pd-disabled-opacity);
+}
+.puredashboard-rate__slider[aria-readonly="true"] { cursor: default; }
+
+/* One star = an EMPTY glyph with a width-clipped FILLED glyph stacked on top. */
+.puredashboard-rate__star {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  color: var(--pd-rate-empty);
+  transition: color var(--pd-duration) var(--pd-ease);
+}
+
+.puredashboard-rate__empty,
+.puredashboard-rate__filled {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+}
+/* The empty layer fills the whole star; the filled layer is clipped by width. */
+.puredashboard-rate__empty { width: 100%; color: var(--pd-rate-empty); }
+.puredashboard-rate__filled { width: 0; color: var(--pd-rate-filled); }
+
+/* Modifiers set by the component per star: how much of the filled glyph shows. */
+.puredashboard-rate__star--half .puredashboard-rate__filled { width: 50%; }
+.puredashboard-rate__star--full .puredashboard-rate__filled { width: 100%; }
+
+.puredashboard-rate__glyph { width: 1em; height: 1em; }
+
+/* Honour reduce-motion via the token (durations collapse to 0ms). */

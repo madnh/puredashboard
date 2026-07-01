@@ -1,0 +1,76 @@
+/* puredashboard-date — styles for <puredashboard-date> (date.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --control-pad-x, --focus-ring, --radius, --border,
+ * --panel, --text, --danger-bg, --disabled-opacity) via a --pd-* chain that
+ * falls back to your app tokens and finally to neutral system colours — so it
+ * looks right with NO config and adapts to light/dark automatically. The element
+ * stays a real native <input type="date">: we only skin it (including the
+ * calendar picker indicator), never replace the browser calendar. Theme by
+ * defining the app tokens, or override --pd-date-*.
+ */
+puredashboard-date {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-date-height: var(--control-height-md, 34px);
+  --pd-date-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+.puredashboard-date__field {
+  width: 100%;
+  box-sizing: border-box;
+  height: var(--pd-date-height);
+  padding: 0 var(--pd-date-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  /* Adopt the theme colour scheme so the browser renders the native date UI
+   * (text, spinners, calendar popup) in the matching light/dark palette. */
+  color-scheme: light dark;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-date__field:hover:not(:disabled):not([readonly]) { border-color: var(--pd-border-2); }
+.puredashboard-date__field:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-date__field:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* Style the native calendar-picker indicator (the little calendar button) while
+ * keeping it fully functional — tint it toward the accent on hover. */
+.puredashboard-date__field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  opacity: 0.7;
+  transition: opacity var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-date__field::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+.puredashboard-date__field:disabled::-webkit-calendar-picker-indicator { cursor: not-allowed; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-date__field[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-date__field[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the height token */
+.puredashboard-date__field--sm { --pd-date-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-date__field--lg { --pd-date-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+
+.puredashboard-date__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

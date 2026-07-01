@@ -45,6 +45,11 @@
     <link rel="stylesheet" href="../src/grid.css" />
     <link rel="stylesheet" href="../src/segmented.css" />
     <link rel="stylesheet" href="../src/statistic.css" />
+    <link rel="stylesheet" href="../src/combobox.css" />
+    <link rel="stylesheet" href="../src/date.css" />
+    <link rel="stylesheet" href="../src/time.css" />
+    <link rel="stylesheet" href="../src/rate.css" />
+    <link rel="stylesheet" href="../src/color.css" />
     <!-- the OPT-IN theme: tokens + base + shell, all in one -->
     <link rel="stylesheet" href="../src/theme/dashboard.css" />
     <style>
@@ -73,6 +78,11 @@
       import "../src/space.js";     // <puredashboard-space>
       import "../src/segmented.js"; // <puredashboard-segmented>
       import "../src/statistic.js"; // <puredashboard-statistic>
+      import "../src/combobox.js";  // <puredashboard-combobox>
+      import "../src/date.js";      // <puredashboard-date>
+      import "../src/time.js";      // <puredashboard-time>
+      import "../src/rate.js";      // <puredashboard-rate>
+      import "../src/color.js";     // <puredashboard-color>
       import "../src/tabs.js";      // <puredashboard-tabs>
       import "../src/breadcrumb.js"; // <puredashboard-breadcrumb>
       import "../src/pagination.js"; // <puredashboard-pagination>
@@ -399,6 +409,21 @@
           el("puredashboard-skeleton", { variant: "text", lines: 3 }),
         );
         gallery([wrap], { wide: true });
+      } else if (shot === "entry") {
+        const el = (tag, props) => Object.assign(document.createElement(tag), props || {});
+        const wrap = el("div"); wrap.style.cssText = "display:grid;gap:16px";
+        const mk = (labelText, node) => { const l = document.createElement("label"); l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)"; const s = document.createElement("span"); s.textContent = labelText; l.append(s, node); return l; };
+        wrap.append(
+          mk(vi ? "Khu vực" : "Region", el("puredashboard-combobox", { placeholder: vi ? "Tìm khu vực…" : "Search region…", options: [
+            { value: "us-east-1", label: "us-east-1" }, { value: "us-west-2", label: "us-west-2" },
+            { value: "eu-west-1", label: "eu-west-1" }, { value: "ap-south-1", label: "ap-south-1" },
+          ]})),
+          mk(vi ? "Ngày" : "Date", el("puredashboard-date", { value: "2026-07-01" })),
+          mk(vi ? "Giờ" : "Time", el("puredashboard-time", { value: "09:30" })),
+          mk(vi ? "Đánh giá" : "Rating", el("puredashboard-rate", { value: 3, allowHalf: true })),
+          mk(vi ? "Màu nhấn" : "Accent color", el("puredashboard-color", { value: "#4f9cf9", showValue: true })),
+        );
+        gallery([wrap]);
       } else if (shot === "general") {
         const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
         const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";

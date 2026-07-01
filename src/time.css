@@ -1,0 +1,69 @@
+/* puredashboard-time — styles for <puredashboard-time> (time.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --control-pad-x, --focus-ring, --radius, --border, --panel,
+ * --text, --danger-bg, …) via a --pd-* chain that falls back to your app tokens and
+ * finally to neutral system colours — so it looks right with NO config and adapts to
+ * light/dark automatically. The inner control stays a real <input type="time">, so
+ * the browser's native time spinner / picker are used as-is. Theme by defining the
+ * app tokens, or override --pd-time-*.
+ */
+puredashboard-time {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-time-height: var(--control-height-md, 34px);
+  --pd-time-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+.puredashboard-time__field {
+  width: 100%;
+  box-sizing: border-box;
+  height: var(--pd-time-height);
+  padding: 0 var(--pd-time-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-time__field:hover:not(:disabled):not([readonly]) { border-color: var(--pd-border-2); }
+.puredashboard-time__field:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-time__field:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* the native picker indicator (clock button) inherits the current text colour */
+.puredashboard-time__field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  filter: invert(var(--pd-picker-invert, 0));
+}
+.puredashboard-time__field::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-time__field[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-time__field[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the height token */
+.puredashboard-time__field--sm { --pd-time-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-time__field--lg { --pd-time-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+
+.puredashboard-time__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

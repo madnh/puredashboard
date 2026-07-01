@@ -34,6 +34,11 @@
 @import "radio-group.css";
 @import "segmented.css";
 @import "slider.css";
+@import "color.css";
+@import "combobox.css";
+@import "date.css";
+@import "time.css";
+@import "rate.css";
 /* layout */
 @import "divider.css";
 @import "space.css";
