@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="../src/radio-group.css" />
     <link rel="stylesheet" href="../src/slider.css" />
     <link rel="stylesheet" href="../src/form.css" />
+    <link rel="stylesheet" href="../src/tabs.css" />
+    <link rel="stylesheet" href="../src/breadcrumb.css" />
+    <link rel="stylesheet" href="../src/pagination.css" />
+    <link rel="stylesheet" href="../src/steps.css" />
+    <link rel="stylesheet" href="../src/nav.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -42,6 +47,11 @@
       import "../src/radio-group.js"; // <puredashboard-radio-group>
       import "../src/slider.js";    // <puredashboard-slider>
       import "../src/form.js";      // <puredashboard-form>
+      import "../src/tabs.js";      // <puredashboard-tabs>
+      import "../src/breadcrumb.js"; // <puredashboard-breadcrumb>
+      import "../src/pagination.js"; // <puredashboard-pagination>
+      import "../src/steps.js";     // <puredashboard-steps>
+      import "../src/nav.js";       // <puredashboard-nav>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -266,6 +276,28 @@
           tos, notify,
         );
         gallery([wrap]);
+      } else if (shot === "nav") {
+        const el = (tag, props) => Object.assign(document.createElement(tag), props);
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:20px";
+        const crumb = el("puredashboard-breadcrumb", { items: [
+          { label: vi ? "Trang chủ" : "Home", href: "#/" },
+          { label: vi ? "Dịch vụ" : "Services", href: "#/services" },
+          { label: "api-gateway" },
+        ]});
+        const tabs = el("puredashboard-tabs", { value: "logs", tabs: [
+          { id: "overview", label: vi ? "Tổng quan" : "Overview" },
+          { id: "logs", label: vi ? "Nhật ký" : "Logs" },
+          { id: "settings", label: vi ? "Cài đặt" : "Settings", disabled: true },
+        ]});
+        const steps = el("puredashboard-steps", { current: 1, steps: [
+          { label: vi ? "Cấu hình" : "Configure" },
+          { label: vi ? "Xem lại" : "Review" },
+          { label: vi ? "Triển khai" : "Deploy" },
+        ]});
+        const pager = el("puredashboard-pagination", { page: 5, total: 200, pageSize: 10 });
+        wrap.append(crumb, tabs, steps, pager);
+        gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();
         const btn = document.createElement("button");

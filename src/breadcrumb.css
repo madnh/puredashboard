@@ -1,0 +1,72 @@
+/* puredashboard-breadcrumb — styles for <puredashboard-breadcrumb> (breadcrumb.js).
+ * BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--muted, --text, --accent, --focus-ring, --radius, --font-size-*, --sp-*) via a
+ * --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override --pd-breadcrumb-*.
+ *
+ * The separator between crumbs is a decorative CSS `::after` (content-driven), so it
+ * is NEVER in the accessibility tree and never selectable as text.
+ */
+puredashboard-breadcrumb {
+  display: block;
+  --pd-accent:     var(--accent, #3b82f6);
+  --pd-text:       var(--text,   CanvasText);
+  --pd-muted:      var(--muted,  color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-radius:     var(--radius, 10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration:   var(--duration-fast, 120ms);
+  --pd-ease:       var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-breadcrumb-gap: var(--sp-2, 8px);
+  --pd-breadcrumb-sep: "/";
+  font-size: var(--font-size-sm, 12px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-muted);
+}
+
+.puredashboard-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.puredashboard-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* decorative separator — drawn AFTER every crumb except the last (a11y-invisible) */
+.puredashboard-breadcrumb__item:not(:last-child)::after {
+  content: var(--pd-breadcrumb-sep);
+  margin: 0 var(--pd-breadcrumb-gap);
+  color: var(--pd-muted);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.puredashboard-breadcrumb__link {
+  color: var(--pd-muted);
+  text-decoration: none;
+  border-radius: var(--pd-radius);
+  transition: color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-breadcrumb__link:hover { color: var(--pd-text); text-decoration: underline; }
+.puredashboard-breadcrumb__link:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+/* current page + non-linked text — no interaction, current is emphasised */
+.puredashboard-breadcrumb__current {
+  color: var(--pd-text);
+  font-weight: var(--weight-medium, 500);
+}
+.puredashboard-breadcrumb__text { color: var(--pd-muted); }
+
+/* collapsed-middle indicator — inert */
+.puredashboard-breadcrumb__item--ellipsis { color: var(--pd-muted); }
