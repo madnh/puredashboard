@@ -1,0 +1,29 @@
+/* PureDashboard — component stylesheet bundle (OPTIONAL convenience).
+ *
+ * One link that pulls in EVERY component's self-contained stylesheet, so a page
+ * using several components needs a single tag instead of hand-picking files
+ * (and never silently missing one):
+ *
+ *   <link rel="stylesheet" href="LIB/components.css">
+ *
+ * This is plain native CSS `@import` — NOT a build step. Nothing is bundled,
+ * minified, or transpiled; the browser fetches each file as-is, and every
+ * component stylesheet still works when linked on its own. Prefer to ship only
+ * what a page uses? Skip this file and link the individual *.css instead.
+ *
+ * This bundle is styling only. The design tokens are a separate, optional layer
+ * — link ONE of these too so the components look polished (they fall back to
+ * neutral system colours without it):
+ *
+ *   <link rel="stylesheet" href="LIB/theme/tokens.css">       <!-- palette only -->
+ *   <link rel="stylesheet" href="LIB/theme/dashboard.css">    <!-- palette + full shell -->
+ *
+ * @import must precede all other rules; these resolve relative to this file.
+ * Keep this list in sync when adding a component (see docs/DEVELOPMENT.md).
+ */
+@import "table.css";
+@import "upload.css";
+@import "dialog.css";
+@import "menu.css";
+@import "toast.css";
+@import "md.css";

@@ -15,6 +15,11 @@ Thumbs.db
 # Browser-automation scratch (Playwright/Chrome) — never commit
 .playwright-mcp/
 
+# Design-reference sources (Base UI / Antd, read-only) — never committed, never
+# installed or run. A local drop spot for reference only; not part of the
+# zero-dependency runtime.
+.reference/
+
 # Should never exist here — the runtime is zero-dependency, no bundler
 node_modules/
 dist/

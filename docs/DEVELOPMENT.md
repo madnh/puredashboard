@@ -83,13 +83,31 @@ component** — they're what keep the library coherent, safe, and dependency-fre
   way to do it). Function-valued keys interpolate (`tooLarge: (max) => …`). Unset keys
   keep the English default.
 
-### 7. Theming via CSS custom properties
+### 7. Theming via CSS custom properties (three token tiers)
 
 - Each component's CSS resolves colours through a `--pd-*` chain on its root:
   `var(--pd-accent)` ← `var(--accent, …)` ← a neutral **system-colour** default
   (`Canvas`/`CanvasText`/`color-mix`). So a component looks right with **no config**,
   adapts to light/dark, **themes** when the app defines its tokens, and can be
   **overridden** via `--pd-*`. Theme by setting tokens — never by overriding the rules.
+- The token system has **three tiers** (see `src/theme/tokens.css`):
+  1. **Primitive** `--pd-ref-*` — the raw, mode-independent colour ramp. Lives only in
+     `tokens.css`; components never read it directly.
+  2. **Semantic** — the app tokens a component actually consumes: colour (`--accent`,
+     `--panel`, `--text`, `--danger-bg`, …), `--focus-ring`, `--shadow-1..3`,
+     `--radius*`, `--sp-*`, typography (`--font-size-*`, `--weight-*`), control sizing
+     (`--control-height-*`, `--control-pad-x`, `--disabled-opacity`), `--z-*`, and
+     motion (`--duration-*`, `--ease-*`). This is the public theming contract — reuse
+     these instead of inventing new literals.
+  3. **Component** `--pd-<tag-suffix>-*` — per-component knobs declared **inside** that
+     component's own stylesheet root (e.g. `--pd-table-*`, `--pd-dialog-*`), each with
+     the fallback chain above. Never add component tokens to `tokens.css`.
+- **Reuse the shared semantic tokens.** Use `--focus-ring` for focus outlines,
+  `--control-height-md` for input/button height, `--duration-fast var(--ease-standard)`
+  for transitions, `--danger-bg`/`--danger-border` for destructive affordances,
+  `--shadow-*` for elevation — so every component is consistent and re-themes at once.
+- Respect `prefers-reduced-motion` (the motion tokens already collapse to `0ms`) and the
+  optional `[data-density="compact"]` sizing override for free by using the tokens.
 
 ### 8. Communicate via events; opt-in debug
 
@@ -105,6 +123,22 @@ component** — they're what keep the library coherent, safe, and dependency-fre
   behaviour, focus, and a11y. Set `aria-*` (`aria-sort`, `aria-current`, `aria-label`,
   `role`); overlays live in the **top layer** (Popover API / modal `<dialog>`) with
   light-dismiss + Esc.
+- For anything native can't provide (combobox, listbox, tabs, tree, slider), follow the
+  **[WAI-ARIA Authoring Practices (APG)](https://www.w3.org/WAI/ARIA/apg/patterns/)**
+  pattern for that widget — its roles, states, and full keyboard map are the spec we
+  build to. Test keyboard-only.
+
+### 10. Form-associated custom elements
+
+- A custom element that acts as a **form input** must participate in `<form>` natively —
+  don't reinvent submission/validation. Use `static formAssociated = true` +
+  `this.#internals = this.attachInternals()`; push the value with
+  `this.#internals.setFormValue(v)` and validity with
+  `this.#internals.setValidity({...}, message, anchorEl)`. This is native, zero-dependency
+  and CSP-safe. `<puredashboard-upload>` already does this (native multipart submit); every
+  new input control (`input`, `select`, `checkbox`, `switch`, `slider`, …) follows suit.
+- Reflect `disabled`/`required`/`name`/`value` as properties **and** attributes, and honour
+  `formDisabledCallback`. Keep the controlled/uncontrolled story consistent across controls.
 
 ---
 
@@ -118,12 +152,40 @@ component** — they're what keep the library coherent, safe, and dependency-fre
 3. Name style classes `companyx-widget__…` (BEM, block = the tag); select via
    `js-companyx-widget__…` / `data-*` (never style the `js-` ones).
 4. Put all strings in a `LABELS` map + a `labels` override property.
-5. Ship a **co-located** `src/<name>.css` themed through `--pd-*` tokens (default to app
-   tokens, then to system colours) so the component is self-contained.
-6. Document the public API as **JSDoc** above the class (`@element @prop @fires @method
+5. Ship a **co-located** `src/<name>.css` themed through `--pd-*` tokens (default to the
+   semantic app tokens, then to system colours) so the component is self-contained.
+   Reuse the shared tokens (`--focus-ring`, `--control-height-*`, `--shadow-*`,
+   `--duration-*`, `--danger-bg`, …) rather than new literals; declare any per-component
+   knobs as `--pd-<name>-*` on the component root.
+6. If it's a form input, make it **form-associated** (`static formAssociated = true` +
+   `attachInternals()`, see rule 10) so it submits and validates natively.
+7. Document the public API as **JSDoc** above the class (`@element @prop @fires @method
    @cssprop @example`).
-7. Add a jsdom test in `test/<name>.test.mjs`; verify focus / top-layer / drag in a real
-   browser when relevant (drop a `test/<name>-harness.html` page).
+8. **Register the stylesheet** in `src/components.css` (`@import "<name>.css";`) so the
+   one-link bundle stays complete.
+9. Add a jsdom test in `test/<name>.test.mjs`; verify focus / top-layer / drag / keyboard
+   in a real browser when relevant (drop a `test/<name>-harness.html` page) and add the
+   component to `test/showcase.html`.
+
+### Definition of Done
+
+A component is finished only when **all** hold — this is the checklist that keeps a large
+set uniform and safe:
+
+- [ ] Right family (Reactive / imperative overlay / pure-DOM) — didn't force a base.
+- [ ] State in `static properties`; all strings in a `LABELS` map + one `labels` prop.
+- [ ] BEM CSS, block = tag; script hooks are separate `js-`/`data-*`, never styled.
+- [ ] Themed via the token chain; shared semantic tokens reused; component knobs are
+      `--pd-<name>-*`; works with **no** theme linked (system-colour fallbacks).
+- [ ] A11y per native elements or the WAI-ARIA APG pattern; full keyboard; `aria-*` set;
+      honours reduced-motion and compact density through the tokens.
+- [ ] Form inputs are form-associated (`ElementInternals`): value + validity + disabled.
+- [ ] CSP-safe: no `eval`/`new Function`; untrusted content reaches the DOM only via
+      `textContent` (never `innerHTML`/`html\`\``).
+- [ ] JSDoc (custom-elements-manifest tags) on the public API.
+- [ ] jsdom test in `test/<name>.test.mjs`; entry in `test/showcase.html`; `@import` added
+      to `src/components.css`.
+- [ ] `make -C test` is green.
 
 ---
 
