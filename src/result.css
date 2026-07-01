@@ -1,0 +1,86 @@
+/* puredashboard-result — styles for <puredashboard-result> (result.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--green/--red/--amber/--accent for status, --text, --muted, --sp-*,
+ * --font-size-*) via a --pd-* chain that falls back to your app tokens and
+ * finally to neutral system colours — so it looks right with NO config and
+ * adapts to light/dark automatically. Theme by defining the app tokens, or
+ * override --pd-result-*.
+ *
+ * A centered status page: a large per-status icon, a bold title, a muted
+ * subtitle, then an extra region for the author's action buttons.
+ */
+puredashboard-result {
+  --pd-text:   var(--text,  CanvasText);
+  --pd-muted:  var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-green:  var(--green,  #3fb950);
+  --pd-red:    var(--red,    #f85149);
+  --pd-amber:  var(--amber,  #d29922);
+  --pd-accent: var(--accent, #4f9cf9);
+
+  --pd-result-gap:       var(--sp-3, 12px);
+  --pd-result-pad:       var(--sp-6, 24px);
+  --pd-result-icon-size: 72px;
+  --pd-result-icon-color: var(--pd-accent);   /* per-status overridden below */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--pd-result-gap);
+  padding: var(--pd-result-pad);
+  color: var(--pd-text);
+}
+
+/* Per-status icon colour — resolved from the shared status tokens. */
+puredashboard-result[data-status="success"] { --pd-result-icon-color: var(--pd-green); }
+puredashboard-result[data-status="error"]   { --pd-result-icon-color: var(--pd-red); }
+puredashboard-result[data-status="warning"] { --pd-result-icon-color: var(--pd-amber); }
+puredashboard-result[data-status="info"]    { --pd-result-icon-color: var(--pd-accent); }
+/* The numeric server statuses read as "problem" states → warning/danger hues. */
+puredashboard-result[data-status="404"]     { --pd-result-icon-color: var(--pd-accent); }
+puredashboard-result[data-status="403"]     { --pd-result-icon-color: var(--pd-amber); }
+puredashboard-result[data-status="500"]     { --pd-result-icon-color: var(--pd-red); }
+
+.puredashboard-result__icon {
+  font-size: var(--pd-result-icon-size);
+  line-height: 0;
+  color: var(--pd-result-icon-color);
+}
+
+/* Numeric statuses render the code as a big bold number, not an SVG. */
+.puredashboard-result__icon--numeric {
+  line-height: 1;
+  font-weight: var(--weight-semibold, 600);
+  font-size: calc(var(--pd-result-icon-size) * 1.2);
+  letter-spacing: -0.02em;
+}
+
+.puredashboard-result__title {
+  margin: 0;
+  color: var(--pd-text);
+  font-size: var(--font-size-xl, 18px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: var(--line-tight, 1.25);
+}
+
+.puredashboard-result__subtitle {
+  margin: 0;
+  color: var(--pd-muted);
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+}
+.puredashboard-result__subtitle[hidden] { display: none; }
+
+/* Extra region — holds the author's buttons. Collapses when empty so no stray
+ * gap is left below the subtitle. */
+.puredashboard-result__extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2, 8px);
+  margin-top: var(--sp-2, 8px);
+}
+.puredashboard-result__extra:empty { display: none; }

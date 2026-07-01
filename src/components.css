@@ -48,6 +48,7 @@
 @import "breadcrumb.css";
 @import "pagination.css";
 @import "steps.css";
+@import "timeline.css";
 @import "nav.css";
 /* data display */
 @import "table.css";
@@ -60,11 +61,14 @@
 @import "empty.css";
 @import "collapse.css";
 @import "tree.css";
+@import "list.css";
+@import "result.css";
 /* overlays & content */
 @import "upload.css";
 @import "dialog.css";
 @import "menu.css";
 @import "popover.css";
+@import "popconfirm.css";
 @import "tooltip.css";
 @import "toast.css";
 @import "md.css";

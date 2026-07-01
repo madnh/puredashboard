@@ -1,0 +1,87 @@
+/* puredashboard-list — styles for <puredashboard-list> (list.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours come from the --pd-* tokens below, which
+ * default to your app tokens (--panel, --text, …) and finally to neutral system
+ * colours (Canvas / CanvasText) — so it looks right with NO config and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override --pd-*.
+ */
+puredashboard-list {
+  display: block;
+  --pd-text:    var(--text,    CanvasText);
+  --pd-muted:   var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-faint:   var(--faint,   color-mix(in srgb, CanvasText 45%, Canvas));
+  --pd-panel:   var(--panel,   Canvas);
+  --pd-panel-2: var(--panel-2, color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-border:  var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:  var(--radius,  10px);
+  --pd-sp-2:    var(--sp-2,    8px);
+  --pd-sp-3:    var(--sp-3,    12px);
+  --pd-sp-4:    var(--sp-4,    16px);
+  --pd-font-sm: var(--font-size-sm, 12px);
+  --pd-font-md: var(--font-size-md, 13px);
+
+  /* per-component knob: row vertical padding, set by the size modifier below */
+  --pd-list-pad-y: var(--pd-sp-3);
+}
+
+.puredashboard-list__panel { background: var(--pd-panel); border-radius: var(--pd-radius); }
+.puredashboard-list__panel--bordered { border: 1px solid var(--pd-border); overflow: hidden; }
+
+.puredashboard-list__header,
+.puredashboard-list__footer {
+  padding: var(--pd-sp-3) var(--pd-sp-4);
+  font-size: var(--pd-font-sm);
+  color: var(--pd-muted);
+  background: var(--pd-panel-2);
+}
+.puredashboard-list__header { font-weight: 600; border-bottom: 1px solid var(--pd-border); }
+.puredashboard-list__footer { border-top: 1px solid var(--pd-border); }
+
+.puredashboard-list__list { list-style: none; margin: 0; padding: 0; }
+
+/* size = row padding density */
+.puredashboard-list__list--sm { --pd-list-pad-y: var(--pd-sp-2); }
+.puredashboard-list__list--md { --pd-list-pad-y: var(--pd-sp-3); }
+.puredashboard-list__list--lg { --pd-list-pad-y: var(--pd-sp-4); }
+
+.puredashboard-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--pd-sp-3);
+  padding: var(--pd-list-pad-y) var(--pd-sp-4);
+  font-size: var(--pd-font-md);
+  color: var(--pd-text);
+  border-bottom: 1px solid var(--pd-border);
+}
+.puredashboard-list__item:last-child { border-bottom: none; }
+/* split=false removes the dividers between rows */
+.puredashboard-list__list--no-split .puredashboard-list__item { border-bottom: none; }
+
+.puredashboard-list__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.puredashboard-list__title { font-weight: 600; color: var(--pd-text); }
+.puredashboard-list__desc { font-size: var(--pd-font-sm); color: var(--pd-muted); }
+.puredashboard-list__extra { flex: none; margin-left: auto; font-size: var(--pd-font-sm); color: var(--pd-faint); white-space: nowrap; }
+
+.puredashboard-list__empty {
+  padding: var(--pd-sp-4) var(--pd-sp-4);
+  text-align: center;
+  color: var(--pd-faint);
+  font-size: var(--pd-font-md);
+  font-style: italic;
+}
+
+/* loading skeleton */
+.puredashboard-list__skeleton {
+  display: block;
+  height: 0.7em;
+  border-radius: var(--pd-radius);
+  background: color-mix(in srgb, var(--pd-text) 12%, transparent);
+  animation: puredashboard-list__pulse var(--duration-slow, 320ms) var(--ease-standard, ease) infinite alternate;
+}
+.puredashboard-list__skeleton--title { width: 40%; }
+.puredashboard-list__skeleton--desc { width: 65%; margin-top: 4px; }
+
+@keyframes puredashboard-list__pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-list__skeleton { animation: none; }
+}

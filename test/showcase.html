@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="../src/collapse.css" />
     <link rel="stylesheet" href="../src/tree.css" />
     <link rel="stylesheet" href="../src/popover.css" />
+    <link rel="stylesheet" href="../src/popconfirm.css" />
     <link rel="stylesheet" href="../src/tooltip.css" />
     <link rel="stylesheet" href="../src/alert.css" />
     <link rel="stylesheet" href="../src/progress.css" />
@@ -50,6 +51,9 @@
     <link rel="stylesheet" href="../src/time.css" />
     <link rel="stylesheet" href="../src/rate.css" />
     <link rel="stylesheet" href="../src/color.css" />
+    <link rel="stylesheet" href="../src/list.css" />
+    <link rel="stylesheet" href="../src/timeline.css" />
+    <link rel="stylesheet" href="../src/result.css" />
     <!-- the OPT-IN theme: tokens + base + shell, all in one -->
     <link rel="stylesheet" href="../src/theme/dashboard.css" />
     <style>
@@ -83,6 +87,9 @@
       import "../src/time.js";      // <puredashboard-time>
       import "../src/rate.js";      // <puredashboard-rate>
       import "../src/color.js";     // <puredashboard-color>
+      import "../src/list.js";      // <puredashboard-list>
+      import "../src/timeline.js";  // <puredashboard-timeline>
+      import "../src/result.js";    // <puredashboard-result>
       import "../src/tabs.js";      // <puredashboard-tabs>
       import "../src/breadcrumb.js"; // <puredashboard-breadcrumb>
       import "../src/pagination.js"; // <puredashboard-pagination>
@@ -97,6 +104,7 @@
       import "../src/collapse.js";  // <puredashboard-collapse>
       import "../src/tree.js";      // <puredashboard-tree>
       import "../src/popover.js";   // <puredashboard-popover>
+      import "../src/popconfirm.js"; // <puredashboard-popconfirm>
       import "../src/tooltip.js";   // <puredashboard-tooltip>
       import "../src/alert.js";     // <puredashboard-alert>
       import "../src/progress.js";  // <puredashboard-progress>
@@ -452,6 +460,26 @@
           stat(vi ? "Lỗi" : "Errors", 12, { trend: "down" }),
         );
         wrap.append(btns, el("puredashboard-divider", { text: vi ? "Bộ lọc" : "Filters" }), seg, el("puredashboard-divider", {}), row);
+        gallery([wrap], { wide: true });
+      } else if (shot === "misc") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div"); wrap.style.cssText = "display:grid;gap:20px";
+        const list = el("puredashboard-list", { header: vi ? "Dịch vụ gần đây" : "Recent services", bordered: true, items: [
+          { title: "api-gateway", description: "us-east-1 · online", extra: "184k/d" },
+          { title: "auth-service", description: "eu-west-1 · online", extra: "91k/d" },
+          { title: "billing-cron", description: "eu-west-1 · offline", extra: "0.8k/d" },
+        ]});
+        const tl = el("puredashboard-timeline", { items: [
+          { label: "09:24", content: vi ? "Triển khai v1.4.0" : "Deployed v1.4.0", color: "success" },
+          { label: "09:31", content: vi ? "Tự động mở rộng lên 8 node" : "Autoscaled to 8 nodes", color: "accent" },
+          { label: "09:47", content: vi ? "billing-cron lỗi health check" : "billing-cron failed health check", color: "error" },
+        ], pending: vi ? "Đang theo dõi…" : "Monitoring…" });
+        const delBtn = el("button", { className: "danger", textContent: vi ? "Xoá dịch vụ" : "Delete service" });
+        const pc = el("puredashboard-popconfirm", { title: vi ? "Xoá dịch vụ này?" : "Delete this service?", description: vi ? "Không thể hoàn tác." : "This cannot be undone.", okDanger: true }, [delBtn]);
+        pc.addEventListener("confirm", () => toast.success(vi ? "Đã xoá" : "Deleted"));
+        const res = el("puredashboard-result", { status: "success", status: "success", title: vi ? "Triển khai thành công" : "Deployment complete", subtitle: vi ? "api-gateway đang chạy ở us-east-1." : "api-gateway is live in us-east-1." });
+        res.append(el("puredashboard-button", { variant: "primary" }, [document.createTextNode(vi ? "Xem dịch vụ" : "View service")]));
+        wrap.append(list, tl, pc, res);
         gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();
