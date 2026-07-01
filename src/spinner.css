@@ -1,0 +1,96 @@
+/* puredashboard-spinner — styles for <puredashboard-spinner> (spinner.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--accent, --border/--panel-3, --muted, --font-size-sm, --duration-*) via a
+ * --pd-* chain that falls back to your app tokens and finally to neutral
+ * system colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-spinner-*.
+ *
+ * The ring is a bordered circle whose top segment is tinted with the accent
+ * colour, rotated continuously by @keyframes. Under prefers-reduced-motion the
+ * animation is REMOVED (a continuous spin can't just have its duration zeroed —
+ * that would freeze it at frame 0 but keep it "running"; we drop it entirely and
+ * show a static ring instead).
+ */
+puredashboard-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2, 8px);
+
+  --pd-accent:  var(--accent, #3b82f6);
+  --pd-muted:   var(--muted,  color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-border:  var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-track:   var(--panel-3, var(--pd-border));
+  --pd-duration: var(--duration-slow, 320ms);
+  --pd-ease:    var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  /* per-component knobs (overridable via --pd-spinner-*) */
+  --pd-spinner-size:  22px;                 /* default = md; sm/lg remap below */
+  --pd-spinner-track: var(--pd-track);
+  --pd-spinner-color: var(--pd-accent);
+}
+
+/* inline = sit beside surrounding content instead of a centred block */
+puredashboard-spinner.puredashboard-spinner--inline {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* the animated ring — a bordered circle with one accent segment (top border) */
+.puredashboard-spinner__ring {
+  box-sizing: border-box;
+  display: block;
+  flex: none;
+  width: var(--pd-spinner-size);
+  height: var(--pd-spinner-size);
+  border-radius: var(--radius-full, 999px);
+  /* track on 3 sides, accent on the top → a rotating "gap" reads as motion */
+  border: 2px solid var(--pd-spinner-track);
+  border-top-color: var(--pd-spinner-color);
+  /* keep the spin speed sensible even if --duration-slow is small; the animation
+   * timing is authored here (a continuous spinner needs a real, non-zero speed),
+   * and reduced-motion is handled by REMOVING the animation below, not via tokens. */
+  animation: puredashboard-spinner-rotate 0.8s linear infinite;
+}
+
+/* named sizes — remap the diameter token (md is the default above) */
+.puredashboard-spinner__ring--sm { --pd-spinner-size: 16px; border-width: 2px; }
+.puredashboard-spinner__ring--lg { --pd-spinner-size: 32px; border-width: 3px; }
+
+/* label text beside the ring */
+.puredashboard-spinner__label {
+  font: inherit;
+  font-size: var(--font-size-sm, 12px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-muted);
+}
+
+/* sr-only — visually hidden but still exposed to assistive tech (the accessible
+ * name lives here when labelVisible is off) */
+.puredashboard-spinner__label--sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes puredashboard-spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion — do NOT spin. Remove the animation entirely (zeroing a duration
+ * would leave a "running" but frozen spinner) and show a full, static ring so the
+ * indicator is still visible without any continuous movement. */
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-spinner__ring {
+    animation: none;
+    border-color: var(--pd-spinner-color);
+  }
+}

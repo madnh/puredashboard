@@ -32,6 +32,10 @@
     <link rel="stylesheet" href="../src/tree.css" />
     <link rel="stylesheet" href="../src/popover.css" />
     <link rel="stylesheet" href="../src/tooltip.css" />
+    <link rel="stylesheet" href="../src/alert.css" />
+    <link rel="stylesheet" href="../src/progress.css" />
+    <link rel="stylesheet" href="../src/spinner.css" />
+    <link rel="stylesheet" href="../src/skeleton.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -72,6 +76,10 @@
       import "../src/tree.js";      // <puredashboard-tree>
       import "../src/popover.js";   // <puredashboard-popover>
       import "../src/tooltip.js";   // <puredashboard-tooltip>
+      import "../src/alert.js";     // <puredashboard-alert>
+      import "../src/progress.js";  // <puredashboard-progress>
+      import "../src/spinner.js";   // <puredashboard-spinner>
+      import "../src/skeleton.js";  // <puredashboard-skeleton>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -364,6 +372,20 @@
         const row = el("div", {}); row.style.cssText = "display:flex;gap:12px;align-items:center";
         row.append(tip, pop);
         wrap.append(tree, acc, row);
+        gallery([wrap], { wide: true });
+      } else if (shot === "feedback") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:16px";
+        wrap.append(
+          el("puredashboard-alert", { type: "success", title: vi ? "Đã triển khai" : "Deployed", message: vi ? "api-gateway đang chạy." : "api-gateway is live.", closable: true }),
+          el("puredashboard-alert", { type: "warning", message: vi ? "Sắp hết hạn ngạch." : "Approaching quota." }),
+          el("puredashboard-alert", { type: "error", title: vi ? "Lỗi" : "Error", message: vi ? "billing-cron thất bại." : "billing-cron failed health check." }),
+          el("puredashboard-progress", { value: 66, showInfo: true }),
+          el("puredashboard-progress", { value: 100, status: "success" }),
+          el("puredashboard-progress", { variant: "circle", value: 42 }),
+          (() => { const r = el("div", {}); r.style.cssText = "display:flex;gap:16px;align-items:center"; r.append(el("puredashboard-spinner", { labelVisible: true }), el("puredashboard-progress", { indeterminate: true })); return r; })(),
+          el("puredashboard-skeleton", { variant: "text", lines: 3 }),
+        );
         gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();
