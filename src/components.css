@@ -21,6 +21,8 @@
  * @import must precede all other rules; these resolve relative to this file.
  * Keep this list in sync when adding a component (see docs/DEVELOPMENT.md).
  */
+/* general */
+@import "button.css";
 /* form family */
 @import "form.css";
 @import "input.css";
@@ -30,7 +32,12 @@
 @import "checkbox.css";
 @import "switch.css";
 @import "radio-group.css";
+@import "segmented.css";
 @import "slider.css";
+/* layout */
+@import "divider.css";
+@import "space.css";
+@import "grid.css";
 /* navigation */
 @import "tabs.css";
 @import "breadcrumb.css";
@@ -41,6 +48,7 @@
 @import "table.css";
 @import "card.css";
 @import "descriptions.css";
+@import "statistic.css";
 @import "tag.css";
 @import "badge.css";
 @import "avatar.css";

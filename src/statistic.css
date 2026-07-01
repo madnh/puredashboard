@@ -1,0 +1,84 @@
+/* puredashboard-statistic — styles for <puredashboard-statistic> (statistic.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--text, --muted, --green, --red, --font-size-xl/sm, --sp-*, --weight-semibold)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral
+ * system colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-statistic-*.
+ */
+puredashboard-statistic {
+  display: block;
+  --pd-text:   var(--text,  CanvasText);
+  --pd-muted:  var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-green:  var(--green, #16a34a);
+  --pd-red:    var(--red,   #dc2626);
+  --pd-statistic-value-size: var(--font-size-xl, 18px);
+  --pd-statistic-title-size: var(--font-size-sm, 12px);
+}
+
+.puredashboard-statistic__title {
+  font-size: var(--pd-statistic-title-size);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-muted);
+}
+
+.puredashboard-statistic__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1, 4px);
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--pd-statistic-value-size);
+  line-height: var(--line-tight, 1.25);
+  font-weight: var(--weight-semibold, 600);
+  color: var(--pd-text);
+}
+
+/* trend tints the whole value line (arrow + number) */
+.puredashboard-statistic__value--up   { color: var(--pd-green); }
+.puredashboard-statistic__value--down { color: var(--pd-red); }
+
+.puredashboard-statistic__arrow {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+}
+
+.puredashboard-statistic__prefix,
+.puredashboard-statistic__suffix {
+  font-weight: var(--weight-medium, 500);
+}
+
+/* screen-reader-only: the trend meaning ("increase"/"decrease") for AT, since the
+ * arrow itself is aria-hidden. Standard visually-hidden clip pattern. */
+.puredashboard-statistic__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* loading placeholder — a subtle shimmering block in place of the value */
+.puredashboard-statistic__skeleton {
+  display: inline-block;
+  width: 6ch;
+  height: 1em;
+  border-radius: var(--radius-sm, 8px);
+  background: color-mix(in srgb, var(--pd-muted) 22%, transparent);
+  animation: puredashboard-statistic__pulse var(--duration-slow, 320ms) var(--ease-standard, ease) infinite alternate;
+}
+
+@keyframes puredashboard-statistic__pulse {
+  from { opacity: 0.45; }
+  to   { opacity: 0.9; }
+}
+
+/* honour reduced motion (belt-and-braces; the motion tokens collapse too) */
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-statistic__skeleton { animation: none; }
+}

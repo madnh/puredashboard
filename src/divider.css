@@ -1,0 +1,72 @@
+/* puredashboard-divider — styles for <puredashboard-divider> (divider.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The line colour and spacing come from the shared
+ * design tokens (--border, --muted, --text, --sp-*, --font-size-sm) via a --pd-*
+ * chain that falls back to your app tokens and finally to neutral system colours
+ * — so it looks right with NO config and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override --pd-divider-*.
+ */
+puredashboard-divider {
+  --pd-divider-color:   var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-text:            var(--text,   CanvasText);
+  --pd-muted:           var(--muted,  color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-divider-spacing: var(--sp-4, 16px);
+  --pd-divider-gap:     var(--sp-4, 16px);
+  --pd-font-size-sm:    var(--font-size-sm, 12px);
+  --pd-weight-medium:   var(--weight-medium, 500);
+}
+
+/* ── Horizontal ──────────────────────────────────────────────────────────── */
+/* Plain rule: a full-width hairline with block margin around it. */
+.puredashboard-divider--horizontal {
+  display: block;
+  block-size: 0;
+  border-block-start: 1px solid var(--pd-divider-color);
+  margin-block: var(--pd-divider-spacing);
+}
+
+/* Labelled horizontal: line — text — line. The host becomes a flex row and the
+ * two spans are the lines; the border moves onto them so the text can sit on top
+ * of the rule. Resets the plain-rule border/height above. */
+.puredashboard-divider--horizontal.puredashboard-divider--with-text {
+  display: flex;
+  align-items: center;
+  gap: var(--pd-divider-gap);
+  block-size: auto;
+  border-block-start: 0;
+}
+.puredashboard-divider__line {
+  flex: 1 1 auto;
+  block-size: 0;
+  border-block-start: 1px solid var(--pd-divider-color);
+}
+.puredashboard-divider__text {
+  flex: 0 0 auto;
+  color: var(--pd-text);
+  font-size: var(--pd-font-size-sm);
+  font-weight: var(--pd-weight-medium);
+  line-height: var(--line-tight, 1.25);
+  white-space: nowrap;
+}
+
+/* Text alignment — shrink the opposite line so the label shifts toward a side. */
+.puredashboard-divider--align-left  .puredashboard-divider__line--before { flex: 0 0 var(--sp-3, 12px); }
+.puredashboard-divider--align-right .puredashboard-divider__line--after  { flex: 0 0 var(--sp-3, 12px); }
+
+/* ── Vertical ────────────────────────────────────────────────────────────── */
+/* An inline separator between inline items — a short vertical hairline. */
+.puredashboard-divider--vertical {
+  display: inline-block;
+  inline-size: 0;
+  block-size: 1em;
+  vertical-align: middle;
+  border-inline-start: 1px solid var(--pd-divider-color);
+  margin-inline: var(--pd-divider-spacing);
+}
+
+/* ── Dashed variant ──────────────────────────────────────────────────────── */
+.puredashboard-divider--dashed.puredashboard-divider--horizontal:not(.puredashboard-divider--with-text) {
+  border-block-start-style: dashed;
+}
+.puredashboard-divider--dashed .puredashboard-divider__line { border-block-start-style: dashed; }
+.puredashboard-divider--dashed.puredashboard-divider--vertical { border-inline-start-style: dashed; }

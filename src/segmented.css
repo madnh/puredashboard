@@ -1,0 +1,107 @@
+/* puredashboard-segmented — styles for <puredashboard-segmented> (segmented.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--panel/--panel-2/--panel-3, --text, --muted, --border, --focus-ring,
+ * --radius, --control-height-*, --duration-*, --ease-standard,
+ * --disabled-opacity) via a --pd-* chain that falls back to your app tokens and
+ * finally to neutral system colours — so it looks right with NO config and
+ * adapts to light/dark automatically. Theme by defining the app tokens, or
+ * override --pd-segmented-*.
+ */
+puredashboard-segmented {
+  display: inline-block;
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-track:     var(--panel-2,  color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-track-2:   var(--panel-3,  color-mix(in srgb, CanvasText 10%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, CanvasText 30%, Canvas));
+  --pd-radius:    var(--radius,   10px);
+  --pd-height:    var(--control-height-md, 34px);
+  --pd-duration:  var(--duration-base, 200ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  /* padding around the thumb inside the track */
+  --pd-segmented-gap: 2px;
+}
+
+/* The rounded track that holds the segments; the selected segment IS the thumb. */
+.puredashboard-segmented__track {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  box-sizing: border-box;
+  height: var(--pd-height);
+  padding: var(--pd-segmented-gap);
+  background: var(--pd-track);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+}
+
+.puredashboard-segmented__track--sm { --pd-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-segmented__track--lg { --pd-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+
+/* block — full width, equal segments */
+.puredashboard-segmented__track--block { display: flex; width: 100%; }
+.puredashboard-segmented__track--block .puredashboard-segmented__segment { flex: 1 1 0; }
+
+/* disabled whole control — dim + block interaction */
+.puredashboard-segmented__track--disabled { opacity: var(--pd-disabled-opacity); }
+
+.puredashboard-segmented__segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2, 8px);
+  flex: 0 1 auto;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 var(--sp-3, 12px);
+  margin: 0;
+  font: inherit;
+  color: var(--pd-muted);
+  background: transparent;
+  border: 0;
+  /* slightly tighter radius than the track so the thumb nests inside it */
+  border-radius: calc(var(--pd-radius) - var(--pd-segmented-gap));
+  cursor: pointer;
+  white-space: nowrap;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  /* thumb slide: reduced-motion collapses --duration-* to 0ms via tokens.css */
+  transition:
+    color var(--pd-duration) var(--pd-ease),
+    background-color var(--pd-duration) var(--pd-ease),
+    box-shadow var(--pd-duration) var(--pd-ease);
+}
+
+.puredashboard-segmented__segment:hover:not(.puredashboard-segmented__segment--checked):not(.puredashboard-segmented__segment--disabled) {
+  color: var(--pd-text);
+  background: var(--pd-track-2);
+}
+
+/* the checked segment IS the sliding thumb: raised --panel surface */
+.puredashboard-segmented__segment--checked {
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.15));
+  font-weight: var(--weight-medium, 500);
+}
+
+/* focus ring on the roving-tabindex segment (the a11y focus target) */
+.puredashboard-segmented__segment:focus-visible {
+  box-shadow: var(--pd-focus-ring);
+}
+
+.puredashboard-segmented__segment--disabled {
+  cursor: not-allowed;
+  color: var(--pd-muted);
+  opacity: var(--pd-disabled-opacity);
+}
+
+.puredashboard-segmented__icon { display: inline-flex; align-items: center; }
+.puredashboard-segmented__text { user-select: none; overflow: hidden; text-overflow: ellipsis; }
