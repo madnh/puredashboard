@@ -24,6 +24,10 @@
 @import "table.css";
 @import "upload.css";
 @import "input.css";
+@import "textarea.css";
+@import "number.css";
+@import "checkbox.css";
+@import "switch.css";
 @import "dialog.css";
 @import "menu.css";
 @import "toast.css";

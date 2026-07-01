@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="../src/menu.css" />
     <link rel="stylesheet" href="../src/upload.css" />
     <link rel="stylesheet" href="../src/input.css" />
+    <link rel="stylesheet" href="../src/textarea.css" />
+    <link rel="stylesheet" href="../src/number.css" />
+    <link rel="stylesheet" href="../src/checkbox.css" />
+    <link rel="stylesheet" href="../src/switch.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -26,6 +30,10 @@
       import "../src/table.js";
       import "../src/upload.js";
       import "../src/input.js";   // defines <puredashboard-input>
+      import "../src/textarea.js";  // <puredashboard-textarea>
+      import "../src/number.js";    // <puredashboard-number>
+      import "../src/checkbox.js";  // <puredashboard-checkbox>
+      import "../src/switch.js";    // <puredashboard-switch>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -207,6 +215,27 @@
           mk(vi ? "Lớn (lg)" : "Large (lg)", field({ size: "lg", placeholder: "large" })),
           mk(vi ? "Có lỗi" : "With error", field({ value: "not-an-email", error: vi ? "Email không hợp lệ." : "That email looks invalid." })),
           mk(vi ? "Bị khoá" : "Disabled", field({ value: "read only", disabled: true })),
+        );
+        gallery([wrap]);
+      } else if (shot === "forms") {
+        // the M2 form family together: textarea, number, checkbox, switch
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:16px";
+        const mk = (labelText, el) => {
+          const l = document.createElement("label");
+          l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)";
+          const s = document.createElement("span"); s.textContent = labelText;
+          l.append(s, el); return l;
+        };
+        const el = (tag, props) => Object.assign(document.createElement(tag), props);
+        const qty = el("puredashboard-number", { min: 0, max: 10, step: 1, value: "3" });
+        const bio = el("puredashboard-textarea", { rows: 3, placeholder: vi ? "Giới thiệu ngắn…" : "Short bio…" });
+        const tos = el("puredashboard-checkbox", { label: vi ? "Tôi đồng ý điều khoản" : "I accept the terms", required: true });
+        const notify = el("puredashboard-switch", { label: vi ? "Nhận thông báo" : "Email notifications", checked: true });
+        wrap.append(
+          mk(vi ? "Số lượng" : "Quantity", qty),
+          mk(vi ? "Tiểu sử" : "Bio", bio),
+          tos, notify,
         );
         gallery([wrap]);
       } else if (shot === "menu") {
