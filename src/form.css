@@ -1,0 +1,37 @@
+/* puredashboard-form — styles for <puredashboard-form> (form.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--sp-*, --border, --danger) via a --pd-* chain that falls back to your app
+ * tokens and finally to neutral system colours — so it looks right with NO
+ * config and adapts to light/dark automatically. Theme by defining the app
+ * tokens, or override --pd-form-*.
+ *
+ * This is an ORCHESTRATOR container: it only supplies a vertical stack layout
+ * for the fields the author places inside. Individual controls carry their own
+ * styles. Deliberately minimal — do not over-design.
+ */
+puredashboard-form {
+  display: block;
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-danger:    var(--danger,   var(--pd-red));
+  --pd-form-gap:  var(--sp-4,     16px);
+}
+
+.puredashboard-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pd-form-gap);
+  margin: 0;
+}
+
+/* Optional author-authored error summary. Style the BEM class; the component
+ * never depends on it (script hooks are the separate js-… class), so authors can
+ * restyle or drop it freely. */
+.puredashboard-form__error-summary {
+  padding: var(--sp-3, 12px);
+  border: 1px solid var(--pd-danger);
+  border-radius: var(--radius, 10px);
+  color: var(--pd-danger);
+  font-size: var(--font-size-sm, 12px);
+}

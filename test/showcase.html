@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="../src/number.css" />
     <link rel="stylesheet" href="../src/checkbox.css" />
     <link rel="stylesheet" href="../src/switch.css" />
+    <link rel="stylesheet" href="../src/select.css" />
+    <link rel="stylesheet" href="../src/radio-group.css" />
+    <link rel="stylesheet" href="../src/slider.css" />
+    <link rel="stylesheet" href="../src/form.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -34,6 +38,10 @@
       import "../src/number.js";    // <puredashboard-number>
       import "../src/checkbox.js";  // <puredashboard-checkbox>
       import "../src/switch.js";    // <puredashboard-switch>
+      import "../src/select.js";    // <puredashboard-select>
+      import "../src/radio-group.js"; // <puredashboard-radio-group>
+      import "../src/slider.js";    // <puredashboard-slider>
+      import "../src/form.js";      // <puredashboard-form>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -228,12 +236,32 @@
           l.append(s, el); return l;
         };
         const el = (tag, props) => Object.assign(document.createElement(tag), props);
+        const region = el("puredashboard-select", {
+          placeholder: vi ? "Chọn khu vực…" : "Choose a region…",
+          options: [
+            { value: "us-east-1", label: "us-east-1" },
+            { value: "eu-west-1", label: "eu-west-1" },
+            { value: "ap-south-1", label: "ap-south-1" },
+          ],
+        });
+        const plan = el("puredashboard-radio-group", {
+          value: "pro",
+          options: [
+            { value: "free", label: "Free" },
+            { value: "pro", label: "Pro" },
+            { value: "enterprise", label: vi ? "Doanh nghiệp" : "Enterprise" },
+          ],
+        });
         const qty = el("puredashboard-number", { min: 0, max: 10, step: 1, value: "3" });
+        const cpu = el("puredashboard-slider", { min: 1, max: 16, step: 1, value: "8", showValue: true });
         const bio = el("puredashboard-textarea", { rows: 3, placeholder: vi ? "Giới thiệu ngắn…" : "Short bio…" });
         const tos = el("puredashboard-checkbox", { label: vi ? "Tôi đồng ý điều khoản" : "I accept the terms", required: true });
         const notify = el("puredashboard-switch", { label: vi ? "Nhận thông báo" : "Email notifications", checked: true });
         wrap.append(
+          mk(vi ? "Khu vực" : "Region", region),
+          mk(vi ? "Gói" : "Plan", plan),
           mk(vi ? "Số lượng" : "Quantity", qty),
+          mk(vi ? "Số CPU" : "CPU cores", cpu),
           mk(vi ? "Tiểu sử" : "Bio", bio),
           tos, notify,
         );
