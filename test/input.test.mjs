@@ -94,6 +94,20 @@ void PuredashboardInput;
   ok(el.value === "done", "el.value reflects the committed value");
 }
 
+// ---- declarative HTML attributes reflect into properties ----
+{
+  document.body.innerHTML = `<puredashboard-input type="email" placeholder="p" size="lg" required disabled></puredashboard-input>`;
+  const el = document.body.firstElementChild;
+  await tick();
+  ok(el.type === "email", "type attribute reflected to property");
+  ok(el.placeholder === "p", "placeholder attribute reflected");
+  ok(el.size === "lg", "size attribute reflected");
+  ok(el.required === true, "required boolean attribute reflected");
+  ok(el.disabled === true, "disabled boolean attribute reflected");
+  const field = el.querySelector(".js-puredashboard-input__field");
+  ok(field.getAttribute("type") === "email" && field.disabled === true, "reflected attrs reach the inner field");
+}
+
 // ---- localisable labels ----
 {
   const el = mount("puredashboard-input");

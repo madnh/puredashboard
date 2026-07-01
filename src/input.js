@@ -74,6 +74,15 @@ class PuredashboardInput extends Reactive {
     this._errId = `js-puredashboard-input__error-${++uid}`;
   }
 
+  // Reflect declarative HTML attributes into reactive properties, so the control
+  // can be configured the natural way inside a form — <puredashboard-input
+  // type="email" required> — not only via JS. Boolean attrs map by presence.
+  static observedAttributes = ["value", "type", "placeholder", "size", "disabled", "required", "readonly"];
+  attributeChangedCallback(name, _old, val) {
+    const bool = name === "disabled" || name === "required" || name === "readonly";
+    this[name] = bool ? val !== null : val;
+  }
+
   // _label(key, …args) → localised string: this.labels override, else the default.
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
 
