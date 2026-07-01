@@ -28,6 +28,10 @@
     <link rel="stylesheet" href="../src/badge.css" />
     <link rel="stylesheet" href="../src/avatar.css" />
     <link rel="stylesheet" href="../src/empty.css" />
+    <link rel="stylesheet" href="../src/collapse.css" />
+    <link rel="stylesheet" href="../src/tree.css" />
+    <link rel="stylesheet" href="../src/popover.css" />
+    <link rel="stylesheet" href="../src/tooltip.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -64,6 +68,10 @@
       import "../src/badge.js";     // <puredashboard-badge>
       import "../src/avatar.js";    // <puredashboard-avatar>
       import "../src/empty.js";     // <puredashboard-empty>
+      import "../src/collapse.js";  // <puredashboard-collapse>
+      import "../src/tree.js";      // <puredashboard-tree>
+      import "../src/popover.js";   // <puredashboard-popover>
+      import "../src/tooltip.js";   // <puredashboard-tooltip>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -332,6 +340,30 @@
         emptyCard.append(el("puredashboard-empty", { description: vi ? "Chưa có nhật ký" : "No logs yet" }, [el("button", { className: "primary", textContent: vi ? "Làm mới" : "Refresh" })]));
         const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
         wrap.append(card, emptyCard);
+        gallery([wrap], { wide: true });
+      } else if (shot === "interactive") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
+        const tree = el("puredashboard-tree", { expandedKeys: ["src"], selectedKey: "reactive", nodes: [
+          { id: "src", label: "src", children: [
+            { id: "reactive", label: "reactive.js" },
+            { id: "table", label: "table.js" },
+            { id: "theme", label: "theme", children: [{ id: "tokens", label: "tokens.css" }] },
+          ]},
+          { id: "docs", label: "docs" },
+        ]});
+        const acc = el("puredashboard-collapse", { value: "a", items: [
+          { key: "a", header: vi ? "Cấu hình chung" : "General settings", content: vi ? "Tuỳ chọn cơ bản của dịch vụ." : "Basic service options." },
+          { key: "b", header: vi ? "Nâng cao" : "Advanced", content: vi ? "Cấu hình nâng cao." : "Advanced configuration." },
+        ]});
+        const tip = el("puredashboard-tooltip", { text: vi ? "Khởi động lại dịch vụ" : "Restart the service" }, [el("button", { textContent: vi ? "Khởi động lại" : "Restart" })]);
+        const pop = el("puredashboard-popover", {});
+        const trg = el("button", { textContent: vi ? "Chi tiết ▾" : "Details ▾" }); trg.setAttribute("data-popover-trigger", "");
+        const pc = el("div", {}); pc.setAttribute("data-popover-content", ""); pc.style.cssText = "padding:12px;min-width:180px"; pc.textContent = vi ? "Nội dung popover" : "Popover content";
+        pop.append(trg, pc);
+        const row = el("div", {}); row.style.cssText = "display:flex;gap:12px;align-items:center";
+        row.append(tip, pop);
+        wrap.append(tree, acc, row);
         gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();

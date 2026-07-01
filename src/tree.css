@@ -1,0 +1,109 @@
+/* puredashboard-tree — styles for <puredashboard-tree> (tree.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours resolve through a --pd-* chain that falls back
+ * to the shared app tokens (--accent, --accent-ink, --text, --muted, --panel-2/3,
+ * --border, --focus-ring, --radius, --duration-*, --sp-*) and finally to neutral
+ * system colours — so the tree looks right with NO theme linked and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override the
+ * --pd-tree-* knobs below.
+ */
+puredashboard-tree {
+  display: block;
+  --pd-accent:     var(--accent,     #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:       var(--text,       CanvasText);
+  --pd-muted:      var(--muted,      color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-panel-3:    var(--panel-3,    color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:     var(--radius,     10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration:   var(--duration-fast, 120ms);
+  --pd-ease:       var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-tree-item-height: var(--control-height-md, 34px);
+  --pd-tree-indent:      var(--sp-4, 16px);
+  color: var(--pd-text);
+  font-size: var(--font-size-md, 13px);
+}
+
+.puredashboard-tree__tree,
+.puredashboard-tree__group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The nested group wrapper is role="none" and purely structural. */
+.puredashboard-tree__group-wrap { display: block; }
+
+/* One treeitem row. The disclosure/label live in an inner __row flex line so the whole
+ * item box can still receive click/focus while the visual row indents by depth. */
+.puredashboard-tree__item {
+  display: block;
+  /* depth is set inline as --pd-tree-depth (0-based) on each item. */
+  --pd-tree-pad: calc(var(--pd-tree-depth, 0) * var(--pd-tree-indent) + var(--sp-2, 8px));
+}
+
+.puredashboard-tree__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  box-sizing: border-box;
+  min-height: var(--pd-tree-item-height);
+  padding: 0 var(--sp-2, 8px);
+  padding-inline-start: var(--pd-tree-pad);
+  border-radius: var(--pd-radius);
+  cursor: pointer;
+  transition: background-color var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-tree__row:hover { background: var(--pd-panel-2); }
+
+/* Focus ring goes on the focusable treeitem (the roving-tabindex owner). */
+.puredashboard-tree__item:focus { outline: none; }
+.puredashboard-tree__item:focus-visible .puredashboard-tree__row {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+/* Selected item — the a11y state (aria-selected) doubles as the style hook. */
+.puredashboard-tree__item--selected > .puredashboard-tree__row,
+.puredashboard-tree__item[aria-selected="true"] > .puredashboard-tree__row {
+  color: var(--pd-accent-ink);
+  background: var(--pd-accent);
+  font-weight: var(--weight-medium, 500);
+}
+.puredashboard-tree__item--selected > .puredashboard-tree__row:hover,
+.puredashboard-tree__item[aria-selected="true"] > .puredashboard-tree__row:hover {
+  background: var(--pd-accent);
+}
+
+/* Twisty — a fixed-size slot so leaves and parents align. Rotates when expanded. */
+.puredashboard-tree__twisty {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  color: var(--pd-muted);
+  transition: transform var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-tree__twisty--leaf { visibility: hidden; }
+.puredashboard-tree__item--selected > .puredashboard-tree__row .puredashboard-tree__twisty { color: inherit; }
+.puredashboard-tree__item[aria-expanded="true"] > .puredashboard-tree__row .puredashboard-tree__twisty {
+  transform: rotate(90deg);
+}
+
+.puredashboard-tree__icon {
+  flex: none;
+  display: inline-flex;
+  color: var(--pd-muted);
+}
+.puredashboard-tree__item--selected > .puredashboard-tree__row .puredashboard-tree__icon { color: inherit; }
+
+.puredashboard-tree__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

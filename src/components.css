@@ -45,9 +45,13 @@
 @import "badge.css";
 @import "avatar.css";
 @import "empty.css";
+@import "collapse.css";
+@import "tree.css";
 /* overlays & content */
 @import "upload.css";
 @import "dialog.css";
 @import "menu.css";
+@import "popover.css";
+@import "tooltip.css";
 @import "toast.css";
 @import "md.css";
