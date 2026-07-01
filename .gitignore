@@ -20,8 +20,10 @@ Thumbs.db
 # zero-dependency runtime.
 .reference/
 
-# Should never exist here — the runtime is zero-dependency, no bundler
-node_modules/
+# Should never exist here — the runtime is zero-dependency, no bundler.
+# (no trailing slash so a `node_modules` symlink used for local test runs is
+# ignored too, not just a real directory)
+node_modules
 dist/
 build/
 package-lock.json
