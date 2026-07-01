@@ -1,0 +1,60 @@
+/* puredashboard-input — styles for <puredashboard-input> (input.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --danger-bg, …) via a --pd-* chain
+ * that falls back to your app tokens and finally to neutral system colours — so it
+ * looks right with NO config and adapts to light/dark automatically. Theme by
+ * defining the app tokens, or override --pd-input-*.
+ */
+puredashboard-input {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-input-height: var(--control-height-md, 34px);
+  --pd-input-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+.puredashboard-input__field {
+  width: 100%;
+  box-sizing: border-box;
+  height: var(--pd-input-height);
+  padding: 0 var(--pd-input-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-input__field::placeholder { color: var(--pd-muted); }
+.puredashboard-input__field:hover:not(:disabled):not([readonly]) { border-color: var(--pd-border-2); }
+.puredashboard-input__field:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-input__field:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-input__field[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-input__field[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the height token */
+.puredashboard-input__field--sm { --pd-input-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-input__field--lg { --pd-input-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+
+.puredashboard-input__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

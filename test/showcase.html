@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../src/table.css" />
     <link rel="stylesheet" href="../src/menu.css" />
     <link rel="stylesheet" href="../src/upload.css" />
+    <link rel="stylesheet" href="../src/input.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -24,6 +25,7 @@
     <script type="module">
       import "../src/table.js";
       import "../src/upload.js";
+      import "../src/input.js";   // defines <puredashboard-input>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -186,6 +188,27 @@
         const md = document.createElement("puredashboard-markdown");
         md.value = MD_SOURCE;
         gallery([md]);
+      } else if (shot === "input") {
+        const field = (props) => Object.assign(document.createElement("puredashboard-input"), props);
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:14px";
+        const mk = (labelText, el) => {
+          const l = document.createElement("label");
+          l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)";
+          const span = document.createElement("span");
+          span.textContent = labelText;
+          l.append(span, el);
+          return l;
+        };
+        wrap.append(
+          mk(vi ? "Email" : "Email", field({ type: "email", placeholder: "you@example.com", value: "" })),
+          mk(vi ? "Mật khẩu" : "Password", field({ type: "password", placeholder: "••••••••" })),
+          mk(vi ? "Nhỏ (sm)" : "Small (sm)", field({ size: "sm", placeholder: "small" })),
+          mk(vi ? "Lớn (lg)" : "Large (lg)", field({ size: "lg", placeholder: "large" })),
+          mk(vi ? "Có lỗi" : "With error", field({ value: "not-an-email", error: vi ? "Email không hợp lệ." : "That email looks invalid." })),
+          mk(vi ? "Bị khoá" : "Disabled", field({ value: "read only", disabled: true })),
+        );
+        gallery([wrap]);
       } else if (shot === "menu") {
         const host = centerStage();
         const btn = document.createElement("button");
