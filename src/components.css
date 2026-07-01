@@ -39,6 +39,12 @@
 @import "nav.css";
 /* data display */
 @import "table.css";
+@import "card.css";
+@import "descriptions.css";
+@import "tag.css";
+@import "badge.css";
+@import "avatar.css";
+@import "empty.css";
 /* overlays & content */
 @import "upload.css";
 @import "dialog.css";

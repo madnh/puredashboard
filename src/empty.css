@@ -1,0 +1,65 @@
+/* puredashboard-empty — styles for <puredashboard-empty> (empty.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--muted, --faint, --text, --sp-*, --font-size-*) via a --pd-* chain that falls
+ * back to your app tokens and finally to neutral system colours — so it looks
+ * right with NO config and adapts to light/dark automatically. Theme by defining
+ * the app tokens, or override --pd-empty-*.
+ *
+ * A centered placeholder: illustration, description, then an actions region for
+ * the author's buttons. Deliberately minimal — do not over-design.
+ */
+puredashboard-empty {
+  display: block;
+  --pd-text:        var(--text,   CanvasText);
+  --pd-muted:       var(--muted,  color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-faint:       var(--faint,  color-mix(in srgb, CanvasText 40%, Canvas));
+  --pd-empty-gap:       var(--sp-3, 12px);
+  --pd-empty-pad:       var(--sp-6, 24px);
+  --pd-empty-icon-size: 48px;
+  --pd-empty-icon-color: var(--pd-faint);
+  --pd-empty-desc-color: var(--pd-muted);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--pd-empty-gap);
+  padding: var(--pd-empty-pad);
+  color: var(--pd-text);
+}
+
+.puredashboard-empty__icon {
+  font-size: var(--pd-empty-icon-size);
+  line-height: 0;
+  color: var(--pd-empty-icon-color);
+}
+
+.puredashboard-empty__desc {
+  margin: 0;
+  color: var(--pd-empty-desc-color);
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+}
+
+/* Actions region — holds the author's buttons. Collapses when empty so no stray
+ * gap is left below the description. */
+.puredashboard-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2, 8px);
+}
+.puredashboard-empty__actions:empty { display: none; }
+
+/* compact — tighter spacing + a smaller illustration and description. */
+puredashboard-empty[compact] {
+  --pd-empty-gap:       var(--sp-2, 8px);
+  --pd-empty-pad:       var(--sp-4, 16px);
+  --pd-empty-icon-size: 32px;
+}
+puredashboard-empty[compact] .puredashboard-empty__desc {
+  font-size: var(--font-size-sm, 12px);
+}

@@ -22,6 +22,12 @@
     <link rel="stylesheet" href="../src/pagination.css" />
     <link rel="stylesheet" href="../src/steps.css" />
     <link rel="stylesheet" href="../src/nav.css" />
+    <link rel="stylesheet" href="../src/card.css" />
+    <link rel="stylesheet" href="../src/descriptions.css" />
+    <link rel="stylesheet" href="../src/tag.css" />
+    <link rel="stylesheet" href="../src/badge.css" />
+    <link rel="stylesheet" href="../src/avatar.css" />
+    <link rel="stylesheet" href="../src/empty.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
@@ -52,6 +58,12 @@
       import "../src/pagination.js"; // <puredashboard-pagination>
       import "../src/steps.js";     // <puredashboard-steps>
       import "../src/nav.js";       // <puredashboard-nav>
+      import "../src/card.js";      // <puredashboard-card>
+      import "../src/descriptions.js"; // <puredashboard-descriptions>
+      import "../src/tag.js";       // <puredashboard-tag>
+      import "../src/badge.js";     // <puredashboard-badge>
+      import "../src/avatar.js";    // <puredashboard-avatar>
+      import "../src/empty.js";     // <puredashboard-empty>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -297,6 +309,29 @@
         ]});
         const pager = el("puredashboard-pagination", { page: 5, total: 200, pageSize: 10 });
         wrap.append(crumb, tabs, steps, pager);
+        gallery([wrap], { wide: true });
+      } else if (shot === "data") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const card = el("puredashboard-card", { title: vi ? "api-gateway" : "api-gateway" });
+        const desc = el("puredashboard-descriptions", { columns: 2, bordered: true, items: [
+          { label: vi ? "Khu vực" : "Region", value: "us-east-1" },
+          { label: vi ? "Trạng thái" : "Status", value: "online" },
+          { label: vi ? "Phiên bản" : "Version", value: "v1.4.0" },
+          { label: vi ? "Lượt/ngày" : "Requests/day", value: "184,203" },
+        ]});
+        const row = el("div", {}); row.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap";
+        row.append(
+          el("puredashboard-avatar", { name: "Ada Lovelace" }),
+          el("puredashboard-tag", { color: "success" }, [document.createTextNode("online")]),
+          el("puredashboard-tag", { color: "warning", round: true }, [document.createTextNode("beta")]),
+          el("puredashboard-tag", { color: "danger", closable: true }, [document.createTextNode("deprecated")]),
+          el("puredashboard-badge", { count: 5 }, [el("button", { textContent: vi ? "Cảnh báo" : "Alerts" })]),
+        );
+        card.append(desc, row);
+        const emptyCard = el("puredashboard-card", { title: vi ? "Nhật ký" : "Logs" });
+        emptyCard.append(el("puredashboard-empty", { description: vi ? "Chưa có nhật ký" : "No logs yet" }, [el("button", { className: "primary", textContent: vi ? "Làm mới" : "Refresh" })]));
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
+        wrap.append(card, emptyCard);
         gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();
