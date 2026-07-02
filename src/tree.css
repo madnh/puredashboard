@@ -41,17 +41,19 @@ puredashboard-tree {
 .puredashboard-tree__item {
   display: block;
   /* depth is set inline as --pd-tree-depth (0-based) on each item. */
-  --pd-tree-pad: calc(var(--pd-tree-depth, 0) * var(--pd-tree-indent) + var(--sp-2, 8px));
 }
 
 .puredashboard-tree__row {
-  display: flex;
+  /* inline-flex + margin indent: the row hugs its own content, so the hover /
+   * selection fill wraps just the item instead of stretching across the empty
+   * indent and out to the full width. */
+  display: inline-flex;
   align-items: center;
   gap: var(--sp-2, 8px);
   box-sizing: border-box;
   min-height: var(--pd-tree-item-height);
   padding: 0 var(--sp-2, 8px);
-  padding-inline-start: var(--pd-tree-pad);
+  margin-inline-start: calc(var(--pd-tree-depth, 0) * var(--pd-tree-indent));
   border-radius: var(--pd-radius);
   cursor: pointer;
   transition: background-color var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);

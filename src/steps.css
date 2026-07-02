@@ -68,14 +68,16 @@ puredashboard-steps {
 }
 .puredashboard-steps__item:first-child > .puredashboard-steps__connector { display: none; }
 .puredashboard-steps__list--horizontal > .puredashboard-steps__item > .puredashboard-steps__connector {
-  top: calc(var(--pd-steps-bubble) / 2);
+  /* the bubble sits below the step's sp-1 padding, so its centre is sp-1 + bubble/2
+   * from the item top — align the line to that, not to bubble/2 alone. */
+  top: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
   height: var(--pd-steps-connector);
   right: 50%;
   left: -50%;
   transform: translateY(-50%);
 }
 .puredashboard-steps__list--vertical > .puredashboard-steps__item > .puredashboard-steps__connector {
-  left: calc(var(--pd-steps-bubble) / 2);
+  left: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
   width: var(--pd-steps-connector);
   top: calc(-1 * var(--sp-6, 24px));
   bottom: calc(100% - var(--pd-steps-bubble));

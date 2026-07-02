@@ -12,5 +12,10 @@ export const el = (tag, props, kids) => {
 };
 export const t = (s) => document.createTextNode(s);
 // stack children vertically / horizontally via <puredashboard-space>
-export const vstack = (kids, size = "sm") => el("puredashboard-space", { direction: "vertical", size }, kids);
+// A vertical stack whose children STRETCH to full width (a grid, not a flex row) —
+// so full-width block components (progress, input, alert…) don't collapse.
+export const vstack = (kids, gap = "12px") => {
+  const g = { sm: "8px", md: "12px", lg: "16px" }[gap] || gap;
+  return el("div", { style: `display:grid; gap:${g}` }, kids);
+};
 export const hstack = (kids, size = "sm") => el("puredashboard-space", { direction: "horizontal", size }, kids);

@@ -74,6 +74,9 @@ puredashboard-number {
   color: var(--pd-text);
   background: var(--pd-panel-2);
   border: none;
+  /* it's a <button>; null the base stylesheet's radius so the steppers sit flush
+   * inside the group instead of reading as separate rounded buttons. */
+  border-radius: 0;
   cursor: pointer;
   transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
 }

@@ -52,13 +52,15 @@ puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; }
 .puredashboard-gallery__bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--pd-panel); border-bottom: 1px solid var(--pd-border); font-size: 13px; }
 .puredashboard-gallery__name { font-weight: 600; }
 .puredashboard-gallery__notes { color: var(--pd-muted); font-size: 12px; }
-.puredashboard-gallery__stage { padding: 28px; background: var(--pd-bg); }
+/* stages use the PANEL surface (like a real card) so subtle things — skeletons,
+ * borders, --panel-2 fills — have contrast instead of vanishing into the page bg. */
+.puredashboard-gallery__stage { padding: 28px; background: var(--pd-panel); }
 
 /* overview / contact sheet */
 .puredashboard-gallery__overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
 .puredashboard-gallery__cell { border: 1px solid var(--pd-border); border-radius: var(--radius, 10px); overflow: hidden; }
 .puredashboard-gallery__cell-label { padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--pd-muted); background: var(--pd-panel); border-bottom: 1px solid var(--pd-border); }
-.puredashboard-gallery__cell-stage { padding: 20px; min-height: 96px; display: flex; align-items: center; }
+.puredashboard-gallery__cell-stage { padding: 20px; min-height: 96px; display: flex; align-items: center; background: var(--pd-panel); }
 
 .puredashboard-gallery__empty { padding: 40px; color: var(--pd-muted); }
 .puredashboard-gallery__err { margin: 0; color: var(--red, #dc2626); font-size: 12px; white-space: pre-wrap; }

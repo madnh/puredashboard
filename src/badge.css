@@ -40,16 +40,17 @@ puredashboard-badge {
   right: 0;
   transform: translate(50%, -50%);
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  /* inline-block + line-height = height reliably centres the digit across fonts;
+   * a tight line-height:1 in a flex box left the glyph sitting high. */
+  display: inline-block;
+  text-align: center;
   min-width: var(--pd-badge-size);
   height: var(--pd-badge-size);
   padding: 0 5px;
   font: inherit;
   font-size: var(--pd-font-xs);
   font-weight: var(--weight-semibold, 600);
-  line-height: 1;
+  line-height: var(--pd-badge-size);
   color: var(--pd-badge-ink);
   background: var(--pd-badge-bg);
   border-radius: var(--pd-radius-full);
