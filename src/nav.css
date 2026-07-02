@@ -33,7 +33,12 @@ puredashboard-nav {
 .puredashboard-nav__list--sub {
   margin-left: var(--pd-nav-indent);
   border-left: 1px solid var(--pd-border);
+  /* breathing room so nested rows don't sit flush against the guide line */
+  padding-left: var(--sp-2, 8px);
 }
+/* Nested rows sit against the vertical guide line — a rounded pill next to that
+ * line reads oddly, so square them off (the top-level rows stay rounded). */
+.puredashboard-nav__list--sub .puredashboard-nav__link { border-radius: 0; }
 .puredashboard-nav__list[hidden] { display: none; }
 
 .puredashboard-nav__item { margin: var(--sp-1, 4px) 0; }

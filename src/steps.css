@@ -88,6 +88,10 @@ puredashboard-steps {
 
 /* ── the step itself (span or button) ── */
 .puredashboard-steps__step {
+  /* lift the step above the absolutely-positioned connector so the opaque bubble
+   * masks the line instead of the line painting over the number/check. */
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: var(--sp-2, 8px);
   align-items: center;
