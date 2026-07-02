@@ -31,6 +31,9 @@ puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; }
 .puredashboard-gallery__item {
   display: block; width: 100%; text-align: left; padding: 6px 16px;
   font: inherit; color: var(--pd-muted); background: none; border: 0;
+  /* it's a <button>, so null out the base stylesheet's radius — a rounded fill
+   * next to the straight left accent bar reads oddly; keep it a clean rectangle. */
+  border-radius: 0;
   border-left: 2px solid transparent; cursor: pointer;
 }
 .puredashboard-gallery__item:hover { color: var(--pd-text); background: var(--pd-panel-2); }
