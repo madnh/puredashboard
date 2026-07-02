@@ -103,7 +103,13 @@ export class Router {
       const m = route.re.exec(path);
       if (m) {
         const params = {};
-        route.keys.forEach((k, i) => (params[k] = decodeURIComponent(m[i + 1])));
+        // Decode defensively: a malformed %-escape (e.g. "#/x/%") makes
+        // decodeURIComponent throw URIError, which would abort render(). Fall back
+        // to the raw capture so a bad URL can't wedge the current view.
+        route.keys.forEach((k, i) => {
+          try { params[k] = decodeURIComponent(m[i + 1]); }
+          catch { params[k] = m[i + 1]; }
+        });
         return { route, params, query, path };
       }
     }

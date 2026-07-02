@@ -154,7 +154,9 @@ class PuredashboardForm extends HTMLElement {
   // Build a plain object from FormData entries. A name that appears more than
   // once (multi-selects, checkbox groups) collapses into an array in order.
   _collect(formData) {
-    const values = {};
+    // Null-prototype bag: a field named "__proto__"/"constructor" is then a plain
+    // own key (no magic setter to corrupt the object, no Object.prototype pollution).
+    const values = Object.create(null);
     for (const [key, val] of formData.entries()) {
       if (key in values) {
         if (Array.isArray(values[key])) values[key].push(val);

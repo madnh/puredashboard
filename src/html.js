@@ -3,7 +3,7 @@
 // Zero dependencies, CSP-safe (no eval). Returns a SafeString (marked) so nested
 // html`` results and arrays of them are inserted verbatim, while plain values are
 // escaped. Use raw() ONLY for trusted pre-built markup (e.g. an inline SVG icon).
-const SAFE = Symbol("safe");
+const SAFE = Symbol.for("puredashboard.safe");   // shared so reactive.js recognizes SafeStrings
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) =>

@@ -36,6 +36,16 @@
  *   { label: "Delete", value: "delete", danger: true },
  * ]);   // → "rename" | "delete" | null
  */
+// Neutralize a script-executing scheme in an item's href so a URL sourced from data
+// can't become click-to-XSS (relative/hash/mailto/tel/http(s) pass through). Leading
+// control chars/whitespace are stripped since the browser ignores them (java\tscript:).
+function safeUrl(u) {
+  const scheme = String(u ?? "").replace(/[\x00-\x20]+/g, "").match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!scheme) return u;
+  const s = scheme[1].toLowerCase();
+  return (s === "javascript" || s === "vbscript" || s === "data") ? "#" : u;
+}
+
 export function menu(anchor, items, opts = {}) {
   const m = document.createElement("div");
   m.className = "puredashboard-menu" + (opts.className ? " " + opts.className : "");
@@ -63,7 +73,7 @@ export function menu(anchor, items, opts = {}) {
     const el = document.createElement(nav ? "a" : "button");
     el.className = "puredashboard-menu__item js-puredashboard-menu__item" + (it.danger ? " puredashboard-menu__item--danger" : "");
     el.setAttribute("role", "menuitem");
-    if (nav) { el.href = it.href; if (it.target) el.target = it.target; }
+    if (nav) { el.href = safeUrl(it.href); if (it.target) el.target = it.target; }
     else { el.type = "button"; }
     if (it.disabled) { el.setAttribute("aria-disabled", "true"); el.tabIndex = -1; }
     if (it.icon) {

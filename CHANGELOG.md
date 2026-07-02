@@ -9,6 +9,26 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Security
+- **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
+  (`href`/`src`/`formaction`/…) now drop `javascript:`/`vbscript:` (and `data:` on
+  navigational attrs), so a URL bound from a data field can't become click-to-XSS.
+  `menu()` applies the same guard to item `href`.
+- **Template type-confusion guard** (`reactive.js`): child/array bindings only render an
+  object as markup when it carries the shared SAFE marker (html.js `raw()`/`html`);
+  any other object is coerced to text instead of `innerHTML`.
+- **Prototype-safety** (`form.js`): collected submit values use a null-prototype object,
+  so a field named `__proto__`/`constructor` can't corrupt it.
+
+### Fixed
+- **Router** (`router.js`): a malformed `%`-escape in a route param (e.g. `#/x/%`) no
+  longer throws an uncaught `URIError` that wedged `render()` — it falls back to the raw
+  capture.
+
+### Docs
+- Document the trust boundary (component props are trusted author config;
+  `accept`/`maxSize` are UX hints — validate on the server) in `_agents.md` / `upload.js`.
+
 ## [0.1.0] - 2026-06-26
 
 First public release — extracted into a standalone, zero-dependency, no-build library.

@@ -252,6 +252,12 @@ Imperative (not elements): `dialog`, `drawer`, `alert`, `confirm`, `prompt`
 
 - **No runtime dependency, no build step, no `eval`/`new Function`.** `src/*` ships as-is.
 - Untrusted content reaches the DOM only via `textContent` / `<puredashboard-markdown>`.
+- **Trust boundary.** Component props are TRUSTED author config: `raw()`/`icon`/`render`
+  slots and any `*.icon` field are inserted as markup — never feed them untrusted data.
+  `href`/`src` bound through the engine (and `menu()`) are scheme-guarded
+  (`javascript:`/`vbscript:`/`data:` are dropped), but treat URLs from users/tenants as
+  untrusted and validate them yourself. Upload `accept`/`maxSize` are UX hints only —
+  the server must validate.
 - BEM class names (`.puredashboard-<tag>__el--mod`); script hooks are separate
   `js-…`/`data-*` — never style those. All UI strings live in a `LABELS` map,
   overridable via the `labels` property.

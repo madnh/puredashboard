@@ -62,9 +62,9 @@ const extOf = (name) => { const m = /\.([^.]+)$/.exec(name || ""); return m ? m[
  *
  * @element puredashboard-upload
  *
- * @prop {string}   accept     - Accept filter, e.g. `"image/*,.pdf"` (same syntax as `<input accept>`). Default `""` = any.
+ * @prop {string}   accept     - Accept filter, e.g. `"image/*,.pdf"` (same syntax as `<input accept>`). Default `""` = any. NOTE: a UX hint only — client-side type/size checks are trivially bypassable (rename, spoofed MIME, direct `uploadFile()`), so the SERVER must validate content, size and storage.
  * @prop {boolean}  multiple   - Allow more than one file. Default `false`.
- * @prop {number}   maxSize    - Max bytes per file; `0` = unlimited. Default `0`.
+ * @prop {number}   maxSize    - Max bytes per file; `0` = unlimited. Default `0`. UX hint only — enforce real limits server-side (see `accept`).
  * @prop {boolean}  debug      - `console.debug` every emitted event. Default `false`.
  * @prop {Object}   labels     - Override UI strings (English defaults). Keys: `browse`, `hint`, `choose`, `tooLarge(maxStr)`, `notAllowed`, `remove(name)`. Function-valued keys interpolate. Unset keys keep the English default.
  * @prop {Function} [uploader] - Custom transport `(file, onProgress:(0..1)=>void) => Promise<{response}>` used by `upload()` instead of the built-in multipart XHR.
