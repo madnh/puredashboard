@@ -245,6 +245,23 @@ Every component is **token-driven** — it reads your `--accent`, `--panel`, `--
 - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — how to extend it: design rules, the
   add-a-component recipe, and testing.
 
+**Building with an AI agent?** The reference an agent needs travels *inside* `src/`
+(so it's there after you copy the folder), and is skipped by the `//go:embed` walker
+so it never bloats your binary:
+
+- **[`src/_agents.md`](src/_agents.md)** — golden rules, copy-paste recipes (forms,
+  overlays, router, theming) and a full component index. Point your agent here first.
+- **`src/_custom-elements.json`** — the [Custom Elements Manifest][cem]: the complete,
+  machine-readable API (props, attributes, events, CSS custom properties) for editor
+  autocomplete and tooling. Regenerate with `make -C test/cem` after JSDoc changes.
+
+**Preview every component:** serve the repo (`python3 -m http.server`) and open
+`test/gallery.html` — a mini component gallery (built from the reusable
+`<puredashboard-gallery>` element). Capture screenshots of all of them with
+`make -C test/visual`.
+
+[cem]: https://github.com/webcomponents/custom-elements-manifest
+
 ---
 
 ## Repo layout
