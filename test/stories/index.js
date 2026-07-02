@@ -6,7 +6,10 @@ import segmented from "./segmented.stories.js";
 // Layout
 import divider from "./divider.stories.js";
 import space from "./space.stories.js";
+import flex from "./flex.stories.js";
 import grid from "./grid.stories.js";
+import layout from "./layout.stories.js";
+import splitter from "./splitter.stories.js";
 // Form
 import input from "./input.stories.js";
 import textarea from "./textarea.stories.js";
@@ -56,7 +59,7 @@ import result from "./result.stories.js";
 
 export const STORIES = [
   button, segmented,
-  divider, space, grid,
+  divider, space, flex, grid, layout, splitter,
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
   tabs, breadcrumb, pagination, steps, nav,
   table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, timeline, empty, md, upload,

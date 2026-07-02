@@ -1,0 +1,139 @@
+/* puredashboard-layout family — styles for layout.js. BEM, block = each tag.
+ *
+ * Self-contained & theme-able. Colours, spacing, sizing and motion come from the
+ * shared design tokens (--panel, --panel-2, --border, --text, --muted, --sp-*,
+ * --shadow-1, --control-height-*, --duration-*, --ease-*) via a --pd-* chain that
+ * falls back to your app tokens and finally to neutral system colours — so the
+ * frame looks right with NO theme linked and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override the per-component --pd-* knobs.
+ *
+ * These are structural containers: minimal, unopinionated shells that arrange the
+ * author's children. Individual widgets (nav, table, …) carry their own styles.
+ */
+
+/* ── Frame ─────────────────────────────────────────────────────────────────── */
+puredashboard-layout {
+  display: flex;
+  flex-direction: column;   /* header / content / footer stack by default */
+  flex: auto;
+  min-height: 0;
+  min-width: 0;
+  --pd-layout-bg: var(--bg, transparent);
+  background: var(--pd-layout-bg);
+  color: var(--text, CanvasText);
+}
+
+/* A direct sider child turns the frame into a row (pure CSS, no JS). `has-sider`
+ * forces the same for a sider added later or where :has() is unsupported. */
+puredashboard-layout:has(> puredashboard-sider),
+puredashboard-layout[has-sider] {
+  flex-direction: row;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+puredashboard-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3, 12px);
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  height: var(--pd-header-height, calc(var(--control-height-lg, 42px) * 1.4));
+  padding: 0 var(--sp-4, 16px);
+  background: var(--pd-header-bg, var(--panel, Canvas));
+  color: var(--text, CanvasText);
+  border-bottom: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+}
+
+/* ── Content ───────────────────────────────────────────────────────────────── */
+puredashboard-content {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;   /* let it shrink so overflow scrolls instead of pushing siblings */
+  min-width: 0;
+  box-sizing: border-box;
+  padding: var(--pd-content-pad, var(--sp-4, 16px));
+  overflow: auto;
+  background: var(--pd-content-bg, var(--bg, transparent));
+  color: var(--text, CanvasText);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+puredashboard-footer {
+  display: block;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: var(--sp-3, 12px) var(--sp-4, 16px);
+  background: var(--pd-footer-bg, var(--panel, Canvas));
+  color: var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  border-top: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  font-size: var(--font-size-sm, 12px);
+  text-align: center;
+}
+
+/* ── Sider ─────────────────────────────────────────────────────────────────── */
+puredashboard-sider {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  /* --pd-sider-w is set inline by the element (width ↔ collapsedWidth). */
+  width: var(--pd-sider-w, 220px);
+  min-width: 0;
+  background: var(--pd-sider-bg, var(--panel, Canvas));
+  color: var(--text, CanvasText);
+  border-right: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  overflow: hidden;
+  transition: width var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Scroll region holding the author's children (nav, etc.). */
+.puredashboard-sider__inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Collapse trigger pinned to the bottom. */
+.puredashboard-sider__trigger {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: var(--control-height-lg, 42px);
+  padding: 0;
+  margin: 0;
+  background: var(--panel-2, color-mix(in srgb, CanvasText 4%, Canvas));
+  color: var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  border: 0;
+  border-top: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  cursor: pointer;
+  font-size: var(--font-size-lg, 15px);
+  transition: background var(--duration-fast, 120ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1)),
+              color var(--duration-fast, 120ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+.puredashboard-sider__trigger:hover {
+  background: var(--panel-3, color-mix(in srgb, CanvasText 8%, Canvas));
+  color: var(--text, CanvasText);
+}
+.puredashboard-sider__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, Highlight 40%, transparent));
+}
+
+/* The chevron points left (toward the sider); flip it when collapsed. */
+.puredashboard-sider__trigger svg {
+  transition: transform var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+puredashboard-sider[collapsed] .puredashboard-sider__trigger svg {
+  transform: rotate(180deg);
+}
+
+/* Belt-and-braces for hosts whose motion tokens don't collapse to 0ms. */
+@media (prefers-reduced-motion: reduce) {
+  puredashboard-sider,
+  .puredashboard-sider__trigger,
+  .puredashboard-sider__trigger svg {
+    transition: none;
+  }
+}

@@ -1,0 +1,47 @@
+/* puredashboard-flex — styles for <puredashboard-flex> (flex.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The gap comes from the shared spacing tokens
+ * (--sp-*) resolved in JS into the dynamic `--pd-flex-gap` custom property, which
+ * falls back to 0 so the wrapper adds no gap unless asked — and looks right with
+ * NO theme linked. Theme by defining the app spacing tokens, or override
+ * --pd-flex-gap directly.
+ *
+ * Purely presentational: the host IS the flex container and the author's children
+ * are the direct flex items — no wrapper elements, no children moved. A LAYOUT
+ * sibling of <puredashboard-space>; deliberately minimal — do not over-design.
+ */
+puredashboard-flex {
+  /* Default gap if JS hasn't run yet (e.g. no-JS / pre-upgrade): none. */
+  --pd-flex-gap: 0;
+}
+
+/* The block turns the host into a flex container. Applied by the script as soon
+ * as it upgrades; the bare tag selector above only carries the token default.
+ * Default direction is row (no --vertical modifier needed). */
+.puredashboard-flex {
+  display: flex;
+  flex-direction: row;
+  gap: var(--pd-flex-gap, 0);
+}
+
+/* Direction ---------------------------------------------------------------- */
+.puredashboard-flex--vertical { flex-direction: column; }
+
+/* Wrapping ----------------------------------------------------------------- */
+.puredashboard-flex--wrap         { flex-wrap: wrap; }
+.puredashboard-flex--wrap-reverse { flex-wrap: wrap-reverse; }
+
+/* Main-axis distribution (justify-content) --------------------------------- */
+.puredashboard-flex--justify-start   { justify-content: flex-start; }
+.puredashboard-flex--justify-center  { justify-content: center; }
+.puredashboard-flex--justify-end     { justify-content: flex-end; }
+.puredashboard-flex--justify-between { justify-content: space-between; }
+.puredashboard-flex--justify-around  { justify-content: space-around; }
+.puredashboard-flex--justify-evenly  { justify-content: space-evenly; }
+
+/* Cross-axis alignment (align-items) --------------------------------------- */
+.puredashboard-flex--align-start    { align-items: flex-start; }
+.puredashboard-flex--align-center   { align-items: center; }
+.puredashboard-flex--align-end      { align-items: flex-end; }
+.puredashboard-flex--align-stretch  { align-items: stretch; }
+.puredashboard-flex--align-baseline { align-items: baseline; }

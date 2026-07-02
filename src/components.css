@@ -42,7 +42,10 @@
 /* layout */
 @import "divider.css";
 @import "space.css";
+@import "flex.css";
 @import "grid.css";
+@import "layout.css";
+@import "splitter.css";
 /* navigation */
 @import "tabs.css";
 @import "breadcrumb.css";
