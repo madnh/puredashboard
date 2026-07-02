@@ -41,7 +41,10 @@ puredashboard-number {
 .puredashboard-number__control:hover { border-color: var(--pd-border-2); }
 .puredashboard-number__control:focus-within { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
 
-.puredashboard-number__field {
+/* scoped under __control (two classes) so it beats the optional theme's
+ * `input[type=number]` rule (type+attr = higher specificity than one class),
+ * keeping the middle field borderless/transparent inside the group. */
+.puredashboard-number__control .puredashboard-number__field {
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
@@ -54,6 +57,9 @@ puredashboard-number {
   color: var(--pd-text);
   background: transparent;
   border: none;
+  /* the group owns the rounding; null the base <input> radius so the middle field
+   * doesn't show its own rounded corners inside the seamless control. */
+  border-radius: 0;
   outline: none;
 }
 .puredashboard-number__field::placeholder { color: var(--pd-muted); }
