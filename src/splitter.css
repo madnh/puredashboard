@@ -38,6 +38,10 @@ puredashboard-splitter[vertical] { flex-direction: column; }
 .puredashboard-splitter__panel {
   min-width: 0;
   min-height: 0;
+  /* the proportional flex-grow (written inline by the component) is the ONLY thing
+   * that should size a panel along the split axis — pin the basis to 0 so content
+   * size can't fight it. Don't set width/height on a panel along the split axis. */
+  flex-basis: 0;
   overflow: auto;
 }
 
