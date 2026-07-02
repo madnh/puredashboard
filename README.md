@@ -251,9 +251,12 @@ so it never bloats your binary:
 
 - **[`src/_agents.md`](src/_agents.md)** — golden rules, copy-paste recipes (forms,
   overlays, router, theming) and a full component index. Point your agent here first.
-- **`src/_custom-elements.json`** — the [Custom Elements Manifest][cem]: the complete,
-  machine-readable API (props, attributes, events, CSS custom properties) for editor
-  autocomplete and tooling. Regenerate with `make -C test/cem` after JSDoc changes.
+- **`src/_components.jsonl`** — the complete, machine-readable API as **one JSON line
+  per component** (props, attributes, events, CSS custom properties, and a usage
+  example). One line = one component, so an agent greps the single line it needs and
+  pipes it to `jq`/node/python — no need to load the whole file. Generated from the
+  JSDoc via the [Custom Elements Manifest][cem] analyzer; regenerate with
+  `make -C test/cem` after JSDoc changes.
 
 **Preview every component:** serve the repo (`python3 -m http.server`) and open
 `test/gallery.html` — a mini component gallery (built from the reusable

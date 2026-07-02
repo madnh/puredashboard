@@ -1,13 +1,13 @@
-# Regenerate the Custom Elements Manifest. Dev-only; needs Docker.
+# Regenerate the agent API reference (src/_components.jsonl). Dev-only; needs Docker.
 #
-#   make -C test/cem        # → writes src/_custom-elements.json
+#   make -C test/cem        # → writes src/_components.jsonl
 #
-# Run this after adding or changing a component's JSDoc so the machine-readable
-# API manifest stays in sync. Its consumer HERE is AI agents (which read it by
-# path) — editor auto-discovery does NOT apply: that needs a package.json
-# "customElements" field + the standard filename, neither of which this repo has
-# (the `_` prefix is deliberate, to keep the file out of the go:embed binary).
-# Output is pretty-printed so agents can grep a tag and read just its slice.
+# Run this after adding or changing a component's JSDoc so the reference stays in
+# sync. It's one JSON line per component, consumed by AI agents (which read it by
+# path). This is NOT wired for editor auto-discovery — that would need a
+# package.json "customElements" field + the standard custom-elements.json name,
+# neither of which this repo has (the `_` prefix is deliberate, to keep the file
+# out of the go:embed binary). See to-jsonl.mjs for the flatten step.
 
 IMAGE = puredashboard-cem
 ROOT  = $(shell cd ../.. && pwd)

@@ -3,8 +3,8 @@
 > You're reading this because you're wiring PureDashboard into an app. It exists so
 > you **don't have to read the component source** to use it. Everything you need —
 > the rules, the copy-paste recipes, and a full component index — is here. For the
-> exhaustive machine-readable API, see **`_custom-elements.json`** (Custom Elements
-> Manifest) next to this file.
+> exhaustive machine-readable API, see **`_components.jsonl`** next to this file —
+> one JSON line per component (props/events/attrs/CSS vars/example).
 >
 > This file ships inside `src/` (as `_agents.md`), so it travels when someone copies
 > the folder. It is skipped by the `//go:embed` walker (leading `_`), so it never
@@ -149,13 +149,26 @@ document.body.append(g);   // ?overview=1 = contact sheet, ?only=1 = single stor
 Set the listed props in JS; listen for the listed events on the element. `LABELS`
 strings are overridable via the `labels` property on every component.
 
-**This table is the front door — it covers 95% of tasks; read it, not the JSON.**
-The full machine-readable API (every prop/attr/event + CSS custom props, from the
-JSDoc) lives in `_custom-elements.json` (~65k tokens — do NOT read it whole). To
-consult ONE component, find its module block (each starts at a `"path"` line) and
-read forward to the next block — blocks run ~30–500 lines (~0.5–3k tokens):
-`grep -n '"path": "src/<file>.js"' src/_custom-elements.json` gives the start line;
-read from there to the next `"path"` hit.
+**This table is the front door — it covers 95% of tasks; read it, not the file below.**
+The full machine-readable API (every prop/attr/event + CSS custom props + a usage
+example, from the JSDoc) lives in **`_components.jsonl`** — one JSON object per line,
+one line per component. Do NOT read the whole file: grep the ONE line you need
+(~0.3–2k tokens) and pipe it to `jq` / node / python.
+
+```sh
+# the whole record for one component, pretty-printed:
+grep '"tag":"puredashboard-table"' src/_components.jsonl | jq
+
+# just its props (no jq? use node or python — both ship everywhere):
+grep '"tag":"puredashboard-table"' src/_components.jsonl \
+  | node -e 'JSON.parse(require("fs").readFileSync(0)).props.forEach(p=>console.log(p.name,"-",p.desc))'
+grep '"tag":"puredashboard-table"' src/_components.jsonl \
+  | python3 -c 'import json,sys; [print(e["name"],"-",e.get("desc","")) for e in json.load(sys.stdin)["events"]]'
+
+# list every tag: grep -o '"tag":"[^"]*"' src/_components.jsonl
+```
+Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
+`events[]{name,desc}`, `attrs[]`, `slots[]?`, `cssProps[]{name,desc}`, `example`, `file`.
 
 ### General & layout
 | Tag | Key props | Events | Notes |
