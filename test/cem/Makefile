@@ -3,7 +3,8 @@
 #   make -C test/cem        # → writes src/_custom-elements.json
 #
 # Run this after adding or changing a component's JSDoc so the machine-readable
-# API manifest (used by editors + AI agents) stays in sync.
+# API manifest (used by editors + AI agents) stays in sync. Output is pretty-
+# printed so agents can grep a tag and read just that component's slice.
 
 IMAGE = puredashboard-cem
 ROOT  = $(shell cd ../.. && pwd)

@@ -147,8 +147,14 @@ document.body.append(g);   // ?overview=1 = contact sheet, ?only=1 = single stor
 ## Component index
 
 Set the listed props in JS; listen for the listed events on the element. `LABELS`
-strings are overridable via the `labels` property on every component. Full API +
-CSS custom props: `_custom-elements.json`.
+strings are overridable via the `labels` property on every component.
+
+**This table is the front door — it covers 95% of tasks; read it, not the JSON.**
+The full machine-readable API (every prop/attr/event + CSS custom props, from the
+JSDoc) lives in `_custom-elements.json` (~65k tokens — do NOT read it whole). To
+consult ONE component, grep its tag and read just that slice:
+`grep -n '"tagName": "puredashboard-<tag>"' src/_custom-elements.json` → read ~240
+lines up from that hit (~2k tokens).
 
 ### General & layout
 | Tag | Key props | Events | Notes |
