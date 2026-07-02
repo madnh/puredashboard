@@ -45,6 +45,7 @@
 
 const RESULT = Symbol("TemplateResult");
 const REPEAT = Symbol("repeat");
+const SAFE = Symbol.for("puredashboard.safe");   // shared with html.js raw()/SafeString
 const MARKER = "lit";       // sentinel; never appears in real content
 const cache = new Map();                // strings array → compiled <template>
 
@@ -59,6 +60,25 @@ export function repeat(items, keyFn, tmplFn) { return { [REPEAT]: true, items, k
 const isRepeat = (x) => !!(x && x[REPEAT]);
 
 function rawNodes(s) { const t = document.createElement("template"); t.innerHTML = s; return [...t.content.childNodes]; }
+
+// URL-bearing attributes whose value must never carry a script-executing scheme.
+const NAV_URL_ATTRS = new Set(["href", "xlink:href", "formaction", "action", "ping"]);
+const MEDIA_URL_ATTRS = new Set(["src", "poster", "background"]);
+// Neutralize javascript:/vbscript: (and data: for navigations) so a URL bound from a
+// data field can't become click-to-XSS. Relative/hash/mailto/tel/http(s)/blob pass
+// through untouched; data: stays allowed on media attrs (e.g. <img src>). Leading
+// control chars/whitespace are stripped first because the browser ignores them when
+// resolving the scheme (e.g. "java\tscript:").
+function safeUrlAttr(name, val) {
+  const n = name.toLowerCase();
+  if (!NAV_URL_ATTRS.has(n) && !MEDIA_URL_ATTRS.has(n)) return val;
+  const scheme = String(val).replace(/[\x00-\x20]+/g, "").match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!scheme) return val;                                 // no scheme → relative/hash, safe
+  const s = scheme[1].toLowerCase();
+  if (s === "javascript" || s === "vbscript") return "";
+  if (s === "data" && NAV_URL_ATTRS.has(n)) return "";
+  return val;
+}
 
 // Row — one keyed item inside a repeat: its own anchor comment plus the nodes before
 // it. update() re-binds in place when the template matches (keeping the live nodes,
@@ -137,7 +157,10 @@ class NodePart {
     }
     if (v.nodeType) { this.replace([v]); this.old = v; return; }
     if (Array.isArray(v)) { this.replace(arrayNodes(v)); this.old = v; return; }
-    this.replace(rawNodes(String(v)));  // SafeString / raw() trusted markup
+    if (v[SAFE]) { this.replace(rawNodes(v.toString())); this.old = v; return; }  // trusted raw()/SafeString markup ONLY
+    // any other non-primitive → coerce to TEXT (never innerHTML an unmarked value)
+    if (this.nodes.length === 1 && this.nodes[0].nodeType === 3) this.nodes[0].data = String(v);
+    else this.replace([document.createTextNode(String(v))]);
     this.old = v;
   }
 
@@ -198,7 +221,7 @@ class AttrPart {
       // pure single nullish binding with no static text → drop the attribute
       if (this.size === 1 && this.statics[0] === "" && this.statics[1] === "" &&
           (values[i] == null || values[i] === false)) node.removeAttribute(name);
-      else node.setAttribute(name, s);
+      else node.setAttribute(name, safeUrlAttr(name, s));
       return;
     }
     const v = values[i];
@@ -264,7 +287,8 @@ function arrayNodes(arr) {
     if (typeof v === "string" || typeof v === "number") out.push(document.createTextNode(String(v)));
     else if (v.nodeType) out.push(v);
     else if (isResult(v)) out.push(...buildFragment(v).childNodes);
-    else out.push(...rawNodes(String(v)));
+    else if (v[SAFE]) out.push(...rawNodes(v.toString()));       // trusted raw()/SafeString markup ONLY
+    else out.push(document.createTextNode(String(v)));           // unmarked object → text, never innerHTML
   }
   return out;
 }

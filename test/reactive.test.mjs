@@ -79,7 +79,10 @@ const tick = () => new Promise((r) => queueMicrotask(r));
     "?disabled removed on update",
   );
 
+  // A value explicitly marked SAFE (html.js raw()/SafeString share this symbol) is
+  // the ONLY object inserted as markup.
   const safe = {
+    [Symbol.for("puredashboard.safe")]: true,
     toString() {
       return "<b>raw</b>";
     },
@@ -87,7 +90,20 @@ const tick = () => new Promise((r) => queueMicrotask(r));
   renderResult(html`<span>${safe}</span>`, host);
   ok(
     host.querySelector("span b")?.textContent === "raw",
-    "raw object inserted as markup",
+    "SAFE-marked value inserted as markup",
+  );
+
+  // An UNMARKED object with a hostile toString must NOT become markup — it is
+  // coerced to text (type-confusion XSS guard).
+  const hostile = {
+    toString() {
+      return "<img src=x onerror=1>";
+    },
+  };
+  renderResult(html`<span>${hostile}</span>`, host);
+  ok(
+    host.querySelector("span img") === null,
+    "unmarked object NOT parsed as HTML (type-confusion guard)",
   );
 
   renderResult(html`<span>${"<img src=x onerror=1>"}</span>`, host);
