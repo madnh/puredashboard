@@ -29,6 +29,7 @@ puredashboard-tabs {
 
 .puredashboard-tabs__tab {
   appearance: none;
+  position: relative;
   margin: 0;
   padding: var(--sp-2, 8px) var(--sp-3, 12px);
   font: inherit;
@@ -37,19 +38,25 @@ puredashboard-tabs {
   color: var(--pd-muted);
   background: transparent;
   border: none;
-  border-bottom: var(--pd-tabs-indicator) solid transparent;
-  margin-bottom: calc(-1 * 1px);
-  border-top-left-radius: var(--pd-radius);
-  border-top-right-radius: var(--pd-radius);
   cursor: pointer;
-  transition: color var(--pd-duration) var(--pd-ease), border-color var(--pd-duration) var(--pd-ease);
+  transition: color var(--pd-duration) var(--pd-ease);
 }
 .puredashboard-tabs__tab:hover:not(:disabled) { color: var(--pd-text); }
 
-.puredashboard-tabs__tab--active {
-  color: var(--pd-accent);
-  border-bottom-color: var(--pd-accent);
+/* the active indicator: a STRAIGHT underline bar on the list baseline. Drawn as a
+ * pseudo-element (no border-radius) so the line never curls up at its ends. */
+.puredashboard-tabs__tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px; /* overlap the list's 1px bottom border */
+  height: var(--pd-tabs-indicator);
+  background: transparent;
+  transition: background-color var(--pd-duration) var(--pd-ease);
 }
+.puredashboard-tabs__tab--active { color: var(--pd-accent); }
+.puredashboard-tabs__tab--active::after { background: var(--pd-accent); }
 
 /* focus ring — a11y state = style hook; only show it for keyboard focus */
 .puredashboard-tabs__tab:focus-visible {

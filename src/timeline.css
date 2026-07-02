@@ -50,15 +50,19 @@ puredashboard-timeline {
 }
 .puredashboard-timeline__item:last-child { padding-bottom: 0; }
 
-/* content on the RIGHT (rail first) — the default reading order */
-.puredashboard-timeline__item--right,
-.puredashboard-timeline__item--left { grid-template-columns: var(--pd-timeline-rail) 1fr; }
-.puredashboard-timeline__item--right > .puredashboard-timeline__dot  { grid-column: 1; }
-.puredashboard-timeline__item--right > .puredashboard-timeline__body { grid-column: 2; text-align: left; }
-/* content on the LEFT (content first, rail second) */
-.puredashboard-timeline__item--left { grid-template-columns: 1fr var(--pd-timeline-rail); }
-.puredashboard-timeline__item--left > .puredashboard-timeline__dot  { grid-column: 2; }
-.puredashboard-timeline__item--left > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
+/* mode=right — rail (dot) on the left, content on the right (default reading order) */
+.puredashboard-timeline__list--right > .puredashboard-timeline__item { grid-template-columns: var(--pd-timeline-rail) 1fr; }
+.puredashboard-timeline__list--right > .puredashboard-timeline__item > .puredashboard-timeline__dot  { grid-column: 1; }
+.puredashboard-timeline__list--right > .puredashboard-timeline__item > .puredashboard-timeline__body { grid-column: 2; text-align: left; }
+/* mode=left — content on the left, rail on the right */
+.puredashboard-timeline__list--left > .puredashboard-timeline__item { grid-template-columns: 1fr var(--pd-timeline-rail); }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item > .puredashboard-timeline__dot  { grid-column: 2; }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
+/* mode=alternate — a CENTRED rail (line down the middle); content alternates side */
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item { grid-template-columns: 1fr var(--pd-timeline-rail) 1fr; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item > .puredashboard-timeline__dot { grid-column: 2; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item--left  > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item--right > .puredashboard-timeline__body { grid-column: 3; text-align: left; }
 
 /* ── connector line: a bar centred behind the dot, spanning the full row height
  *    (into the padding gap) so consecutive dots read as one thread. The rail is
@@ -94,8 +98,10 @@ puredashboard-timeline {
   background: var(--pd-border-2);
   z-index: 0;
 }
-.puredashboard-timeline__item--right::before { left: calc(var(--pd-timeline-rail) / 2); transform: translateX(-50%); }
-.puredashboard-timeline__item--left::before  { right: calc(var(--pd-timeline-rail) / 2); transform: translateX(50%); }
+.puredashboard-timeline__list--right > .puredashboard-timeline__item::before { left: calc(var(--pd-timeline-rail) / 2); transform: translateX(-50%); }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item::before  { right: calc(var(--pd-timeline-rail) / 2); transform: translateX(50%); }
+/* alternate: the line runs down the CENTRED rail (the middle grid column) */
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item::before { left: 50%; transform: translateX(-50%); }
 /* trim the ends: start the thread at the first dot's centre, stop it at the last */
 .puredashboard-timeline__item:first-child::before { top: calc(2px + var(--pd-timeline-dot) / 2); }
 .puredashboard-timeline__item:last-child::before  { bottom: auto; height: calc(2px + var(--pd-timeline-dot) / 2); }
