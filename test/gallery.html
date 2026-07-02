@@ -5,71 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PureBook — PureDashboard component gallery</title>
 
-    <!-- tokens + base primitives + every component stylesheet -->
+    <!-- tokens + base primitives + every component stylesheet + the gallery chrome -->
     <link rel="stylesheet" href="../src/theme/tokens.css" />
     <link rel="stylesheet" href="../src/theme/base.css" />
     <link rel="stylesheet" href="../src/components.css" />
-
-    <style>
-      /* PureBook chrome — dev-only, NOT part of the library. */
-      * { box-sizing: border-box; }
-      body { margin: 0; font: 14px/1.5 var(--sans); color: var(--text); background: var(--bg); }
-      .pb { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
-      /* sidebar */
-      .pb-side { border-right: 1px solid var(--border); background: var(--panel); overflow-y: auto; }
-      .pb-brand { padding: 16px; font-weight: 700; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel); }
-      .pb-brand small { color: var(--muted); font-weight: 400; }
-      .pb-group { padding: 12px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--faint); }
-      .pb-item { display: block; padding: 6px 16px; color: var(--muted); text-decoration: none; border-left: 2px solid transparent; cursor: pointer; }
-      .pb-item:hover { color: var(--text); background: var(--panel-2); }
-      .pb-item[aria-current="true"] { color: var(--text); border-left-color: var(--accent); background: var(--panel-2); }
-      /* main */
-      .pb-main { min-width: 0; display: flex; flex-direction: column; }
-      .pb-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 5; }
-      .pb-toolbar h1 { font-size: 16px; margin: 0 auto 0 0; }
-      .pb-toolbar select, .pb-toolbar button { font: inherit; padding: 5px 10px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
-      .pb-canvas { padding: 24px; display: grid; gap: 24px; }
-      .pb-story { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-      .pb-story__bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--border); font-size: 13px; }
-      .pb-story__name { font-weight: 600; }
-      .pb-story__notes { color: var(--muted); font-size: 12px; }
-      .pb-story__stage { padding: 28px; background: var(--bg); }
-      .pb-story__stage.pad-sm { padding: 16px; }
-      /* only=1 : a single story, full-bleed, no chrome (for screenshots) */
-      body.pb-only .pb-side, body.pb-only .pb-toolbar, body.pb-only .pb-story__bar { display: none; }
-      body.pb-only .pb { display: block; }
-      body.pb-only .pb-canvas { padding: 0; }
-      body.pb-only .pb-story { border: 0; border-radius: 0; }
-      body.pb-only .pb-story__stage { padding: 32px; }
-      .pb-empty { padding: 40px; color: var(--muted); }
-    </style>
+    <link rel="stylesheet" href="../src/gallery.css" />
+    <style> body { margin: 0; } </style>
   </head>
   <body>
-    <div class="pb">
-      <aside class="pb-side">
-        <div class="pb-brand">PureBook <small>· gallery</small></div>
-        <nav id="pb-nav"></nav>
-      </aside>
-      <div class="pb-main">
-        <div class="pb-toolbar">
-          <h1 id="pb-title">—</h1>
-          <label>Theme
-            <select id="pb-theme"><option value="dark">dark</option><option value="light">light</option></select>
-          </label>
-          <label>Lang
-            <select id="pb-lang"><option value="en">en</option><option value="vi">vi</option></select>
-          </label>
-          <label>Density
-            <select id="pb-density"><option value="">normal</option><option value="compact">compact</option></select>
-          </label>
-        </div>
-        <div class="pb-canvas" id="pb-canvas"></div>
-      </div>
-    </div>
-
     <script type="module">
-      // Define every custom element so stories can create them.
-      import "../src/table.js"; import "../src/input.js"; import "../src/textarea.js";
+      // Define every custom element so stories can create them …
+      import "../src/table.js"; import "../src/upload.js"; import "../src/input.js"; import "../src/textarea.js";
       import "../src/number.js"; import "../src/select.js"; import "../src/combobox.js";
       import "../src/checkbox.js"; import "../src/switch.js"; import "../src/radio-group.js";
       import "../src/slider.js"; import "../src/date.js"; import "../src/time.js";
@@ -84,96 +30,14 @@
       import "../src/result.js"; import "../src/tooltip.js"; import "../src/popover.js";
       import "../src/popconfirm.js"; import "../src/alert.js"; import "../src/progress.js";
       import "../src/spinner.js"; import "../src/skeleton.js"; import "../src/md.js";
-
+      // … the gallery component itself, and the story registry.
+      import "../src/gallery.js";
       import { STORIES } from "./stories/index.js";
 
-      const params = new URLSearchParams(location.search);
-      const el = (id) => document.getElementById(id);
-      const state = {
-        c: params.get("c") || (STORIES[0] && STORIES[0].tag),
-        s: params.get("s") || null,
-        theme: params.get("theme") || "dark",
-        lang: params.get("lang") || "en",
-        density: params.get("density") || "",
-        only: params.get("only") === "1",
-      };
-      // expose the language to stories that localise (they read window.PB_LANG)
-      window.PB_LANG = () => state.lang;
-
-      function applyChrome() {
-        document.documentElement.dataset.theme = state.theme;
-        document.documentElement.lang = state.lang;
-        document.body.dataset.density = state.density || "";
-        document.body.classList.toggle("pb-only", state.only);
-        el("pb-theme").value = state.theme; el("pb-lang").value = state.lang; el("pb-density").value = state.density;
-      }
-
-      function buildNav() {
-        const nav = el("pb-nav");
-        nav.replaceChildren();
-        const groups = new Map();
-        for (const def of STORIES) {
-          const g = (def.title || "Other").split("/")[0];
-          if (!groups.has(g)) groups.set(g, []);
-          groups.get(g).push(def);
-        }
-        for (const [g, defs] of groups) {
-          nav.append(Object.assign(document.createElement("div"), { className: "pb-group", textContent: g }));
-          for (const def of defs) {
-            const a = Object.assign(document.createElement("a"), { className: "pb-item", textContent: def.tag.replace(/^puredashboard-/, "") });
-            a.href = `?c=${def.tag}${state.only ? "&only=1" : ""}`;
-            a.toggleAttribute("aria-current", def.tag === state.c);
-            a.setAttribute("aria-current", def.tag === state.c ? "true" : "false");
-            nav.append(a);
-          }
-        }
-      }
-
-      function renderStage() {
-        const def = STORIES.find((d) => d.tag === state.c) || STORIES[0];
-        const canvas = el("pb-canvas");
-        canvas.replaceChildren();
-        if (!def) { canvas.innerHTML = '<div class="pb-empty">No stories yet.</div>'; return; }
-        el("pb-title").textContent = def.title || def.tag;
-        document.title = `PureBook · ${def.tag}`;
-        const stories = state.s ? def.stories.filter((s) => s.name === state.s) : def.stories;
-        for (const st of stories) {
-          const wrap = document.createElement("div"); wrap.className = "pb-story";
-          const bar = document.createElement("div"); bar.className = "pb-story__bar";
-          bar.append(Object.assign(document.createElement("span"), { className: "pb-story__name", textContent: st.name }));
-          if (st.notes) bar.append(Object.assign(document.createElement("span"), { className: "pb-story__notes", textContent: st.notes }));
-          const stage = document.createElement("div"); stage.className = "pb-story__stage" + (st.padSmall ? " pad-sm" : "");
-          try { const node = st.render(); if (node) stage.append(node); }
-          catch (e) { stage.append(Object.assign(document.createElement("pre"), { textContent: "render error: " + (e && e.message) })); }
-          wrap.append(bar, stage);
-          canvas.append(wrap);
-        }
-        // signal readiness for the screenshot driver
-        requestAnimationFrame(() => requestAnimationFrame(() => { document.documentElement.dataset.ready = "1"; }));
-      }
-
-      function go(patch) {
-        Object.assign(state, patch);
-        const u = new URLSearchParams();
-        u.set("c", state.c); if (state.s) u.set("s", state.s);
-        u.set("theme", state.theme); u.set("lang", state.lang);
-        if (state.density) u.set("density", state.density);
-        if (state.only) u.set("only", "1");
-        history.replaceState(null, "", "?" + u.toString());
-        applyChrome(); buildNav(); renderStage();
-      }
-
-      el("pb-nav").addEventListener("click", (e) => {
-        const a = e.target.closest(".pb-item"); if (!a) return;
-        e.preventDefault();
-        const tag = new URL(a.href).searchParams.get("c");
-        go({ c: tag, s: null });
-      });
-      el("pb-theme").addEventListener("change", (e) => go({ theme: e.target.value }));
-      el("pb-lang").addEventListener("change", (e) => go({ lang: e.target.value }));
-      el("pb-density").addEventListener("change", (e) => go({ density: e.target.value }));
-
-      applyChrome(); buildNav(); renderStage();
+      const g = document.createElement("puredashboard-gallery");
+      g.route = true;               // mirror the view into the URL (?c=&s=&theme=&only=&overview=)
+      g.stories = STORIES;
+      document.body.append(g);
     </script>
   </body>
 </html>

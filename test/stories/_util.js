@@ -1,6 +1,12 @@
 // Tiny helpers for PureBook stories (dev-only). Not part of the library.
 export const el = (tag, props, kids) => {
-  const n = Object.assign(document.createElement(tag), props || {});
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    // hyphenated keys (data-*, aria-*, …) are real ATTRIBUTES, not properties —
+    // so component selectors like [data-popover-content] actually match.
+    if (k.includes("-")) n.setAttribute(k, v === true ? "" : v);
+    else n[k] = v;
+  }
   if (kids != null) n.append(...[].concat(kids).filter((k) => k != null));
   return n;
 };
