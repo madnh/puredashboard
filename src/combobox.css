@@ -1,0 +1,144 @@
+/* puredashboard-combobox — styles for <puredashboard-combobox> (combobox.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --control-pad-x, --focus-ring, --radius, --border, --panel,
+ * --panel-2, --panel-3, --shadow-2, --danger-bg, --z-dropdown, --disabled-opacity, …)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override --pd-combobox-*.
+ *
+ * The listbox popup renders in the TOP LAYER (Popover API, popover="manual") so it
+ * escapes overflow:hidden / z-index-stacked ancestors, with a fixed/high-z fallback.
+ * Because it is appended in place (styled here, not on <body>), the theme tokens are
+ * declared on the host AND re-declared on the popup so the fallback path is themed too.
+ */
+puredashboard-combobox {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 9%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-shadow:    var(--shadow-2, 0 4px 12px rgba(0, 0, 0, 0.28));
+  --pd-z:         var(--z-dropdown, 1000);
+  --pd-combobox-height: var(--control-height-md, 34px);
+  --pd-combobox-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+/* control — positioning context so the chevron overlays the input, and (in the
+ * fallback / no-Popover path) so the listbox anchors under it. */
+.puredashboard-combobox__control {
+  position: relative;
+  display: block;
+}
+
+.puredashboard-combobox__input {
+  width: 100%;
+  box-sizing: border-box;
+  height: var(--pd-combobox-height);
+  /* leave room on the right for the overlaid chevron */
+  padding: 0 calc(var(--pd-combobox-pad-x) + 1.4em) 0 var(--pd-combobox-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-combobox__input::placeholder { color: var(--pd-muted); }
+.puredashboard-combobox__input:hover:not(:disabled) { border-color: var(--pd-border-2); }
+.puredashboard-combobox__input:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-combobox__input:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-combobox__input[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-combobox__input[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* chevron — decorative, overlaid on the right edge; MUST NOT catch clicks. */
+.puredashboard-combobox__chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--pd-combobox-pad-x);
+  transform: translateY(-50%);
+  color: var(--pd-muted);
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* listbox popup — top layer (Popover) or fixed/high-z fallback. Re-declare the theme
+ * tokens here so the popup is themed whether Popover promotes it or the fallback keeps
+ * it in the control's subtree. */
+.puredashboard-combobox__list {
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 9%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-shadow:    var(--shadow-2, 0 4px 12px rgba(0, 0, 0, 0.28));
+  --pd-z:         var(--z-dropdown, 1000);
+
+  box-sizing: border-box;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+  margin: 0;
+  background: var(--pd-panel);
+  color: var(--pd-text);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  box-shadow: var(--pd-shadow);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+}
+/* Popover default styles reset for the fallback path (element stays inline, positioned
+ * via inline style fixed/z-index). Hidden state via the `hidden` attribute + :popover. */
+.puredashboard-combobox__list:not(:popover-open) { position: fixed; }
+.puredashboard-combobox__list[hidden] { display: none; }
+/* When the Popover API is unavailable the element is not promoted; the component sets a
+ * fixed position + z-index inline, and we ensure it floats above the control. */
+.puredashboard-combobox__list--open { z-index: var(--pd-z); }
+
+.puredashboard-combobox__option {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: var(--pd-text);
+  cursor: pointer;
+  user-select: none;
+}
+.puredashboard-combobox__option--active { background: var(--pd-panel-2); }
+.puredashboard-combobox__option--selected { color: var(--pd-accent); font-weight: var(--weight-medium, 500); }
+.puredashboard-combobox__option--selected.puredashboard-combobox__option--active { background: var(--pd-panel-3); }
+.puredashboard-combobox__option--disabled { opacity: var(--pd-disabled-opacity); cursor: default; }
+
+.puredashboard-combobox__empty {
+  padding: 8px 10px;
+  color: var(--pd-muted);
+  cursor: default;
+}
+
+.puredashboard-combobox__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

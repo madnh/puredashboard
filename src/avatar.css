@@ -1,0 +1,84 @@
+/* puredashboard-avatar — styles for <puredashboard-avatar> (avatar.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--panel-2/3, --border, --text, --muted, --accent, --radius, --radius-full,
+ * --font-size-*) via a --pd-* chain that falls back to your app tokens and finally
+ * to neutral system colours — so it looks right with NO config and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override --pd-avatar-*.
+ *
+ * The initials background palette (--pd-avatar-c0..c5) maps to the shared status
+ * hues so avatars sit in the same visual language; each name hashes to one index.
+ */
+puredashboard-avatar {
+  display: inline-block;
+  vertical-align: middle;
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-radius:    var(--radius,   10px);
+  --pd-radius-full: var(--radius-full, 999px);
+
+  /* size — a single knob; a numeric `size` prop sets --pd-avatar-size inline */
+  --pd-avatar-size: 40px;
+
+  /* stable-hash palette — the shared status hues, with system-colour fallbacks */
+  --pd-avatar-c0: var(--accent, #3b82f6);
+  --pd-avatar-c1: var(--green,  #3fb950);
+  --pd-avatar-c2: var(--amber,  #d29922);
+  --pd-avatar-c3: var(--red,    #f85149);
+  --pd-avatar-c4: var(--teal,   #2dd4bf);
+  --pd-avatar-c5: var(--purple, #a98bff);
+}
+
+.puredashboard-avatar__box {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pd-avatar-size);
+  height: var(--pd-avatar-size);
+  border-radius: var(--pd-radius-full);
+  overflow: hidden;
+  background: var(--pd-panel-3);
+  color: var(--pd-muted);
+  font-family: var(--sans, inherit);
+  font-size: calc(var(--pd-avatar-size) * 0.4);
+  line-height: 1;
+  font-weight: var(--weight-semibold, 600);
+  user-select: none;
+}
+
+/* shape — square swaps the full circle for the standard corner radius */
+.puredashboard-avatar--square { border-radius: var(--pd-radius); }
+
+/* named sizes — remap the single size knob */
+.puredashboard-avatar--sm { --pd-avatar-size: 28px; }
+.puredashboard-avatar--lg { --pd-avatar-size: 56px; }
+
+.puredashboard-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.puredashboard-avatar__initials {
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* readable text on any hue fill */
+  color: var(--accent-ink, #fff);
+}
+
+.puredashboard-avatar__placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--pd-avatar-size) * 0.55);
+  color: var(--pd-muted);
+}

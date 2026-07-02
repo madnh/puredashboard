@@ -1,0 +1,112 @@
+/* puredashboard-switch — styles for <puredashboard-switch> (switch.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --accent, --duration-*, …) via a
+ * --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-switch-*.
+ *
+ * The visual is a sliding track + knob built entirely in CSS. The native
+ * <input type="checkbox"> is visually hidden (clipped, NOT display:none) so it
+ * stays focusable and keyboard-operable; the checked/focus/disabled state on that
+ * input drives the sibling track/knob via CSS selectors.
+ */
+puredashboard-switch {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-knob:      var(--panel,    #ffffff);
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  --pd-switch-height: calc(var(--control-height-md, 34px) * 0.6);
+  --pd-switch-width:  calc(var(--pd-switch-height) * 1.8);
+  --pd-switch-gap:    3px;
+}
+
+.puredashboard-switch__root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+}
+
+/* control = the sizing box the clipped input and the track share */
+.puredashboard-switch__control {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--pd-switch-width);
+  height: var(--pd-switch-height);
+}
+
+/* the native checkbox: visually hidden but STILL FOCUSABLE (clip, not display:none).
+ * It sits on top of the track so pointer events land on it and drive the visual. */
+.puredashboard-switch__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: inherit;
+  z-index: 1;
+}
+
+.puredashboard-switch__track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full, 999px);
+  background: var(--pd-border-2);
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: background-color var(--pd-duration) var(--pd-ease);
+}
+
+.puredashboard-switch__knob {
+  position: absolute;
+  top: var(--pd-switch-gap);
+  left: var(--pd-switch-gap);
+  width: calc(var(--pd-switch-height) - 2 * var(--pd-switch-gap));
+  height: calc(var(--pd-switch-height) - 2 * var(--pd-switch-gap));
+  border-radius: 50%;
+  background: var(--pd-knob);
+  box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.4));
+  transition: transform var(--pd-duration) var(--pd-ease);
+}
+
+/* checked → tint the track and slide the knob to the far end */
+.puredashboard-switch__input:checked ~ .puredashboard-switch__track { background: var(--pd-accent); }
+.puredashboard-switch__input:checked ~ .puredashboard-switch__track .puredashboard-switch__knob {
+  transform: translateX(calc(var(--pd-switch-width) - var(--pd-switch-height)));
+}
+
+/* focus — reuse the shared ring token (a11y hook drives the visible outline) */
+.puredashboard-switch__input:focus-visible ~ .puredashboard-switch__track { box-shadow: var(--pd-focus-ring); }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-switch__input[aria-invalid="true"] ~ .puredashboard-switch__track { border-color: var(--pd-red); }
+
+/* disabled */
+.puredashboard-switch__input:disabled { cursor: not-allowed; }
+.puredashboard-switch__input:disabled ~ .puredashboard-switch__track { opacity: var(--pd-disabled-opacity); }
+.puredashboard-switch__root:has(.puredashboard-switch__input:disabled) { cursor: not-allowed; color: var(--pd-text); opacity: var(--pd-disabled-opacity); }
+
+.puredashboard-switch__label { user-select: none; }
+
+.puredashboard-switch__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

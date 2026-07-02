@@ -1,0 +1,44 @@
+/* puredashboard-space — styles for <puredashboard-space> (space.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The gap comes from the shared spacing tokens
+ * (--sp-*) resolved in JS into the dynamic `--pd-space-gap` custom property, with
+ * a --pd-* chain that falls back to raw px so it looks right with NO theme linked
+ * and adapts to light/dark automatically. Theme by defining the app spacing
+ * tokens, or override --pd-space-gap.
+ *
+ * Purely presentational: the host IS the flex container and the author's children
+ * are the direct flex items — no wrapper elements, no children moved. Deliberately
+ * minimal — do not over-design.
+ */
+puredashboard-space {
+  /* Default gap if JS hasn't run yet (e.g. no-JS / pre-upgrade): medium token. */
+  --pd-space-gap: var(--sp-3, 12px);
+}
+
+/* The block turns the host into a flex container. Applied by the script as soon
+ * as it upgrades; the bare tag selector above only carries the token default. */
+.puredashboard-space {
+  display: flex;
+  gap: var(--pd-space-gap);
+}
+
+/* Direction ---------------------------------------------------------------- */
+.puredashboard-space--horizontal { flex-direction: row; }
+.puredashboard-space--vertical   { flex-direction: column; }
+
+/* Wrapping ----------------------------------------------------------------- */
+.puredashboard-space--wrap   { flex-wrap: wrap; }
+.puredashboard-space--nowrap { flex-wrap: nowrap; }
+
+/* Cross-axis alignment (align-items) --------------------------------------- */
+.puredashboard-space--align-start    { align-items: flex-start; }
+.puredashboard-space--align-center   { align-items: center; }
+.puredashboard-space--align-end      { align-items: flex-end; }
+.puredashboard-space--align-baseline { align-items: baseline; }
+
+/* Main-axis distribution (justify-content) --------------------------------- */
+.puredashboard-space--justify-start   { justify-content: flex-start; }
+.puredashboard-space--justify-center  { justify-content: center; }
+.puredashboard-space--justify-end     { justify-content: flex-end; }
+.puredashboard-space--justify-between { justify-content: space-between; }
+.puredashboard-space--justify-around  { justify-content: space-around; }

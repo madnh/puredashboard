@@ -1,0 +1,84 @@
+/* puredashboard-badge — styles for <puredashboard-badge> (badge.js). BEM, block = the tag.
+ *
+ * A small count / status indicator pinned to the top-right corner of a badged
+ * child (icon, avatar, button). Self-contained & theme-able: colours resolve
+ * through a --pd-* chain that falls back to your app tokens (--red / --accent /
+ * --green / --amber, --panel, --font-size-xs, --radius-full) and finally to
+ * neutral system colours — so it looks right with NO theme linked and adapts to
+ * light/dark. Theme by defining the app tokens, or override --pd-badge-*.
+ */
+puredashboard-badge {
+  display: inline-flex;                 /* shrink-wrap the badged child */
+  position: relative;                   /* positioning context for the indicator */
+  vertical-align: middle;
+  --pd-red:     var(--red,    #dc2626);
+  --pd-accent:  var(--accent, #3b82f6);
+  --pd-green:   var(--green,  #16a34a);
+  --pd-amber:   var(--amber,  #d97706);
+  --pd-neutral: var(--muted,  color-mix(in srgb, CanvasText 55%, Canvas));
+  --pd-panel:   var(--panel,  Canvas);
+  --pd-radius-full: var(--radius-full, 999px);
+  --pd-font-xs: var(--font-size-xs, 11px);
+
+  /* component knobs (tier 3) */
+  --pd-badge-size: 18px;                        /* min diameter / pill height */
+  --pd-badge-dot:  8px;                          /* dot diameter */
+  --pd-badge-bg:   var(--pd-red);                /* default fill; remapped per color */
+  --pd-badge-ink:  #ffffff;                      /* text on the fill */
+  --pd-badge-ring: var(--pd-panel);              /* ring separating badge from child */
+}
+
+/* the wrapper that holds the author's badged element (moved in on connect) */
+.puredashboard-badge__anchor {
+  display: inline-flex;
+}
+
+/* the count / dot indicator, pinned to the top-right corner */
+.puredashboard-badge__indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  box-sizing: border-box;
+  /* inline-block + line-height = height reliably centres the digit across fonts;
+   * a tight line-height:1 in a flex box left the glyph sitting high. */
+  display: inline-block;
+  text-align: center;
+  min-width: var(--pd-badge-size);
+  height: var(--pd-badge-size);
+  padding: 0 5px;
+  font: inherit;
+  font-size: var(--pd-font-xs);
+  font-weight: var(--weight-semibold, 600);
+  line-height: var(--pd-badge-size);
+  color: var(--pd-badge-ink);
+  background: var(--pd-badge-bg);
+  border-radius: var(--pd-radius-full);
+  box-shadow: 0 0 0 2px var(--pd-badge-ring);   /* the ring around the badge */
+  pointer-events: none;                          /* purely decorative overlay */
+  white-space: nowrap;
+}
+
+/* standalone (no wrapped child): render the badge inline in normal flow */
+puredashboard-badge[standalone] .puredashboard-badge__indicator {
+  position: static;
+  transform: none;
+  box-shadow: none;                              /* no child to separate from */
+}
+
+/* dot mode — a small circle, no number */
+.puredashboard-badge__indicator--dot {
+  min-width: var(--pd-badge-dot);
+  width: var(--pd-badge-dot);
+  height: var(--pd-badge-dot);
+  padding: 0;
+}
+
+/* colour variants — remap the fill token (default red carries no modifier) */
+.puredashboard-badge__indicator--accent  { --pd-badge-bg: var(--pd-accent);  --pd-badge-ink: var(--accent-ink, #fff); }
+.puredashboard-badge__indicator--success { --pd-badge-bg: var(--pd-green);   --pd-badge-ink: #fff; }
+.puredashboard-badge__indicator--warning { --pd-badge-bg: var(--pd-amber);   --pd-badge-ink: #fff; }
+.puredashboard-badge__indicator--neutral { --pd-badge-bg: var(--pd-neutral); --pd-badge-ink: var(--panel, #fff); }
+
+/* hidden — count 0 (and not showZero / not dot) */
+.puredashboard-badge__indicator--hidden { display: none; }

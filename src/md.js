@@ -239,9 +239,24 @@ export function renderMarkdown(src) {
 // `puredashboard-markdown` descendants) applies. Not built on Reactive — it emits a prebuilt
 // safe DOM fragment, not a reactive template.
 //
-//   const md = document.createElement("puredashboard-markdown");
-//   md.value = "# Hello\n\nsome **markdown**";   // untrusted text is safe (textContent only)
-//   container.append(md);
+/**
+ * Renders Markdown to a SAFE DOM subtree — `textContent` only, href whitelist, no
+ * `innerHTML` — so it is XSS-safe for UNTRUSTED input (e.g. an AI/agent response).
+ * Extends plain `HTMLElement` (not `Reactive`): it emits a prebuilt safe fragment,
+ * not a reactive template. Setting `.value` coalesces the re-render to the next
+ * animation frame, so a caller streaming tokens can set it per-token without an
+ * O(n²) re-parse. With no `.value`, inline text content is used as the source.
+ *
+ * @prop {string} value - The Markdown source. Set via the property (safe for
+ *   untrusted text) or the `value` attribute. Default `""`.
+ * @attr {string} value - Declarative form of `value`.
+ *
+ * @example
+ * // <puredashboard-markdown value="# Hello"></puredashboard-markdown>
+ * const md = document.createElement("puredashboard-markdown");
+ * md.value = "# Hello\n\nsome **markdown**";   // untrusted text is safe (textContent only)
+ * container.append(md);
+ */
 class PuredashboardMarkdown extends HTMLElement {
   static get observedAttributes() { return ["value"]; }
   // A template engine (reactive.js / lit) sets `.value` while the element is still in

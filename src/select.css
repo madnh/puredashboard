@@ -1,0 +1,92 @@
+/* puredashboard-select — styles for <puredashboard-select> (select.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --control-pad-x, --focus-ring, --radius, --border, --panel,
+ * --danger-bg, …) via a --pd-* chain that falls back to your app tokens and finally
+ * to neutral system colours — so it looks right with NO config and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override --pd-select-*.
+ *
+ * The control stays a REAL native <select> (keyboard, typeahead, mobile picker, a11y);
+ * we only suppress the UA's default arrow and overlay our own chevron, which is
+ * decorative and non-interactive (pointer-events:none) so clicks reach the <select>.
+ */
+puredashboard-select {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-select-height: var(--control-height-md, 34px);
+  --pd-select-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+/* control — positioning context so the chevron can overlay the native <select> */
+.puredashboard-select__control {
+  position: relative;
+  display: block;
+}
+
+.puredashboard-select__field {
+  width: 100%;
+  box-sizing: border-box;
+  height: var(--pd-select-height);
+  /* leave room on the right for the overlaid chevron */
+  padding: 0 calc(var(--pd-select-pad-x) + 1.4em) 0 var(--pd-select-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  cursor: pointer;
+  /* drop the UA's native arrow — we overlay our own chevron */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+/* the disabled/empty placeholder option reads as muted */
+.puredashboard-select__field:invalid,
+.puredashboard-select__field:has(option[value=""]:checked) { color: var(--pd-muted); }
+.puredashboard-select__field:hover:not(:disabled) { border-color: var(--pd-border-2); }
+.puredashboard-select__field:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-select__field:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+/* render the option list in the component's own colours (native list where supported) */
+.puredashboard-select__option { color: var(--pd-text); background: var(--pd-panel); }
+
+/* chevron — decorative, overlaid on the right edge; MUST NOT catch clicks so the
+ * native <select> opens on click anywhere in the control. */
+.puredashboard-select__chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--pd-select-pad-x);
+  transform: translateY(-50%);
+  color: var(--pd-muted);
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-select__field[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-select__field[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the height token */
+.puredashboard-select__field--sm { --pd-select-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-select__field--lg { --pd-select-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+
+.puredashboard-select__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

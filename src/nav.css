@@ -1,0 +1,123 @@
+/* puredashboard-nav — styles for <puredashboard-nav> (nav.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours resolve through a --pd-* chain that falls back
+ * to the shared app tokens (--accent, --text, --panel-2/3, --border, --focus-ring, …)
+ * and finally to neutral system colours — so the sidebar looks right with NO theme
+ * linked and adapts to light/dark automatically. Theme by defining the app tokens, or
+ * override the --pd-nav-* knobs below.
+ */
+puredashboard-nav {
+  display: block;
+  --pd-accent:     var(--accent,     #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:       var(--text,       CanvasText);
+  --pd-muted:      var(--muted,      color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-panel-3:    var(--panel-3,    color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:     var(--radius,     10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration:   var(--duration-fast, 120ms);
+  --pd-ease:       var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-nav-item-height: var(--control-height-md, 34px);
+  --pd-nav-indent:      var(--sp-4, 16px);
+}
+
+.puredashboard-nav__nav { display: block; }
+
+.puredashboard-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.puredashboard-nav__list--sub {
+  margin-left: var(--pd-nav-indent);
+  border-left: 1px solid var(--pd-border);
+  /* breathing room so nested rows don't sit flush against the guide line */
+  padding-left: var(--sp-2, 8px);
+}
+/* Nested rows sit against the vertical guide line — a rounded pill next to that
+ * line reads oddly, so square them off (the top-level rows stay rounded). */
+.puredashboard-nav__list--sub .puredashboard-nav__link { border-radius: 0; }
+.puredashboard-nav__list[hidden] { display: none; }
+
+.puredashboard-nav__item { margin: var(--sp-1, 4px) 0; }
+
+/* Shared row look for leaf links and group buttons. */
+.puredashboard-nav__link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--pd-nav-item-height);
+  padding: 0 var(--sp-3, 12px);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  text-align: left;
+  text-decoration: none;
+  color: var(--pd-text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--pd-radius);
+  cursor: pointer;
+  transition: background-color var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-nav__link:hover { background: var(--pd-panel-2); }
+.puredashboard-nav__link:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+/* Active leaf — the item whose href === current (aria-current="page"). The a11y state
+ * doubles as the style hook so they can never drift apart. */
+.puredashboard-nav__link--active,
+.puredashboard-nav__link[aria-current="page"] {
+  color: var(--pd-accent-ink);
+  background: var(--pd-accent);
+  font-weight: var(--weight-medium, 500);
+}
+.puredashboard-nav__link--active:hover,
+.puredashboard-nav__link[aria-current="page"]:hover {
+  background: var(--pd-accent);
+}
+
+.puredashboard-nav__icon {
+  display: inline-flex;
+  flex: none;
+  color: var(--pd-muted);
+}
+.puredashboard-nav__link--active .puredashboard-nav__icon { color: inherit; }
+
+.puredashboard-nav__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.puredashboard-nav__badge {
+  flex: none;
+  min-width: 1.4em;
+  padding: 0 var(--sp-1, 4px);
+  font-size: var(--font-size-xs, 11px);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--pd-text);
+  background: var(--pd-panel-3);
+  border-radius: var(--radius-full, 999px);
+}
+.puredashboard-nav__link--active .puredashboard-nav__badge {
+  color: var(--pd-accent);
+  background: var(--pd-accent-ink);
+}
+
+/* Group toggle chevron — rotates when the group is open. */
+.puredashboard-nav__toggle {
+  flex: none;
+  display: inline-flex;
+  color: var(--pd-muted);
+  transition: transform var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-nav__link--open .puredashboard-nav__toggle { transform: rotate(90deg); }

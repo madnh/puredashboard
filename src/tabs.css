@@ -1,0 +1,71 @@
+/* puredashboard-tabs — styles for <puredashboard-tabs> (tabs.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--accent, --border, --focus-ring, --duration-*, --font-size-md, …) via a
+ * --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-tabs-*.
+ */
+puredashboard-tabs {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-radius:    var(--radius,   10px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  --pd-tabs-gap:  var(--sp-1, 4px);
+  --pd-tabs-indicator: 2px;
+}
+
+.puredashboard-tabs__list {
+  display: flex;
+  gap: var(--pd-tabs-gap);
+  border-bottom: 1px solid var(--pd-border);
+}
+
+.puredashboard-tabs__tab {
+  appearance: none;
+  position: relative;
+  margin: 0;
+  padding: var(--sp-2, 8px) var(--sp-3, 12px);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  font-weight: var(--weight-medium, 500);
+  color: var(--pd-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-tabs__tab:hover:not(:disabled) { color: var(--pd-text); }
+
+/* the active indicator: a STRAIGHT underline bar on the list baseline. Drawn as a
+ * pseudo-element (no border-radius) so the line never curls up at its ends. */
+.puredashboard-tabs__tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px; /* overlap the list's 1px bottom border */
+  height: var(--pd-tabs-indicator);
+  background: transparent;
+  transition: background-color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-tabs__tab--active { color: var(--pd-accent); }
+.puredashboard-tabs__tab--active::after { background: var(--pd-accent); }
+
+/* focus ring — a11y state = style hook; only show it for keyboard focus */
+.puredashboard-tabs__tab:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+.puredashboard-tabs__tab--disabled,
+.puredashboard-tabs__tab:disabled {
+  opacity: var(--pd-disabled-opacity);
+  cursor: not-allowed;
+}

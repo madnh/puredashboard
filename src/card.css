@@ -1,0 +1,85 @@
+/* puredashboard-card — styles for <puredashboard-card> (card.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--panel, --panel-2, --border, --text, --muted, --radius, --shadow-1, --sp-*)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral
+ * system colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-card-*.
+ *
+ * This is a CONTAINER: it supplies a bordered panel surface with an optional
+ * header (title + extra actions), a body, and an optional footer. The border and
+ * background are toggled by the data-card-flat state hook the script sets (never
+ * style the js-… body class the script selects by).
+ */
+puredashboard-card {
+  display: block;
+  --pd-panel:    var(--panel,    Canvas);
+  --pd-panel-2:  var(--panel-2,  color-mix(in srgb, CanvasText 4%, Canvas));
+  --pd-border:   var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-text:     var(--text,     CanvasText);
+  --pd-muted:    var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-card-radius: var(--radius,   10px);
+  --pd-card-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.12));
+  --pd-card-pad:    var(--sp-4,     16px);
+  --pd-card-pad-y:  var(--sp-3,     12px);
+
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-card-radius);
+  box-shadow: var(--pd-card-shadow);
+  overflow: clip;
+}
+
+/* Flat variant — the script sets data-card-flat when bordered is false. */
+puredashboard-card[data-card-flat] {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.puredashboard-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3, 12px);
+  padding: var(--pd-card-pad-y) var(--pd-card-pad);
+  border-bottom: 1px solid var(--pd-border);
+}
+puredashboard-card[data-card-flat] .puredashboard-card__header { border-bottom-color: transparent; }
+
+.puredashboard-card__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-size-lg, 15px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: var(--line-tight, 1.25);
+  color: var(--pd-text);
+  /* long titles ellipsize rather than shove the extra actions off-row */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Header actions region — sits at the end of the header row. */
+.puredashboard-card__extra {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+}
+
+.puredashboard-card__body {
+  padding: var(--pd-card-pad);
+}
+
+.puredashboard-card__footer {
+  padding: var(--pd-card-pad-y) var(--pd-card-pad);
+  border-top: 1px solid var(--pd-border);
+  background: var(--pd-panel-2);
+  color: var(--pd-muted);
+  font-size: var(--font-size-sm, 12px);
+}
+puredashboard-card[data-card-flat] .puredashboard-card__footer {
+  border-top-color: transparent;
+  background: none;
+}

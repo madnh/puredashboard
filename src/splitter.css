@@ -1,0 +1,90 @@
+/* puredashboard-splitter — styles for <puredashboard-splitter> (splitter.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--border, --border-2, --accent, --panel-2, --focus-ring, --duration-*) via a
+ * --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-splitter-*.
+ *
+ * The host is a flex container: a ROW by default (panels side by side, vertical
+ * gutters), or a COLUMN when the `vertical` attribute is set (panels stacked,
+ * horizontal gutters). Panels are the author's own children (sized via a dynamic
+ * inline flex-grow the component maintains); the gutters are the elements the
+ * component inserts between them. Only class hooks are styled — never the `js-…`
+ * / data-* hooks the script depends on.
+ */
+puredashboard-splitter {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  --pd-accent:   var(--accent,   #3b82f6);
+  --pd-border:   var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2: var(--border-2, color-mix(in srgb, CanvasText 24%, Canvas));
+  --pd-panel-2:  var(--panel-2,  color-mix(in srgb, CanvasText 8%, Canvas));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration: var(--duration-fast, 120ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  /* component knob — gutter thickness (the component also sets an inline
+   * flex-basis per gutter from the `gutterSize` property; this is the visual
+   * default for anything reading the token). */
+  --pd-splitter-gutter: 6px;
+}
+puredashboard-splitter[vertical] { flex-direction: column; }
+
+/* Panels are the author's children — we only add layout resets so their content
+ * can shrink below its intrinsic size instead of blocking the drag. The actual
+ * size is a dynamic inline flex-grow written by the component. */
+.puredashboard-splitter__panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ── Gutter ──────────────────────────────────────────────────────────────────
+ * A thin, fixed-thickness bar between two panels. The cross axis stretches to
+ * fill the container (flex default). Highlights on hover / active / focus with
+ * the accent; the grip is a subtle centred handle. */
+.puredashboard-splitter__gutter {
+  flex: 0 0 var(--pd-splitter-gutter);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pd-panel-2);
+  border: 0 solid var(--pd-border);
+  cursor: col-resize;
+  touch-action: none;               /* let pointer drags work without scroll interference */
+  transition: background var(--pd-duration) var(--pd-ease);
+  -webkit-user-select: none;
+  user-select: none;
+}
+puredashboard-splitter[vertical] .puredashboard-splitter__gutter { cursor: row-resize; }
+
+.puredashboard-splitter__gutter:hover,
+.puredashboard-splitter__gutter--active {
+  background: color-mix(in srgb, var(--pd-accent) 22%, var(--pd-panel-2));
+}
+
+.puredashboard-splitter__gutter:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+  z-index: 1;                        /* let the ring sit above the adjacent panels */
+}
+
+/* ── Grip ────────────────────────────────────────────────────────────────────
+ * A small dash centred in the gutter, oriented along the bar so it reads as a
+ * drag handle in both layouts. Brightens with the gutter on hover/active. */
+.puredashboard-splitter__grip {
+  display: block;
+  background: var(--pd-border-2);
+  border-radius: var(--radius-full, 999px);
+  transition: background var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-splitter__gutter .puredashboard-splitter__grip { width: 2px; height: 24px; }
+puredashboard-splitter[vertical] .puredashboard-splitter__grip { width: 24px; height: 2px; }
+
+.puredashboard-splitter__gutter:hover .puredashboard-splitter__grip,
+.puredashboard-splitter__gutter--active .puredashboard-splitter__grip {
+  background: var(--pd-accent);
+}

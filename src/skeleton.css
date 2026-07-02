@@ -1,0 +1,82 @@
+/* puredashboard-skeleton — styles for <puredashboard-skeleton> (skeleton.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The shape colour + shimmer highlight come from the
+ * shared surface tokens (--panel-2 as the base, --panel-3 as the moving highlight)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral
+ * system colours — so it looks right with NO config and adapts to light/dark. Theme
+ * by defining the app tokens, or override --pd-skeleton-*.
+ *
+ * IMPORTANT: the shimmer animation is DISABLED under prefers-reduced-motion — the
+ * shapes become a plain static block (see the @media block at the bottom).
+ */
+puredashboard-skeleton {
+  display: block;
+  --pd-skeleton-base:      var(--panel-2, color-mix(in srgb, CanvasText 8%, Canvas));
+  --pd-skeleton-highlight: var(--panel-3, color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-skeleton-radius:    var(--radius, 10px);
+  --pd-skeleton-radius-full: var(--radius-full, 999px);
+  --pd-skeleton-gap:       var(--sp-2, 8px);
+  --pd-skeleton-bar-height: 0.85em;
+  --pd-duration: var(--duration-slow, 320ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* the shape itself — a filled block in the base surface colour */
+.puredashboard-skeleton__el {
+  display: block;
+  background-color: var(--pd-skeleton-base);
+  border-radius: var(--pd-skeleton-radius);
+}
+
+/* text variant: a vertical stack of bars */
+.puredashboard-skeleton__lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pd-skeleton-gap);
+}
+.puredashboard-skeleton__el--text {
+  width: 100%;
+  height: var(--pd-skeleton-bar-height);
+}
+.puredashboard-skeleton__el--last { width: 60%; }
+
+/* rect variant: a plain block (dimensions supplied via dynamic inline style) */
+.puredashboard-skeleton__el--rect {
+  width: 100%;
+  height: 1em;
+}
+
+/* circle variant: a round block, diameter = width (== height) */
+.puredashboard-skeleton__el--circle {
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: var(--pd-skeleton-radius-full);
+}
+
+/* shimmer — a moving highlight gradient over the base colour. Only the --animated
+ * modifier opts in, so animated="false" stays a flat static block. */
+.puredashboard-skeleton__el--animated {
+  background-image: linear-gradient(
+    90deg,
+    var(--pd-skeleton-base) 0%,
+    var(--pd-skeleton-highlight) 50%,
+    var(--pd-skeleton-base) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: puredashboard-skeleton-shimmer 1.4s var(--pd-ease) infinite;
+}
+
+@keyframes puredashboard-skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* Reduced motion: NO shimmer — kill the animation and the moving gradient so the
+ * placeholder is a plain static block. */
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-skeleton__el--animated {
+    animation: none;
+    background-image: none;
+  }
+}

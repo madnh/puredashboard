@@ -1,0 +1,83 @@
+/* PureDashboard — component stylesheet bundle (OPTIONAL convenience).
+ *
+ * One link that pulls in EVERY component's self-contained stylesheet, so a page
+ * using several components needs a single tag instead of hand-picking files
+ * (and never silently missing one):
+ *
+ *   <link rel="stylesheet" href="LIB/components.css">
+ *
+ * This is plain native CSS `@import` — NOT a build step. Nothing is bundled,
+ * minified, or transpiled; the browser fetches each file as-is, and every
+ * component stylesheet still works when linked on its own. Prefer to ship only
+ * what a page uses? Skip this file and link the individual *.css instead.
+ *
+ * This bundle is styling only. The design tokens are a separate, optional layer
+ * — link ONE of these too so the components look polished (they fall back to
+ * neutral system colours without it):
+ *
+ *   <link rel="stylesheet" href="LIB/theme/tokens.css">       <!-- palette only -->
+ *   <link rel="stylesheet" href="LIB/theme/dashboard.css">    <!-- palette + full shell -->
+ *
+ * @import must precede all other rules; these resolve relative to this file.
+ * Keep this list in sync when adding a component (see docs/DEVELOPMENT.md).
+ */
+/* general */
+@import "button.css";
+/* form family */
+@import "form.css";
+@import "input.css";
+@import "textarea.css";
+@import "number.css";
+@import "select.css";
+@import "checkbox.css";
+@import "switch.css";
+@import "radio-group.css";
+@import "segmented.css";
+@import "slider.css";
+@import "color.css";
+@import "combobox.css";
+@import "date.css";
+@import "time.css";
+@import "rate.css";
+/* layout */
+@import "divider.css";
+@import "space.css";
+@import "flex.css";
+@import "grid.css";
+@import "layout.css";
+@import "splitter.css";
+@import "titlebar.css";
+/* navigation */
+@import "tabs.css";
+@import "breadcrumb.css";
+@import "pagination.css";
+@import "steps.css";
+@import "timeline.css";
+@import "nav.css";
+/* data display */
+@import "table.css";
+@import "card.css";
+@import "descriptions.css";
+@import "statistic.css";
+@import "tag.css";
+@import "badge.css";
+@import "avatar.css";
+@import "empty.css";
+@import "collapse.css";
+@import "tree.css";
+@import "list.css";
+@import "result.css";
+/* overlays & content */
+@import "upload.css";
+@import "dialog.css";
+@import "menu.css";
+@import "popover.css";
+@import "popconfirm.css";
+@import "tooltip.css";
+@import "toast.css";
+@import "md.css";
+/* feedback */
+@import "alert.css";
+@import "progress.css";
+@import "spinner.css";
+@import "skeleton.css";

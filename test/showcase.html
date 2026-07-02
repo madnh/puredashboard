@@ -8,9 +8,52 @@
     <link rel="stylesheet" href="../src/table.css" />
     <link rel="stylesheet" href="../src/menu.css" />
     <link rel="stylesheet" href="../src/upload.css" />
+    <link rel="stylesheet" href="../src/input.css" />
+    <link rel="stylesheet" href="../src/textarea.css" />
+    <link rel="stylesheet" href="../src/number.css" />
+    <link rel="stylesheet" href="../src/checkbox.css" />
+    <link rel="stylesheet" href="../src/switch.css" />
+    <link rel="stylesheet" href="../src/select.css" />
+    <link rel="stylesheet" href="../src/radio-group.css" />
+    <link rel="stylesheet" href="../src/slider.css" />
+    <link rel="stylesheet" href="../src/form.css" />
+    <link rel="stylesheet" href="../src/tabs.css" />
+    <link rel="stylesheet" href="../src/breadcrumb.css" />
+    <link rel="stylesheet" href="../src/pagination.css" />
+    <link rel="stylesheet" href="../src/steps.css" />
+    <link rel="stylesheet" href="../src/nav.css" />
+    <link rel="stylesheet" href="../src/card.css" />
+    <link rel="stylesheet" href="../src/descriptions.css" />
+    <link rel="stylesheet" href="../src/tag.css" />
+    <link rel="stylesheet" href="../src/badge.css" />
+    <link rel="stylesheet" href="../src/avatar.css" />
+    <link rel="stylesheet" href="../src/empty.css" />
+    <link rel="stylesheet" href="../src/collapse.css" />
+    <link rel="stylesheet" href="../src/tree.css" />
+    <link rel="stylesheet" href="../src/popover.css" />
+    <link rel="stylesheet" href="../src/popconfirm.css" />
+    <link rel="stylesheet" href="../src/tooltip.css" />
+    <link rel="stylesheet" href="../src/alert.css" />
+    <link rel="stylesheet" href="../src/progress.css" />
+    <link rel="stylesheet" href="../src/spinner.css" />
+    <link rel="stylesheet" href="../src/skeleton.css" />
     <link rel="stylesheet" href="../src/dialog.css" />
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
+    <link rel="stylesheet" href="../src/button.css" />
+    <link rel="stylesheet" href="../src/divider.css" />
+    <link rel="stylesheet" href="../src/space.css" />
+    <link rel="stylesheet" href="../src/grid.css" />
+    <link rel="stylesheet" href="../src/segmented.css" />
+    <link rel="stylesheet" href="../src/statistic.css" />
+    <link rel="stylesheet" href="../src/combobox.css" />
+    <link rel="stylesheet" href="../src/date.css" />
+    <link rel="stylesheet" href="../src/time.css" />
+    <link rel="stylesheet" href="../src/rate.css" />
+    <link rel="stylesheet" href="../src/color.css" />
+    <link rel="stylesheet" href="../src/list.css" />
+    <link rel="stylesheet" href="../src/timeline.css" />
+    <link rel="stylesheet" href="../src/result.css" />
     <!-- the OPT-IN theme: tokens + base + shell, all in one -->
     <link rel="stylesheet" href="../src/theme/dashboard.css" />
     <style>
@@ -24,6 +67,49 @@
     <script type="module">
       import "../src/table.js";
       import "../src/upload.js";
+      import "../src/input.js";   // defines <puredashboard-input>
+      import "../src/textarea.js";  // <puredashboard-textarea>
+      import "../src/number.js";    // <puredashboard-number>
+      import "../src/checkbox.js";  // <puredashboard-checkbox>
+      import "../src/switch.js";    // <puredashboard-switch>
+      import "../src/select.js";    // <puredashboard-select>
+      import "../src/radio-group.js"; // <puredashboard-radio-group>
+      import "../src/slider.js";    // <puredashboard-slider>
+      import "../src/form.js";      // <puredashboard-form>
+      import "../src/grid.js";      // <puredashboard-row> + <puredashboard-col>
+      import "../src/button.js";    // <puredashboard-button>
+      import "../src/divider.js";   // <puredashboard-divider>
+      import "../src/space.js";     // <puredashboard-space>
+      import "../src/segmented.js"; // <puredashboard-segmented>
+      import "../src/statistic.js"; // <puredashboard-statistic>
+      import "../src/combobox.js";  // <puredashboard-combobox>
+      import "../src/date.js";      // <puredashboard-date>
+      import "../src/time.js";      // <puredashboard-time>
+      import "../src/rate.js";      // <puredashboard-rate>
+      import "../src/color.js";     // <puredashboard-color>
+      import "../src/list.js";      // <puredashboard-list>
+      import "../src/timeline.js";  // <puredashboard-timeline>
+      import "../src/result.js";    // <puredashboard-result>
+      import "../src/tabs.js";      // <puredashboard-tabs>
+      import "../src/breadcrumb.js"; // <puredashboard-breadcrumb>
+      import "../src/pagination.js"; // <puredashboard-pagination>
+      import "../src/steps.js";     // <puredashboard-steps>
+      import "../src/nav.js";       // <puredashboard-nav>
+      import "../src/card.js";      // <puredashboard-card>
+      import "../src/descriptions.js"; // <puredashboard-descriptions>
+      import "../src/tag.js";       // <puredashboard-tag>
+      import "../src/badge.js";     // <puredashboard-badge>
+      import "../src/avatar.js";    // <puredashboard-avatar>
+      import "../src/empty.js";     // <puredashboard-empty>
+      import "../src/collapse.js";  // <puredashboard-collapse>
+      import "../src/tree.js";      // <puredashboard-tree>
+      import "../src/popover.js";   // <puredashboard-popover>
+      import "../src/popconfirm.js"; // <puredashboard-popconfirm>
+      import "../src/tooltip.js";   // <puredashboard-tooltip>
+      import "../src/alert.js";     // <puredashboard-alert>
+      import "../src/progress.js";  // <puredashboard-progress>
+      import "../src/spinner.js";   // <puredashboard-spinner>
+      import "../src/skeleton.js";  // <puredashboard-skeleton>
       import "../src/md.js";   // defines <puredashboard-markdown>
       import { menu } from "../src/menu.js";
       import { dialog } from "../src/dialog.js";
@@ -186,6 +272,215 @@
         const md = document.createElement("puredashboard-markdown");
         md.value = MD_SOURCE;
         gallery([md]);
+      } else if (shot === "input") {
+        const field = (props) => Object.assign(document.createElement("puredashboard-input"), props);
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:14px";
+        const mk = (labelText, el) => {
+          const l = document.createElement("label");
+          l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)";
+          const span = document.createElement("span");
+          span.textContent = labelText;
+          l.append(span, el);
+          return l;
+        };
+        wrap.append(
+          mk(vi ? "Email" : "Email", field({ type: "email", placeholder: "you@example.com", value: "" })),
+          mk(vi ? "Mật khẩu" : "Password", field({ type: "password", placeholder: "••••••••" })),
+          mk(vi ? "Nhỏ (sm)" : "Small (sm)", field({ size: "sm", placeholder: "small" })),
+          mk(vi ? "Lớn (lg)" : "Large (lg)", field({ size: "lg", placeholder: "large" })),
+          mk(vi ? "Có lỗi" : "With error", field({ value: "not-an-email", error: vi ? "Email không hợp lệ." : "That email looks invalid." })),
+          mk(vi ? "Bị khoá" : "Disabled", field({ value: "read only", disabled: true })),
+        );
+        gallery([wrap]);
+      } else if (shot === "forms") {
+        // the M2 form family together: textarea, number, checkbox, switch
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:16px";
+        const mk = (labelText, el) => {
+          const l = document.createElement("label");
+          l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)";
+          const s = document.createElement("span"); s.textContent = labelText;
+          l.append(s, el); return l;
+        };
+        const el = (tag, props) => Object.assign(document.createElement(tag), props);
+        const region = el("puredashboard-select", {
+          placeholder: vi ? "Chọn khu vực…" : "Choose a region…",
+          options: [
+            { value: "us-east-1", label: "us-east-1" },
+            { value: "eu-west-1", label: "eu-west-1" },
+            { value: "ap-south-1", label: "ap-south-1" },
+          ],
+        });
+        const plan = el("puredashboard-radio-group", {
+          value: "pro",
+          options: [
+            { value: "free", label: "Free" },
+            { value: "pro", label: "Pro" },
+            { value: "enterprise", label: vi ? "Doanh nghiệp" : "Enterprise" },
+          ],
+        });
+        const qty = el("puredashboard-number", { min: 0, max: 10, step: 1, value: "3" });
+        const cpu = el("puredashboard-slider", { min: 1, max: 16, step: 1, value: "8", showValue: true });
+        const bio = el("puredashboard-textarea", { rows: 3, placeholder: vi ? "Giới thiệu ngắn…" : "Short bio…" });
+        const tos = el("puredashboard-checkbox", { label: vi ? "Tôi đồng ý điều khoản" : "I accept the terms", required: true });
+        const notify = el("puredashboard-switch", { label: vi ? "Nhận thông báo" : "Email notifications", checked: true });
+        wrap.append(
+          mk(vi ? "Khu vực" : "Region", region),
+          mk(vi ? "Gói" : "Plan", plan),
+          mk(vi ? "Số lượng" : "Quantity", qty),
+          mk(vi ? "Số CPU" : "CPU cores", cpu),
+          mk(vi ? "Tiểu sử" : "Bio", bio),
+          tos, notify,
+        );
+        gallery([wrap]);
+      } else if (shot === "nav") {
+        const el = (tag, props) => Object.assign(document.createElement(tag), props);
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:grid;gap:20px";
+        const crumb = el("puredashboard-breadcrumb", { items: [
+          { label: vi ? "Trang chủ" : "Home", href: "#/" },
+          { label: vi ? "Dịch vụ" : "Services", href: "#/services" },
+          { label: "api-gateway" },
+        ]});
+        const tabs = el("puredashboard-tabs", { value: "logs", tabs: [
+          { id: "overview", label: vi ? "Tổng quan" : "Overview" },
+          { id: "logs", label: vi ? "Nhật ký" : "Logs" },
+          { id: "settings", label: vi ? "Cài đặt" : "Settings", disabled: true },
+        ]});
+        const steps = el("puredashboard-steps", { current: 1, steps: [
+          { label: vi ? "Cấu hình" : "Configure" },
+          { label: vi ? "Xem lại" : "Review" },
+          { label: vi ? "Triển khai" : "Deploy" },
+        ]});
+        const pager = el("puredashboard-pagination", { page: 5, total: 200, pageSize: 10 });
+        wrap.append(crumb, tabs, steps, pager);
+        gallery([wrap], { wide: true });
+      } else if (shot === "data") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const card = el("puredashboard-card", { title: vi ? "api-gateway" : "api-gateway" });
+        const desc = el("puredashboard-descriptions", { columns: 2, bordered: true, items: [
+          { label: vi ? "Khu vực" : "Region", value: "us-east-1" },
+          { label: vi ? "Trạng thái" : "Status", value: "online" },
+          { label: vi ? "Phiên bản" : "Version", value: "v1.4.0" },
+          { label: vi ? "Lượt/ngày" : "Requests/day", value: "184,203" },
+        ]});
+        const row = el("div", {}); row.style.cssText = "display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap";
+        row.append(
+          el("puredashboard-avatar", { name: "Ada Lovelace" }),
+          el("puredashboard-tag", { color: "success" }, [document.createTextNode("online")]),
+          el("puredashboard-tag", { color: "warning", round: true }, [document.createTextNode("beta")]),
+          el("puredashboard-tag", { color: "danger", closable: true }, [document.createTextNode("deprecated")]),
+          el("puredashboard-badge", { count: 5 }, [el("button", { textContent: vi ? "Cảnh báo" : "Alerts" })]),
+        );
+        card.append(desc, row);
+        const emptyCard = el("puredashboard-card", { title: vi ? "Nhật ký" : "Logs" });
+        emptyCard.append(el("puredashboard-empty", { description: vi ? "Chưa có nhật ký" : "No logs yet" }, [el("button", { className: "primary", textContent: vi ? "Làm mới" : "Refresh" })]));
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
+        wrap.append(card, emptyCard);
+        gallery([wrap], { wide: true });
+      } else if (shot === "interactive") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
+        const tree = el("puredashboard-tree", { expandedKeys: ["src"], selectedKey: "reactive", nodes: [
+          { id: "src", label: "src", children: [
+            { id: "reactive", label: "reactive.js" },
+            { id: "table", label: "table.js" },
+            { id: "theme", label: "theme", children: [{ id: "tokens", label: "tokens.css" }] },
+          ]},
+          { id: "docs", label: "docs" },
+        ]});
+        const acc = el("puredashboard-collapse", { value: "a", items: [
+          { key: "a", header: vi ? "Cấu hình chung" : "General settings", content: vi ? "Tuỳ chọn cơ bản của dịch vụ." : "Basic service options." },
+          { key: "b", header: vi ? "Nâng cao" : "Advanced", content: vi ? "Cấu hình nâng cao." : "Advanced configuration." },
+        ]});
+        const tip = el("puredashboard-tooltip", { text: vi ? "Khởi động lại dịch vụ" : "Restart the service" }, [el("button", { textContent: vi ? "Khởi động lại" : "Restart" })]);
+        const pop = el("puredashboard-popover", {});
+        const trg = el("button", { textContent: vi ? "Chi tiết ▾" : "Details ▾" }); trg.setAttribute("data-popover-trigger", "");
+        const pc = el("div", {}); pc.setAttribute("data-popover-content", ""); pc.style.cssText = "padding:12px;min-width:180px"; pc.textContent = vi ? "Nội dung popover" : "Popover content";
+        pop.append(trg, pc);
+        const row = el("div", {}); row.style.cssText = "display:flex;gap:12px;align-items:center";
+        row.append(tip, pop);
+        wrap.append(tree, acc, row);
+        gallery([wrap], { wide: true });
+      } else if (shot === "feedback") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:16px";
+        wrap.append(
+          el("puredashboard-alert", { type: "success", title: vi ? "Đã triển khai" : "Deployed", message: vi ? "api-gateway đang chạy." : "api-gateway is live.", closable: true }),
+          el("puredashboard-alert", { type: "warning", message: vi ? "Sắp hết hạn ngạch." : "Approaching quota." }),
+          el("puredashboard-alert", { type: "error", title: vi ? "Lỗi" : "Error", message: vi ? "billing-cron thất bại." : "billing-cron failed health check." }),
+          el("puredashboard-progress", { value: 66, showInfo: true }),
+          el("puredashboard-progress", { value: 100, status: "success" }),
+          el("puredashboard-progress", { variant: "circle", value: 42 }),
+          (() => { const r = el("div", {}); r.style.cssText = "display:flex;gap:16px;align-items:center"; r.append(el("puredashboard-spinner", { labelVisible: true }), el("puredashboard-progress", { indeterminate: true })); return r; })(),
+          el("puredashboard-skeleton", { variant: "text", lines: 3 }),
+        );
+        gallery([wrap], { wide: true });
+      } else if (shot === "entry") {
+        const el = (tag, props) => Object.assign(document.createElement(tag), props || {});
+        const wrap = el("div"); wrap.style.cssText = "display:grid;gap:16px";
+        const mk = (labelText, node) => { const l = document.createElement("label"); l.style.cssText = "display:grid;gap:6px;font-size:13px;color:var(--muted)"; const s = document.createElement("span"); s.textContent = labelText; l.append(s, node); return l; };
+        wrap.append(
+          mk(vi ? "Khu vực" : "Region", el("puredashboard-combobox", { placeholder: vi ? "Tìm khu vực…" : "Search region…", options: [
+            { value: "us-east-1", label: "us-east-1" }, { value: "us-west-2", label: "us-west-2" },
+            { value: "eu-west-1", label: "eu-west-1" }, { value: "ap-south-1", label: "ap-south-1" },
+          ]})),
+          mk(vi ? "Ngày" : "Date", el("puredashboard-date", { value: "2026-07-01" })),
+          mk(vi ? "Giờ" : "Time", el("puredashboard-time", { value: "09:30" })),
+          mk(vi ? "Đánh giá" : "Rating", el("puredashboard-rate", { value: 3, allowHalf: true })),
+          mk(vi ? "Màu nhấn" : "Accent color", el("puredashboard-color", { value: "#4f9cf9", showValue: true })),
+        );
+        gallery([wrap]);
+      } else if (shot === "general") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
+        // buttons
+        const btns = el("puredashboard-space", { size: "sm" });
+        btns.append(
+          el("puredashboard-button", { variant: "primary" }, [document.createTextNode(vi ? "Lưu" : "Save")]),
+          el("puredashboard-button", {}, [document.createTextNode(vi ? "Huỷ" : "Cancel")]),
+          el("puredashboard-button", { variant: "dashed" }, [document.createTextNode(vi ? "Thêm" : "Add")]),
+          el("puredashboard-button", { danger: true }, [document.createTextNode(vi ? "Xoá" : "Delete")]),
+          el("puredashboard-button", { variant: "primary", loading: true }, [document.createTextNode(vi ? "Đang lưu" : "Saving")]),
+          el("puredashboard-button", { variant: "link", href: "#/docs" }, [document.createTextNode(vi ? "Tài liệu" : "Docs")]),
+        );
+        // segmented
+        const seg = el("puredashboard-segmented", { value: "day", options: [
+          { value: "day", label: vi ? "Ngày" : "Day" },
+          { value: "week", label: vi ? "Tuần" : "Week" },
+          { value: "month", label: vi ? "Tháng" : "Month" },
+        ]});
+        // statistics in a grid row
+        const row = el("puredashboard-row", { gutter: "md" });
+        const stat = (title, value, opts) => { const c = el("puredashboard-col", { span: 8 }); c.append(el("puredashboard-statistic", Object.assign({ title, value }, opts || {}))); return c; };
+        row.append(
+          stat(vi ? "Lượt/ngày" : "Requests/day", 184203),
+          stat(vi ? "Thời gian hoạt động" : "Uptime", 99.98, { suffix: "%", precision: 2, trend: "up" }),
+          stat(vi ? "Lỗi" : "Errors", 12, { trend: "down" }),
+        );
+        wrap.append(btns, el("puredashboard-divider", { text: vi ? "Bộ lọc" : "Filters" }), seg, el("puredashboard-divider", {}), row);
+        gallery([wrap], { wide: true });
+      } else if (shot === "misc") {
+        const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
+        const wrap = el("div"); wrap.style.cssText = "display:grid;gap:20px";
+        const list = el("puredashboard-list", { header: vi ? "Dịch vụ gần đây" : "Recent services", bordered: true, items: [
+          { title: "api-gateway", description: "us-east-1 · online", extra: "184k/d" },
+          { title: "auth-service", description: "eu-west-1 · online", extra: "91k/d" },
+          { title: "billing-cron", description: "eu-west-1 · offline", extra: "0.8k/d" },
+        ]});
+        const tl = el("puredashboard-timeline", { items: [
+          { label: "09:24", content: vi ? "Triển khai v1.4.0" : "Deployed v1.4.0", color: "success" },
+          { label: "09:31", content: vi ? "Tự động mở rộng lên 8 node" : "Autoscaled to 8 nodes", color: "accent" },
+          { label: "09:47", content: vi ? "billing-cron lỗi health check" : "billing-cron failed health check", color: "error" },
+        ], pending: vi ? "Đang theo dõi…" : "Monitoring…" });
+        const delBtn = el("button", { className: "danger", textContent: vi ? "Xoá dịch vụ" : "Delete service" });
+        const pc = el("puredashboard-popconfirm", { title: vi ? "Xoá dịch vụ này?" : "Delete this service?", description: vi ? "Không thể hoàn tác." : "This cannot be undone.", okDanger: true }, [delBtn]);
+        pc.addEventListener("confirm", () => toast.success(vi ? "Đã xoá" : "Deleted"));
+        const res = el("puredashboard-result", { status: "success", status: "success", title: vi ? "Triển khai thành công" : "Deployment complete", subtitle: vi ? "api-gateway đang chạy ở us-east-1." : "api-gateway is live in us-east-1." });
+        res.append(el("puredashboard-button", { variant: "primary" }, [document.createTextNode(vi ? "Xem dịch vụ" : "View service")]));
+        wrap.append(list, tl, pc, res);
+        gallery([wrap], { wide: true });
       } else if (shot === "menu") {
         const host = centerStage();
         const btn = document.createElement("button");

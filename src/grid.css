@@ -1,0 +1,96 @@
+/* puredashboard-row / puredashboard-col — styles for the 24-column responsive
+ * grid (grid.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The only themed value is the GUTTER, which the
+ * element resolves to a length (a raw px number or a --sp-* preset) and writes
+ * to the inline `--pd-row-gutter` custom property this file consumes as the flex
+ * `gap`. So the grid works with NO theme linked (the element's preset fallbacks
+ * already inline literal px), and honours your --sp-* spacing scale when a theme
+ * is present. Purely presentational layout — deliberately minimal.
+ *
+ * ── 24-column width math ──────────────────────────────────────────────────
+ * A row is a wrapping flexbox with `gap: var(--pd-row-gutter)`. A col of span S
+ * (out of 24) must be S/24 of the row MINUS its share of the gaps. With a gap of
+ * G between siblings, the exact fitting width is:
+ *
+ *     width = S/24 * 100%  -  (24 - S)/24 * G
+ *
+ * (equivalently, S * (100% + G) / 24 - G). So e.g. span=12 with no gutter → 50%,
+ * span=8 → 33.333%, span=24 → 100%. `--pd-col-span` carries S; `--pd-row-gutter`
+ * (inherited from the row) carries G — both feed a single calc().
+ *
+ * ── responsive breakpoints (mobile-first) ─────────────────────────────────
+ * The base rule uses --pd-col-span. Each @media block (min-width) overrides the
+ * `--_span` used by the width calc with --pd-col-<bp>, but ONLY when that
+ * property is set on the element (its `initial` fallback keeps the previous
+ * value otherwise). Because blocks are ordered smallest→largest, an unset
+ * breakpoint inherits the next-smaller defined span. Standard breakpoints:
+ * sm 576px, md 768px, lg 992px, xl 1200px.
+ */
+
+puredashboard-row {
+  display: flex;
+  flex-wrap: wrap;
+  /* Fallback so the grid is inert-but-sensible even before the element upgrades
+   * and sets --pd-row-gutter inline. */
+  gap: var(--pd-row-gutter, 0px);
+  box-sizing: border-box;
+}
+
+/* Cross-axis (vertical) alignment. */
+.puredashboard-row--align-top    { align-items: flex-start; }
+.puredashboard-row--align-middle { align-items: center; }
+.puredashboard-row--align-bottom { align-items: flex-end; }
+
+/* Main-axis (horizontal) distribution. */
+.puredashboard-row--justify-start   { justify-content: flex-start; }
+.puredashboard-row--justify-center  { justify-content: center; }
+.puredashboard-row--justify-end     { justify-content: flex-end; }
+.puredashboard-row--justify-between { justify-content: space-between; }
+.puredashboard-row--justify-around  { justify-content: space-around; }
+
+puredashboard-col {
+  display: block;
+  box-sizing: border-box;
+  /* --_span is the span the width calc reads; @media blocks below re-point it at
+   * the per-breakpoint custom property when one is set. Default: the base span,
+   * or 24 (full width) when no span is declared at all. */
+  --_span: var(--pd-col-span, 24);
+  --_gutter: var(--pd-row-gutter, 0px);
+  /* S/24 of the row, minus this column's share of the (24 - S) gaps it spans. */
+  width: calc(
+    var(--_span) / 24 * 100%
+    - (24 - var(--_span)) / 24 * var(--_gutter)
+  );
+  /* Never let a rounding remainder force an extra wrap-shrink. */
+  min-width: 0;
+  /* Fixed to its computed width; do not grow/shrink like a default flex item. */
+  flex: 0 0 auto;
+}
+
+/* Offset: push the column right by offset/24 of the row as a left margin. */
+puredashboard-col[offset] {
+  margin-left: calc(var(--pd-col-offset, 0) / 24 * 100%);
+}
+
+/* Responsive spans — mobile-first, smallest → largest. Each block re-points
+ * --_span at its own custom property ONLY when set (initial fallback = keep the
+ * previous value), so unset breakpoints inherit the next-smaller span. */
+@media (min-width: 576px) {
+  puredashboard-col { --_span: var(--pd-col-sm, var(--pd-col-xs, var(--pd-col-span, 24))); }
+}
+@media (min-width: 768px) {
+  puredashboard-col { --_span: var(--pd-col-md, var(--pd-col-sm, var(--pd-col-xs, var(--pd-col-span, 24)))); }
+}
+@media (min-width: 992px) {
+  puredashboard-col { --_span: var(--pd-col-lg, var(--pd-col-md, var(--pd-col-sm, var(--pd-col-xs, var(--pd-col-span, 24))))); }
+}
+@media (min-width: 1200px) {
+  puredashboard-col { --_span: var(--pd-col-xl, var(--pd-col-lg, var(--pd-col-md, var(--pd-col-sm, var(--pd-col-xs, var(--pd-col-span, 24)))))); }
+}
+
+/* The xs span (if any) applies below the sm breakpoint too — set it as the base
+ * so the smallest viewport honours an explicit xs before span. */
+@media (max-width: 575.98px) {
+  puredashboard-col { --_span: var(--pd-col-xs, var(--pd-col-span, 24)); }
+}

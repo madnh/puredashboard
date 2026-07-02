@@ -1,0 +1,114 @@
+/* puredashboard-alert — styles for <puredashboard-alert> (alert.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. The status hues + soft tints come from the shared
+ * design tokens (--danger-bg/--success-bg/--warning-bg/--info-bg, --red/--green/
+ * --amber/--accent, *-border, --text, --radius, --sp-*, --font-size-*) via a --pd-*
+ * chain that falls back to your app tokens and finally to neutral system colours — so
+ * it looks right with NO config and adapts to light/dark automatically. Theme by
+ * defining the app tokens, or override --pd-alert-*.
+ */
+puredashboard-alert {
+  display: block;
+  --pd-text:    var(--text,   CanvasText);
+  --pd-accent:  var(--accent, #3b82f6);
+  --pd-green:   var(--green,  #16a34a);
+  --pd-amber:   var(--amber,  #d29922);
+  --pd-red:     var(--red,    #dc2626);
+  --pd-radius:  var(--radius, 10px);
+  --pd-sp-2:    var(--sp-2,   8px);
+  --pd-sp-3:    var(--sp-3,   12px);
+  --pd-fs-sm:   var(--font-size-sm, 12px);
+  --pd-fs-md:   var(--font-size-md, 13px);
+
+  /* per-type knobs; defaulted by the modifier classes below */
+  --pd-alert-bg:     var(--info-bg, color-mix(in srgb, var(--pd-accent) 12%, transparent));
+  --pd-alert-accent: var(--pd-accent);
+  --pd-alert-border: var(--border, color-mix(in srgb, var(--pd-accent) 40%, transparent));
+}
+
+.puredashboard-alert__box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pd-sp-2);
+  box-sizing: border-box;
+  padding: var(--pd-sp-3);
+  font-size: var(--pd-fs-md);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-alert-bg);
+  border: 1px solid var(--pd-alert-border);
+  border-radius: var(--pd-radius);
+}
+
+/* per-type: remap the tint + hue tokens (drives icon colour + border). */
+.puredashboard-alert__box--info {
+  --pd-alert-bg:     var(--info-bg, color-mix(in srgb, var(--pd-accent) 12%, transparent));
+  --pd-alert-accent: var(--pd-accent);
+  --pd-alert-border: color-mix(in srgb, var(--pd-accent) 40%, transparent);
+}
+.puredashboard-alert__box--success {
+  --pd-alert-bg:     var(--success-bg, color-mix(in srgb, var(--pd-green) 12%, transparent));
+  --pd-alert-accent: var(--pd-green);
+  --pd-alert-border: var(--success-border, color-mix(in srgb, var(--pd-green) 40%, transparent));
+}
+.puredashboard-alert__box--warning {
+  --pd-alert-bg:     var(--warning-bg, color-mix(in srgb, var(--pd-amber) 12%, transparent));
+  --pd-alert-accent: var(--pd-amber);
+  --pd-alert-border: color-mix(in srgb, var(--pd-amber) 40%, transparent);
+}
+.puredashboard-alert__box--error {
+  --pd-alert-bg:     var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-alert-accent: var(--pd-red);
+  --pd-alert-border: var(--danger-border, color-mix(in srgb, var(--pd-red) 40%, transparent));
+}
+
+.puredashboard-alert__icon {
+  flex: none;
+  display: inline-flex;
+  font-size: var(--font-size-lg, 15px);
+  line-height: 1;
+  color: var(--pd-alert-accent);
+  /* nudge the glyph onto the title's baseline */
+  margin-top: 1px;
+}
+
+.puredashboard-alert__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.puredashboard-alert__title {
+  font-weight: var(--weight-semibold, 600);
+}
+.puredashboard-alert__title + .puredashboard-alert__message {
+  margin-top: var(--sp-1, 4px);
+}
+.puredashboard-alert__message {
+  color: var(--muted, color-mix(in srgb, CanvasText 65%, Canvas));
+}
+
+.puredashboard-alert__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 1.4em;
+  height: 1.4em;
+  font-size: var(--pd-fs-md);
+  color: var(--muted, color-mix(in srgb, CanvasText 65%, Canvas));
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  transition: background var(--duration-fast, 120ms) var(--ease-standard, ease),
+              color var(--duration-fast, 120ms) var(--ease-standard, ease);
+}
+.puredashboard-alert__close:hover {
+  color: var(--pd-text);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.puredashboard-alert__close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+}

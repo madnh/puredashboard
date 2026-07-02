@@ -1,0 +1,112 @@
+/* puredashboard-number — styles for <puredashboard-number> (number.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --border, --panel-2, --danger-bg, …)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override --pd-number-*.
+ */
+puredashboard-number {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-number-height: var(--control-height-md, 34px);
+  --pd-number-pad-x:  var(--control-pad-x, 12px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+/* control — the field + steppers group as one bordered box; the inner input has no
+ * border of its own so the group reads as a single control that focuses together. */
+.puredashboard-number__control {
+  display: flex;
+  align-items: stretch;
+  height: var(--pd-number-height);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  overflow: hidden;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-number__control:hover { border-color: var(--pd-border-2); }
+.puredashboard-number__control:focus-within { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+
+/* scoped under __control (two classes) so it beats the optional theme's
+ * `input[type=number]` rule (type+attr = higher specificity than one class),
+ * keeping the middle field borderless/transparent inside the group. */
+.puredashboard-number__control .puredashboard-number__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0 var(--pd-number-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  text-align: center;
+  color: var(--pd-text);
+  background: transparent;
+  border: none;
+  /* the group owns the rounding; null the base <input> radius so the middle field
+   * doesn't show its own rounded corners inside the seamless control. */
+  border-radius: 0;
+  outline: none;
+}
+.puredashboard-number__field::placeholder { color: var(--pd-muted); }
+/* hide the native spinners — the component supplies its own steppers */
+.puredashboard-number__field::-webkit-outer-spin-button,
+.puredashboard-number__field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.puredashboard-number__field { -moz-appearance: textfield; appearance: textfield; }
+
+/* stepper buttons — flank the field, tinted panel surface, share the group border */
+.puredashboard-number__step {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pd-number-height);
+  padding: 0;
+  font-size: var(--font-size-md, 13px);
+  color: var(--pd-text);
+  background: var(--pd-panel-2);
+  border: none;
+  /* it's a <button>; null the base stylesheet's radius so the steppers sit flush
+   * inside the group instead of reading as separate rounded buttons. */
+  border-radius: 0;
+  cursor: pointer;
+  transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-number__step--dec { border-right: 1px solid var(--pd-border); }
+.puredashboard-number__step--inc { border-left: 1px solid var(--pd-border); }
+.puredashboard-number__step:hover:not(:disabled) { color: var(--pd-accent); }
+.puredashboard-number__step:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* disabled control — mute the whole group */
+.puredashboard-number__control:has(.puredashboard-number__field:disabled) { opacity: var(--pd-disabled-opacity); }
+.puredashboard-number__control:has(.puredashboard-number__field:disabled) .puredashboard-number__field { cursor: not-allowed; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-number__control:has(.puredashboard-number__field[aria-invalid="true"]) { border-color: var(--pd-red); }
+.puredashboard-number__control:has(.puredashboard-number__field[aria-invalid="true"]):focus-within { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the height token on the group */
+.puredashboard-number__control--sm { --pd-number-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-number__control--sm .puredashboard-number__field { font-size: var(--font-size-sm, 12px); }
+.puredashboard-number__control--lg { --pd-number-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
+.puredashboard-number__control--lg .puredashboard-number__field { font-size: var(--font-size-lg, 15px); }
+
+.puredashboard-number__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

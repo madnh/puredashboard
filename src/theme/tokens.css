@@ -1,19 +1,53 @@
 /* PureDashboard theme — design tokens (OPTIONAL).
  *
- * The single source of truth for the visual language: palette, spacing, type.
- * Every PureDashboard component themes itself from these variables (with its own
- * --pd-* fallbacks), so linking ONLY this file already makes the components look
- * polished and cohesive instead of falling back to bare system colours.
+ * The single source of truth for the visual language: palette, spacing, type,
+ * elevation, motion, and control sizing. Every PureDashboard component themes
+ * itself from these variables (with its own --pd-* fallbacks), so linking ONLY
+ * this file already makes the components look polished and cohesive instead of
+ * falling back to bare system colours.
  *
  * Zero-dependency, no build, CSP-safe — plain CSS custom properties. Dark by
  * default; light is applied automatically via prefers-color-scheme. Force a mode
  * regardless of the OS with `<html data-theme="light">` / `data-theme="dark">`.
  * Override any token from your own stylesheet to retheme everything at once.
+ *
+ * ── Three token tiers ──────────────────────────────────────────────────────
+ *   1. PRIMITIVE  (--pd-ref-*)  raw, mode-independent palette values. The only
+ *                               place a literal colour ramp lives. Not consumed
+ *                               by components directly.
+ *   2. SEMANTIC   (--accent, --panel, --sp-*, --shadow-*, …)  meaning-carrying
+ *                               app tokens — THIS is the public theming contract
+ *                               components read (via their own --pd-* fallback
+ *                               chain). Surfaces/text are authored per light/dark;
+ *                               everything else is mode-neutral.
+ *   3. COMPONENT  (--pd-<comp>-*)  per-component knobs, defined INSIDE each
+ *                               component's own stylesheet (e.g. --pd-table-*),
+ *                               never here. See docs/DEVELOPMENT.md.
+ *
+ * Backward-compat: every semantic token name that existed before this file was
+ * tiered still exists with the same resolved value — components are unchanged.
  */
+
+/* ═══ Tier 1 — PRIMITIVE palette (mode-independent) ═════════════════════════ */
+:root {
+  /* accent ramp */
+  --pd-ref-accent-400: #6facfa;
+  --pd-ref-accent-500: #4f9cf9;
+  --pd-ref-accent-600: #3b82f6;
+
+  /* status hues */
+  --pd-ref-red-500:    #f85149;
+  --pd-ref-green-500:  #3fb950;
+  --pd-ref-amber-500:  #d29922;
+  --pd-ref-teal-500:   #2dd4bf;
+  --pd-ref-purple-500: #a98bff;
+}
+
+/* ═══ Tier 2 — SEMANTIC (dark = default) ═══════════════════════════════════ */
 :root, :root[data-theme="dark"] {
   color-scheme: light dark;
 
-  /* surfaces */
+  /* surfaces (per-mode) */
   --bg: #0f1115;
   --panel: #171a21;
   --panel-2: #1d212b;
@@ -21,35 +55,94 @@
   --border: #2a2f3a;
   --border-2: #353b48;
 
-  /* text */
+  /* text (per-mode) */
   --text: #e6e9ef;
   --muted: #99a0ad;
   --faint: #6b7280;
 
-  /* accent + status */
-  --accent: #4f9cf9;
+  /* accent + status (mode-neutral → primitives) */
+  --accent: var(--pd-ref-accent-500);
+  --accent-hover: var(--pd-ref-accent-400);
+  --accent-active: var(--pd-ref-accent-600);
   --accent-ink: #07101f;     /* readable text on an --accent fill */
-  --green: #3fb950;
-  --amber: #d29922;
-  --red: #f85149;
-  --teal: #2dd4bf;
-  --purple: #a98bff;
+  --green: var(--pd-ref-green-500);
+  --amber: var(--pd-ref-amber-500);
+  --red: var(--pd-ref-red-500);
+  --teal: var(--pd-ref-teal-500);
+  --purple: var(--pd-ref-purple-500);
   --danger: var(--red);
 
-  /* shape */
-  --radius: 10px;
-  --radius-sm: 8px;
+  /* status "soft" backgrounds + borders — tint the hue, stay theme-agnostic
+   * via color-mix so the same token reads correctly in light and dark. */
+  --danger-bg:  color-mix(in srgb, var(--red)   12%, transparent);
+  --success-bg: color-mix(in srgb, var(--green) 12%, transparent);
+  --warning-bg: color-mix(in srgb, var(--amber) 12%, transparent);
+  --info-bg:    color-mix(in srgb, var(--accent) 12%, transparent);
+  --danger-border:  color-mix(in srgb, var(--red)   40%, var(--border));
+  --success-border: color-mix(in srgb, var(--green) 40%, var(--border));
 
-  /* spacing scale */
+  /* focus ring — one token every control shares for a consistent a11y outline */
+  --ring-width: 3px;
+  --focus-ring: 0 0 0 var(--ring-width) color-mix(in srgb, var(--accent) 40%, transparent);
+
+  /* shape */
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+
+  /* spacing scale (4px base) */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
   --sp-4: 16px;
+  --sp-5: 20px;
   --sp-6: 24px;
+  --sp-8: 32px;
 
-  /* type */
+  /* typography */
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 13px;   /* the components' body size */
+  --font-size-lg: 15px;
+  --font-size-xl: 18px;
+  --line-tight: 1.25;
+  --line-normal: 1.5;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* control sizing / density — the shared knob for inputs, buttons, selects.
+   * Set [data-density="compact"] on a container to tighten an area (Antd-style). */
+  --control-height-sm: 28px;
+  --control-height-md: 34px;
+  --control-height-lg: 42px;
+  --control-pad-x: var(--sp-3);
+  --disabled-opacity: 0.55;
+
+  /* elevation (dark needs deeper shadow to read on dark surfaces) */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-overlay: var(--shadow-3);
+
+  /* z-index scale — for the fixed/high-z FALLBACKS only; dialog/menu/toast use
+   * the native top layer and never need these. Kept ordered + named to prevent
+   * ad-hoc magic numbers from fighting each other. */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-toast: 1400;
+
+  /* motion */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
 }
 
 /* light palette — auto when the OS prefers light (and no explicit override) … */
@@ -65,6 +158,11 @@
     --muted: #5b6472;
     --faint: #8b93a1;
     --accent-ink: #ffffff;
+
+    /* softer shadows on light surfaces */
+    --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.08);
+    --shadow-2: 0 4px 12px rgba(16, 24, 40, 0.12);
+    --shadow-3: 0 12px 32px rgba(16, 24, 40, 0.16);
   }
 }
 /* … or forced, regardless of OS, via <html data-theme="light"> */
@@ -80,4 +178,25 @@
   --muted: #5b6472;
   --faint: #8b93a1;
   --accent-ink: #ffffff;
+
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.08);
+  --shadow-2: 0 4px 12px rgba(16, 24, 40, 0.12);
+  --shadow-3: 0 12px 32px rgba(16, 24, 40, 0.16);
+}
+
+/* Compact density — opt in on any subtree with [data-density="compact"]. */
+[data-density="compact"] {
+  --control-height-sm: 24px;
+  --control-height-md: 30px;
+  --control-height-lg: 36px;
+  --control-pad-x: var(--sp-2);
+}
+
+/* Honour the OS "reduce motion" setting everywhere at once. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
 }

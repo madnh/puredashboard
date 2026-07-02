@@ -1,0 +1,131 @@
+/* puredashboard-titlebar — styles for <puredashboard-titlebar> (titlebar.js).
+ * BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens (--panel,
+ * --panel-2, --border, --text, --muted, --font-size-sm, --sp-*, --control-height-*,
+ * --duration-*) via a --pd-* chain that falls back to your app tokens and finally to
+ * neutral system colours — so the bar looks right with NO theme linked and adapts to
+ * light/dark automatically. Theme by defining the app tokens, or override --pd-titlebar-*.
+ *
+ * The bar itself is an OS DRAG REGION for frameless windows (Tauri/Wails/Electron):
+ * `-webkit-app-region: drag` (+ standard `app-region`). Interactive descendants and
+ * anything tagged `.puredashboard-titlebar__nodrag` opt OUT so they stay clickable.
+ */
+puredashboard-titlebar {
+  --pd-titlebar-text:    var(--text,     CanvasText);
+  --pd-titlebar-muted:   var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-titlebar-bg:      var(--panel,    Canvas);
+  --pd-titlebar-hover:   var(--panel-2,  color-mix(in srgb, CanvasText 8%, Canvas));
+  --pd-titlebar-border:  var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-titlebar-danger:  var(--danger,   var(--red, #dc2626));
+  --pd-titlebar-height:  38px;
+  --pd-titlebar-mac-inset: 78px;
+  --pd-titlebar-ctrl-w:  46px;
+  --pd-duration: var(--duration-fast, 120ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  display: flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--pd-titlebar-height);
+  color: var(--pd-titlebar-text);
+  background: var(--pd-titlebar-bg);
+  border-bottom: 1px solid var(--pd-titlebar-border);
+  font-family: var(--sans, inherit);
+  font-size: var(--font-size-sm, 12px);
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  /* the empty bar drags the window — cover all runtimes: Electron/Tauri webviews
+   * (-webkit-app-region), the standard, and Wails (--wails-draggable). */
+  -webkit-app-region: drag;
+  app-region: drag;
+  --wails-draggable: drag;
+}
+
+/* Interactive descendants must NOT drag, or they become unclickable. The explicit
+ * helper class covers custom widgets the selectors below don't reach. */
+.puredashboard-titlebar__nodrag,
+puredashboard-titlebar button,
+puredashboard-titlebar a,
+puredashboard-titlebar input,
+puredashboard-titlebar select,
+puredashboard-titlebar textarea {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+  --wails-draggable: no-drag;
+}
+
+/* ── regions ─────────────────────────────────────────────────────────────── */
+.puredashboard-titlebar__region {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  min-width: 0;
+}
+.puredashboard-titlebar__region--leading  { flex: 0 0 auto; padding-inline-start: var(--sp-2, 8px); }
+.puredashboard-titlebar__region--center   { flex: 1 1 auto; justify-content: flex-start; padding-inline: var(--sp-2, 8px); overflow: hidden; }
+.puredashboard-titlebar__region--trailing { flex: 0 0 auto; justify-content: flex-end; margin-inline-start: auto; }
+
+/* title label — truncates rather than pushing the layout around */
+.puredashboard-titlebar__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--weight-medium, 500);
+  color: var(--pd-titlebar-text);
+}
+
+/* ── macOS: reserve the traffic-light inset + center the title ────────────── */
+.puredashboard-titlebar--mac .puredashboard-titlebar__region--leading {
+  min-width: var(--pd-titlebar-mac-inset);
+}
+.puredashboard-titlebar--mac .puredashboard-titlebar__region--center {
+  justify-content: center;
+  text-align: center;
+}
+
+/* ── Windows/Linux: left-aligned title (default) ─────────────────────────── */
+.puredashboard-titlebar--windows .puredashboard-titlebar__region--center,
+.puredashboard-titlebar--linux   .puredashboard-titlebar__region--center {
+  justify-content: flex-start;
+}
+
+/* ── window control buttons ──────────────────────────────────────────────── */
+.puredashboard-titlebar__controls {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  margin-inline-start: var(--sp-2, 8px);
+}
+.puredashboard-titlebar__control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pd-titlebar-ctrl-w);
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pd-titlebar-muted);
+  font-size: var(--font-size-md, 13px);
+  cursor: pointer;
+  outline: none;
+  transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-titlebar__control:hover { background: var(--pd-titlebar-hover); color: var(--pd-titlebar-text); }
+.puredashboard-titlebar__control:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--accent, #3b82f6) 40%, transparent));
+  outline-offset: -3px;
+}
+.puredashboard-titlebar__control-icon { display: inline-flex; }
+
+/* the close button gets a danger hover (white glyph on red) */
+.puredashboard-titlebar__control--close:hover {
+  background: var(--pd-titlebar-danger);
+  color: #fff;
+}

@@ -1,0 +1,78 @@
+/* PureDashboard — macOS "native" skin (OPTIONAL).
+ *
+ * An opt-in skin that retunes the design tokens toward a macOS desktop feel and
+ * adds vibrancy (translucent, blurred title bar + sidebar), hairline detail, tighter
+ * controls, and thin overlay scrollbars. Built for frameless Tauri/Wails windows.
+ *
+ * Zero-dependency, no build, CSP-safe — plain CSS. It is SCOPED to `data-skin="macos"`
+ * so you opt in per document (composes with your light/dark theme):
+ *
+ *   <html data-theme="dark" data-skin="macos">
+ *   <link rel="stylesheet" href="LIB/theme/tokens.css">
+ *   <link rel="stylesheet" href="LIB/theme/native.css">
+ *
+ * REAL vibrancy (blur of the desktop behind the window) needs the native layer to
+ * make the window translucent — see docs/DESKTOP.md (Tauri `transparent` +
+ * `macos-private-api`; Wails `WindowIsTranslucent`). Without that, backdrop-filter
+ * still frosts content *inside* the app, which already reads well.
+ */
+
+/* ── token retune ─────────────────────────────────────────────────────────── */
+[data-skin="macos"] {
+  /* macOS uses smaller radii + more compact controls */
+  --radius-sm: 5px;
+  --radius: 7px;
+  --radius-lg: 11px;
+  --control-height-sm: 22px;
+  --control-height-md: 28px;
+  --control-height-lg: 36px;
+  --control-pad-x: 10px;
+  --font-size-md: 13px;
+
+  /* macOS system accent (dark). Light overridden below. */
+  --accent: #0a84ff;
+  --accent-hover: #369bff;
+  --accent-active: #0060df;
+  --accent-ink: #ffffff;
+  --focus-ring: 0 0 0 3.5px color-mix(in srgb, var(--accent) 35%, transparent);
+
+  /* vibrancy surface: semi-transparent panel + a blur/saturate backdrop */
+  --pd-vibrancy: color-mix(in srgb, var(--panel) 68%, transparent);
+  --pd-vibrancy-blur: saturate(180%) blur(20px);
+}
+/* macOS light accent */
+@media (prefers-color-scheme: light) {
+  [data-skin="macos"]:not([data-theme="dark"]) { --accent: #007aff; --accent-hover: #3395ff; --accent-active: #0062cc; }
+}
+[data-skin="macos"][data-theme="light"] { --accent: #007aff; --accent-hover: #3395ff; --accent-active: #0062cc; }
+
+/* ── vibrancy: title bar + sidebar are translucent + blurred ──────────────── */
+[data-skin="macos"] puredashboard-titlebar,
+[data-skin="macos"] puredashboard-sider,
+[data-skin="macos"] .puredashboard-nav__nav {
+  background: var(--pd-vibrancy);
+  -webkit-backdrop-filter: var(--pd-vibrancy-blur);
+  backdrop-filter: var(--pd-vibrancy-blur);
+}
+/* hairline separators instead of solid borders */
+[data-skin="macos"] puredashboard-sider { border-inline-end: 0.5px solid var(--border); }
+[data-skin="macos"] puredashboard-header { border-bottom: 0.5px solid var(--border); }
+
+/* ── macOS source-list selection: a soft rounded accent fill ──────────────── */
+[data-skin="macos"] .puredashboard-nav__list--sub .puredashboard-nav__link { border-radius: 6px; }
+
+/* ── thin overlay scrollbars (WebKit) ─────────────────────────────────────── */
+[data-skin="macos"] ::-webkit-scrollbar { width: 11px; height: 11px; }
+[data-skin="macos"] ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+[data-skin="macos"] ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, currentColor 34%, transparent); background-clip: padding-box; }
+[data-skin="macos"] ::-webkit-scrollbar-track { background: transparent; }
+
+/* ── subtle control refinements ───────────────────────────────────────────── */
+/* macOS pushbuttons read a touch softer + tighter */
+[data-skin="macos"] .puredashboard-button__inner { font-weight: var(--weight-medium, 500); }
+/* reduced motion still respected — these are static */

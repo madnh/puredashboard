@@ -1,0 +1,93 @@
+/* puredashboard-radio-group — styles for <puredashboard-radio-group> (radio-group.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--accent, --border, --focus-ring, --radius-full, --danger-bg, --duration-*, …)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral
+ * system colours — so it looks right with NO config and adapts to light/dark
+ * automatically. Theme by defining the app tokens, or override --pd-radio-*.
+ */
+puredashboard-radio-group {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius-full: var(--radius-full, 999px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  /* dot size derived from the shared control height so it tracks density */
+  --pd-radio-size: calc(var(--control-height-md, 34px) * 0.5);
+  --pd-radio-group-gap: var(--sp-2, 8px);
+}
+
+.puredashboard-radio-group__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pd-radio-group-gap);
+}
+
+.puredashboard-radio-group__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  cursor: pointer;
+  outline: none;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.puredashboard-radio-group__dot {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--pd-radio-size);
+  height: var(--pd-radio-size);
+  border: 1px solid var(--pd-border-2);
+  border-radius: var(--pd-radius-full);
+  background: var(--pd-panel);
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+
+.puredashboard-radio-group__option:hover:not(.puredashboard-radio-group__option--disabled) .puredashboard-radio-group__dot {
+  border-color: var(--pd-accent);
+}
+
+/* focus ring on the roving-tabindex option (the a11y focus target) */
+.puredashboard-radio-group__option:focus-visible .puredashboard-radio-group__dot {
+  border-color: var(--pd-accent);
+  box-shadow: var(--pd-focus-ring);
+}
+
+/* checked — accent fill + inner dot via border trick */
+.puredashboard-radio-group__option--checked .puredashboard-radio-group__dot {
+  border-color: var(--pd-accent);
+  background: radial-gradient(circle at center, var(--pd-accent) 0 42%, var(--pd-panel) 46% 100%);
+}
+
+/* disabled — dim the option (group-level or per-option) */
+.puredashboard-radio-group__option--disabled {
+  cursor: not-allowed;
+  opacity: var(--pd-disabled-opacity);
+}
+
+.puredashboard-radio-group__text { user-select: none; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-radio-group__group[aria-invalid="true"] .puredashboard-radio-group__dot {
+  border-color: var(--pd-red);
+}
+
+.puredashboard-radio-group__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

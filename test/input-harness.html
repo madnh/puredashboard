@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureDashboard — &lt;puredashboard-input&gt; harness</title>
+    <link rel="stylesheet" href="../src/input.css" />
+    <link rel="stylesheet" href="../src/theme/dashboard.css" />
+    <style>
+      body { max-width: 480px; margin: 40px auto; padding: 0 16px; }
+      form { display: grid; gap: 16px; }
+      label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+      .row { display: flex; gap: 8px; }
+      pre { background: var(--panel-2); padding: 12px; border-radius: 8px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>&lt;puredashboard-input&gt; harness</h1>
+    <p>Verifies what jsdom can't: native <code>&lt;form&gt;</code> submission (values collected
+      via <code>FormData</code>) and constraint validation via <code>ElementInternals</code>.</p>
+
+    <form id="f">
+      <label>Email (required, type=email)
+        <puredashboard-input name="email" type="email" required placeholder="you@example.com"></puredashboard-input>
+      </label>
+      <label>Username (required)
+        <puredashboard-input name="username" required placeholder="pick a handle"></puredashboard-input>
+      </label>
+      <label>Bio (optional)
+        <puredashboard-input name="bio" placeholder="optional"></puredashboard-input>
+      </label>
+      <div class="row">
+        <button type="submit" class="primary">Submit</button>
+        <button type="reset">Reset</button>
+      </div>
+    </form>
+
+    <h3>Result</h3>
+    <pre id="out">— submit to see the FormData the browser collected —</pre>
+
+    <script type="module">
+      import "../src/input.js";
+      const f = document.getElementById("f");
+      const out = document.getElementById("out");
+      f.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(f).entries());
+        out.textContent =
+          "valid form: " + f.checkValidity() + "\n" +
+          "FormData: " + JSON.stringify(data, null, 2);
+      });
+      f.addEventListener("reset", () => { out.textContent = "— form reset —"; });
+      // Report per-field validity live so you can watch valueMissing / typeMismatch flip.
+      f.addEventListener("input", () => {
+        const fields = [...f.querySelectorAll("puredashboard-input")];
+        out.textContent = fields
+          .map((el) => `${el.getAttribute("name")}: valid=${el.checkValidity?.() ?? "n/a"} value=${JSON.stringify(el.value)}`)
+          .join("\n");
+      });
+    </script>
+  </body>
+</html>

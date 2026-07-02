@@ -1,0 +1,105 @@
+/* puredashboard-collapse — styles for <puredashboard-collapse> (collapse.js).
+ * BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--panel-2, --border, --text, --muted, --radius, --sp-*, --duration-*,
+ * --ease-*, --font-size-md, …) via a --pd-* chain that falls back to your app
+ * tokens and finally to neutral system colours — so it looks right with NO
+ * config and adapts to light/dark automatically. Theme by defining the app
+ * tokens, or override --pd-collapse-*. prefers-reduced-motion is honoured because
+ * --duration-* collapses to 0ms there (tokens.css), so the chevron rotation
+ * transition becomes instant.
+ */
+puredashboard-collapse {
+  display: block;
+  --pd-panel:    var(--panel-2, color-mix(in srgb, CanvasText 4%, Canvas));
+  --pd-text:     var(--text,    CanvasText);
+  --pd-muted:    var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-border:   var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-accent:   var(--accent,  #3b82f6);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-radius:   var(--radius,  10px);
+  --pd-duration: var(--duration-fast, 120ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  --pd-collapse-gap: var(--sp-2, 8px);
+  --pd-collapse-pad: var(--sp-3, 12px);
+}
+
+.puredashboard-collapse__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pd-collapse-gap);
+}
+
+.puredashboard-collapse__item {
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  background: var(--pd-panel);
+  overflow: hidden;
+}
+
+.puredashboard-collapse__heading {
+  margin: 0;
+  font: inherit;
+}
+
+.puredashboard-collapse__header {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2, 8px);
+  width: 100%;
+  margin: 0;
+  padding: var(--pd-collapse-pad);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  font-weight: var(--weight-medium, 500);
+  text-align: left;
+  color: var(--pd-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.puredashboard-collapse__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* the rotating chevron indicator — points down when collapsed, flips up when open */
+.puredashboard-collapse__chevron {
+  flex: none;
+  color: var(--pd-muted);
+  transition: transform var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-collapse__item--open .puredashboard-collapse__chevron {
+  transform: rotate(180deg);
+}
+
+/* focus ring — a11y state = style hook; only show it for keyboard focus */
+.puredashboard-collapse__header:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+.puredashboard-collapse__item--disabled .puredashboard-collapse__header,
+.puredashboard-collapse__header:disabled {
+  opacity: var(--pd-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.puredashboard-collapse__panel {
+  border-top: 1px solid var(--pd-border);
+}
+.puredashboard-collapse__panel[hidden] {
+  display: none;
+}
+
+.puredashboard-collapse__content {
+  padding: var(--pd-collapse-pad);
+  font-size: var(--font-size-md, 13px);
+  color: var(--pd-text);
+}

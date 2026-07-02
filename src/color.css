@@ -1,0 +1,68 @@
+/* puredashboard-color — styles for <puredashboard-color> (color.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --border, --panel, --text, --muted,
+ * --font-size-sm/--mono, --disabled-opacity) via a --pd-* chain that falls back to
+ * your app tokens and finally to neutral system colours — so it looks right with
+ * NO config and adapts to light/dark automatically. Theme by defining the app
+ * tokens, or override --pd-color-*.
+ *
+ * The swatch IS the native <input type="color">, restyled: we strip the UA chrome
+ * and paint the border/radius/focus-ring ourselves so it reads as a themed swatch
+ * while keeping the OS colour picker, keyboard and a11y intact.
+ */
+puredashboard-color {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-mono:      var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  --pd-color-size: var(--control-height-md, 34px);
+}
+
+/* the native <input type=color>, restyled to look like a swatch */
+.puredashboard-color__swatch {
+  box-sizing: border-box;
+  width: var(--pd-color-size);
+  height: var(--pd-color-size);
+  padding: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  cursor: pointer;
+  transition: box-shadow var(--pd-duration) var(--pd-ease), border-color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-color__swatch:focus-visible { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-color__swatch:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* strip the UA colour-well chrome so the whole control is the colour fill inside
+ * our own border/radius (WebKit + Firefox). */
+.puredashboard-color__swatch::-webkit-color-swatch-wrapper { padding: 2px; }
+.puredashboard-color__swatch::-webkit-color-swatch { border: none; border-radius: calc(var(--pd-radius) - 3px); }
+.puredashboard-color__swatch::-moz-color-swatch { border: none; border-radius: calc(var(--pd-radius) - 3px); }
+
+/* size variants — remap the swatch edge token */
+.puredashboard-color__swatch--sm { --pd-color-size: var(--control-height-sm, 28px); }
+.puredashboard-color__swatch--lg { --pd-color-size: var(--control-height-lg, 42px); }
+
+/* the read-only hex label shown next to the swatch when show-value is set */
+.puredashboard-color__value {
+  font-family: var(--pd-mono);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-muted);
+  text-transform: uppercase;
+  user-select: text;
+}

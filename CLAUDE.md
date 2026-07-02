@@ -83,9 +83,10 @@ multi-line `html\`<el>\n  text\n</el>\`` puts newlines into `textContent` and fa
 
 ## Repo / distribution conventions
 
-- **Only `src/` ships.** `test/` and `docs/` are dev-only; when embedding (e.g. Go
-  `//go:embed`), keep them out — names starting with `_` or `.` are skipped by the embed
-  walker. See `docs/USAGE.md`.
+- **Only `src/` ships.** `test/`, `docs/`, and `tools/` are dev-only; when embedding
+  (e.g. Go `//go:embed`), keep them out — names starting with `_` or `.` are skipped by
+  the embed walker. See `docs/USAGE.md`. (`tools/api-reference/` regenerates
+  `src/_components.jsonl` — a generator, not a test, so it lives outside `test/`.)
 - **Not published to any registry** (no npm package — by design). Distributed as source +
   GitHub Releases. Version via git tags + `CHANGELOG.md` (currently `v0.1.0`, `0.x` = API may change).
 - **Pull requests are not accepted** (issues-only; see `CONTRIBUTING.md`). When proposing

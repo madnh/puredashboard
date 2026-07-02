@@ -1,0 +1,177 @@
+/* puredashboard-steps — styles for <puredashboard-steps> (steps.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours resolve through a --pd-* chain that falls
+ * back to your app tokens (--accent, --green, --border, --text, --muted, …) and
+ * finally to neutral system colours — so it looks right with NO theme linked and
+ * adapts to light/dark automatically. Theme by defining the app tokens, or
+ * override the --pd-steps-* knobs below.
+ *
+ * Status modifiers on the item drive the visuals: --complete (filled + green
+ * check), --current (accent ring + emphasised label), --upcoming (muted). The
+ * connector lines are drawn per-item with an absolutely-positioned bar so the
+ * geometry flips cleanly between horizontal and vertical.
+ */
+puredashboard-steps {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-green:     var(--green,    #16a34a);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 55%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  /* component knobs */
+  --pd-steps-bubble: 28px;
+  --pd-steps-connector: 2px;
+}
+
+.puredashboard-steps__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+.puredashboard-steps__list--horizontal { flex-direction: row; }
+.puredashboard-steps__list--vertical   { flex-direction: column; }
+
+/* ── item: holds one step + the connector reaching back to the previous one ── */
+.puredashboard-steps__item {
+  position: relative;
+  display: flex;
+}
+.puredashboard-steps__list--horizontal > .puredashboard-steps__item {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 var(--sp-2, 8px);
+}
+.puredashboard-steps__list--vertical > .puredashboard-steps__item {
+  flex-direction: row;
+  align-items: flex-start;
+  padding-bottom: var(--sp-6, 24px);
+}
+.puredashboard-steps__list--vertical > .puredashboard-steps__item:last-child { padding-bottom: 0; }
+
+/* ── connector line: drawn from the previous bubble to this one; hidden on the
+ *    first item (nothing precedes it). Position flips per orientation. ── */
+.puredashboard-steps__connector {
+  position: absolute;
+  background: var(--pd-border);
+  transition: background-color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-steps__item:first-child > .puredashboard-steps__connector { display: none; }
+.puredashboard-steps__list--horizontal > .puredashboard-steps__item > .puredashboard-steps__connector {
+  /* the bubble sits below the step's sp-1 padding, so its centre is sp-1 + bubble/2
+   * from the item top — align the line to that, not to bubble/2 alone. */
+  top: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
+  height: var(--pd-steps-connector);
+  right: 50%;
+  left: -50%;
+  transform: translateY(-50%);
+}
+.puredashboard-steps__list--vertical > .puredashboard-steps__item > .puredashboard-steps__connector {
+  left: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
+  width: var(--pd-steps-connector);
+  top: calc(-1 * var(--sp-6, 24px));
+  bottom: calc(100% - var(--pd-steps-bubble));
+  transform: translateX(-50%);
+}
+/* completed & current items pull their connector to accent, so the "done" trail
+ * reads as a filled progress line. */
+.puredashboard-steps__item--complete > .puredashboard-steps__connector,
+.puredashboard-steps__item--current > .puredashboard-steps__connector { background: var(--pd-accent); }
+
+/* ── the step itself (span or button) ── */
+.puredashboard-steps__step {
+  /* lift the step above the absolutely-positioned connector so the opaque bubble
+   * masks the line instead of the line painting over the number/check. */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: var(--sp-2, 8px);
+  align-items: center;
+  margin: 0;
+  padding: var(--sp-1, 4px);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  border-radius: var(--radius-sm, 8px);
+}
+.puredashboard-steps__list--horizontal .puredashboard-steps__step { flex-direction: column; }
+/* only buttons are interactive — upcoming spans must never look clickable */
+button.puredashboard-steps__step { cursor: pointer; }
+button.puredashboard-steps__step:focus-visible { outline: none; box-shadow: var(--pd-focus-ring); }
+
+/* ── number / check bubble ── */
+.puredashboard-steps__bubble {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pd-steps-bubble);
+  height: var(--pd-steps-bubble);
+  border-radius: var(--radius-full, 999px);
+  border: var(--pd-steps-connector) solid var(--pd-border-2);
+  background: var(--pd-panel);
+  color: var(--pd-muted);
+  font-size: var(--font-size-sm, 12px);
+  font-weight: var(--weight-semibold, 600);
+  line-height: 1;
+  transition: background-color var(--pd-duration) var(--pd-ease),
+              border-color var(--pd-duration) var(--pd-ease),
+              color var(--pd-duration) var(--pd-ease);
+}
+
+/* ── labels ── */
+.puredashboard-steps__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.puredashboard-steps__label {
+  color: var(--pd-muted);
+  font-size: var(--font-size-md, 13px);
+  font-weight: var(--weight-medium, 500);
+}
+.puredashboard-steps__desc {
+  color: var(--pd-muted);
+  font-size: var(--font-size-sm, 12px);
+}
+
+/* ── status: complete ── */
+.puredashboard-steps__item--complete .puredashboard-steps__bubble {
+  background: var(--pd-green);
+  border-color: var(--pd-green);
+  color: var(--pd-accent-ink);
+}
+.puredashboard-steps__item--complete .puredashboard-steps__label { color: var(--pd-text); }
+
+/* ── status: current ── */
+.puredashboard-steps__item--current .puredashboard-steps__bubble {
+  background: var(--pd-accent);
+  border-color: var(--pd-accent);
+  color: var(--pd-accent-ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pd-accent) 20%, transparent);
+}
+.puredashboard-steps__item--current .puredashboard-steps__label {
+  color: var(--pd-text);
+  font-weight: var(--weight-semibold, 600);
+}
+
+/* ── status: upcoming (defaults are already muted; keep explicit for clarity) ── */
+.puredashboard-steps__item--upcoming .puredashboard-steps__bubble { color: var(--pd-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-steps__connector,
+  .puredashboard-steps__bubble { transition: none; }
+}

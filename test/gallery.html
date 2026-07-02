@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureBook — PureDashboard component gallery</title>
+
+    <!-- tokens + base primitives + every component stylesheet + the gallery chrome -->
+    <link rel="stylesheet" href="../src/theme/tokens.css" />
+    <link rel="stylesheet" href="../src/theme/base.css" />
+    <link rel="stylesheet" href="../src/components.css" />
+    <link rel="stylesheet" href="../src/gallery.css" />
+    <style> body { margin: 0; } </style>
+  </head>
+  <body>
+    <script type="module">
+      // Define every custom element so stories can create them …
+      import "../src/table.js"; import "../src/upload.js"; import "../src/input.js"; import "../src/textarea.js";
+      import "../src/number.js"; import "../src/select.js"; import "../src/combobox.js";
+      import "../src/checkbox.js"; import "../src/switch.js"; import "../src/radio-group.js";
+      import "../src/slider.js"; import "../src/date.js"; import "../src/time.js";
+      import "../src/color.js"; import "../src/rate.js"; import "../src/form.js";
+      import "../src/button.js"; import "../src/divider.js"; import "../src/space.js";
+      import "../src/grid.js"; import "../src/segmented.js"; import "../src/statistic.js";
+      import "../src/tabs.js"; import "../src/breadcrumb.js"; import "../src/pagination.js";
+      import "../src/steps.js"; import "../src/nav.js"; import "../src/card.js";
+      import "../src/descriptions.js"; import "../src/tag.js"; import "../src/badge.js";
+      import "../src/avatar.js"; import "../src/empty.js"; import "../src/collapse.js";
+      import "../src/tree.js"; import "../src/list.js"; import "../src/timeline.js";
+      import "../src/result.js"; import "../src/tooltip.js"; import "../src/popover.js";
+      import "../src/popconfirm.js"; import "../src/alert.js"; import "../src/progress.js";
+      import "../src/spinner.js"; import "../src/skeleton.js"; import "../src/md.js";
+      import "../src/flex.js"; import "../src/layout.js"; import "../src/splitter.js"; import "../src/titlebar.js";
+      // … the gallery component itself, and the story registry.
+      import "../src/gallery.js";
+      import { STORIES } from "./stories/index.js";
+
+      const g = document.createElement("puredashboard-gallery");
+      g.route = true;               // mirror the view into the URL (?c=&s=&theme=&only=&overview=)
+      g.stories = STORIES;
+      document.body.append(g);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+/* puredashboard-gallery — styles for <puredashboard-gallery> (gallery.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able through the shared token chain (falls back to system
+ * colours with no theme linked). It's a dev/preview tool, so it fills the viewport.
+ */
+puredashboard-gallery {
+  --pd-bg:      var(--bg,      Canvas);
+  --pd-panel:   var(--panel,   color-mix(in srgb, CanvasText 4%, Canvas));
+  --pd-panel-2: var(--panel-2, color-mix(in srgb, CanvasText 7%, Canvas));
+  --pd-text:    var(--text,    CanvasText);
+  --pd-muted:   var(--muted,   color-mix(in srgb, CanvasText 55%, Canvas));
+  --pd-faint:   var(--faint,   color-mix(in srgb, CanvasText 40%, Canvas));
+  --pd-border:  var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-accent:  var(--accent,  #3b82f6);
+
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  font: 14px/1.5 var(--sans, system-ui, sans-serif);
+  color: var(--pd-text);
+  background: var(--pd-bg);
+}
+/* only-mode: a single story, full-bleed, no chrome (for screenshots) */
+puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; }
+.puredashboard-gallery__only { padding: 32px; }
+
+/* sidebar */
+.puredashboard-gallery__side { border-right: 1px solid var(--pd-border); background: var(--pd-panel); overflow-y: auto; }
+.puredashboard-gallery__brand { padding: 16px; font-weight: 700; border-bottom: 1px solid var(--pd-border); position: sticky; top: 0; background: var(--pd-panel); }
+.puredashboard-gallery__group { padding: 12px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--pd-faint); }
+.puredashboard-gallery__item {
+  display: block; width: 100%; text-align: left; padding: 6px 16px;
+  font: inherit; color: var(--pd-muted); background: none; border: 0;
+  /* it's a <button>, so null out the base stylesheet's radius — a rounded fill
+   * next to the straight left accent bar reads oddly; keep it a clean rectangle. */
+  border-radius: 0;
+  border-left: 2px solid transparent; cursor: pointer;
+}
+.puredashboard-gallery__item:hover { color: var(--pd-text); background: var(--pd-panel-2); }
+.puredashboard-gallery__item[aria-current="true"] { color: var(--pd-text); border-left-color: var(--pd-accent); background: var(--pd-panel-2); }
+
+/* main */
+.puredashboard-gallery__main { min-width: 0; display: flex; flex-direction: column; }
+.puredashboard-gallery__toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--pd-border); position: sticky; top: 0; background: var(--pd-bg); z-index: 5; }
+.puredashboard-gallery__title { font-size: 16px; margin: 0 auto 0 0; }
+.puredashboard-gallery__toolbar label { color: var(--pd-muted); font-size: 13px; }
+.puredashboard-gallery__toolbar select { font: inherit; margin-left: 4px; padding: 5px 10px; background: var(--pd-panel-2); color: var(--pd-text); border: 1px solid var(--pd-border); border-radius: var(--radius-sm, 8px); cursor: pointer; }
+.puredashboard-gallery__canvas { padding: 24px; display: grid; gap: 24px; }
+
+/* a story panel */
+.puredashboard-gallery__story { border: 1px solid var(--pd-border); border-radius: var(--radius, 10px); overflow: hidden; }
+.puredashboard-gallery__bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--pd-panel); border-bottom: 1px solid var(--pd-border); font-size: 13px; }
+.puredashboard-gallery__name { font-weight: 600; }
+.puredashboard-gallery__notes { color: var(--pd-muted); font-size: 12px; }
+/* stages use the PANEL surface (like a real card) so subtle things — skeletons,
+ * borders, --panel-2 fills — have contrast instead of vanishing into the page bg. */
+.puredashboard-gallery__stage { padding: 28px; background: var(--pd-panel); }
+
+/* overview / contact sheet */
+.puredashboard-gallery__overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.puredashboard-gallery__cell { border: 1px solid var(--pd-border); border-radius: var(--radius, 10px); overflow: hidden; }
+.puredashboard-gallery__cell-label { padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--pd-muted); background: var(--pd-panel); border-bottom: 1px solid var(--pd-border); }
+.puredashboard-gallery__cell-stage { padding: 20px; min-height: 96px; display: flex; align-items: center; background: var(--pd-panel); }
+
+.puredashboard-gallery__empty { padding: 40px; color: var(--pd-muted); }
+.puredashboard-gallery__err { margin: 0; color: var(--red, #dc2626); font-size: 12px; white-space: pre-wrap; }

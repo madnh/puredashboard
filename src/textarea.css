@@ -1,0 +1,60 @@
+/* puredashboard-textarea — styles for <puredashboard-textarea> (textarea.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --danger-bg, …) via a --pd-* chain
+ * that falls back to your app tokens and finally to neutral system colours — so it
+ * looks right with NO config and adapts to light/dark automatically. Theme by
+ * defining the app tokens, or override --pd-textarea-*.
+ */
+puredashboard-textarea {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius:    var(--radius,   10px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-textarea-pad-x: var(--control-pad-x, 12px);
+  --pd-textarea-pad-y: var(--sp-2, 8px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+}
+
+.puredashboard-textarea__field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--pd-textarea-pad-y) var(--pd-textarea-pad-x);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  outline: none;
+  resize: vertical;
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-textarea__field::placeholder { color: var(--pd-muted); }
+.puredashboard-textarea__field:hover:not(:disabled):not([readonly]) { border-color: var(--pd-border-2); }
+.puredashboard-textarea__field:focus { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-textarea__field:disabled { opacity: var(--pd-disabled-opacity); cursor: not-allowed; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-textarea__field[aria-invalid="true"] { border-color: var(--pd-red); }
+.puredashboard-textarea__field[aria-invalid="true"]:focus { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+/* size variants — remap the type scale */
+.puredashboard-textarea__field--sm { font-size: var(--font-size-sm, 12px); --pd-textarea-pad-y: var(--sp-1, 4px); }
+.puredashboard-textarea__field--lg { font-size: var(--font-size-lg, 15px); --pd-textarea-pad-y: var(--sp-3, 12px); }
+
+.puredashboard-textarea__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

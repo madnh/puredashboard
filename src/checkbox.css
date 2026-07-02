@@ -1,0 +1,73 @@
+/* puredashboard-checkbox — styles for <puredashboard-checkbox> (checkbox.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens
+ * (--control-height-*, --focus-ring, --radius, --danger-bg, …) via a --pd-* chain
+ * that falls back to your app tokens and finally to neutral system colours — so it
+ * looks right with NO config and adapts to light/dark automatically. Theme by
+ * defining the app tokens, or override --pd-checkbox-*.
+ */
+puredashboard-checkbox {
+  display: block;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-accent-ink: var(--accent-ink, #ffffff);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+  --pd-red:       var(--red,      #dc2626);
+  --pd-radius-sm: var(--radius-sm, 8px);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-danger-bg: var(--danger-bg, color-mix(in srgb, var(--pd-red) 12%, transparent));
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-disabled-opacity: var(--disabled-opacity, 0.55);
+  /* box size derived from the shared control height so it tracks density */
+  --pd-checkbox-size:   calc(var(--control-height-md, 34px) * 0.5);
+  --pd-checkbox-radius: var(--pd-radius-sm);
+}
+
+.puredashboard-checkbox__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  font: inherit;
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+  color: var(--pd-text);
+  cursor: pointer;
+}
+
+.puredashboard-checkbox__box {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--pd-checkbox-size);
+  height: var(--pd-checkbox-size);
+  margin: 0;
+  /* accent-color lets the native box adopt the theme accent in supporting UAs */
+  accent-color: var(--pd-accent);
+  border-radius: var(--pd-checkbox-radius);
+  cursor: pointer;
+  transition: box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-checkbox__box:focus-visible { outline: none; box-shadow: var(--pd-focus-ring); }
+.puredashboard-checkbox__box:disabled { cursor: not-allowed; }
+
+/* disabled — dim the whole control (native box + author text) */
+.puredashboard-checkbox__box:disabled,
+.puredashboard-checkbox__box:disabled ~ .puredashboard-checkbox__text {
+  opacity: var(--pd-disabled-opacity);
+}
+.puredashboard-checkbox__label:has(.puredashboard-checkbox__box:disabled) { cursor: not-allowed; }
+
+.puredashboard-checkbox__text { user-select: none; }
+
+/* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
+.puredashboard-checkbox__box[aria-invalid="true"] { outline: 1px solid var(--pd-red); outline-offset: 1px; }
+.puredashboard-checkbox__box[aria-invalid="true"]:focus-visible { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
+
+.puredashboard-checkbox__error {
+  margin-top: var(--sp-1, 4px);
+  font-size: var(--font-size-sm, 12px);
+  color: var(--pd-red);
+}

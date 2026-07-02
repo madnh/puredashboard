@@ -1,0 +1,135 @@
+/* puredashboard-progress — styles for <puredashboard-progress> (progress.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens (--accent,
+ * --green, --red, --panel-3, --radius-full, --text/--muted, --duration-*, --font-size-sm)
+ * via a --pd-* chain that falls back to your app tokens and finally to neutral system
+ * colours — so it looks right with NO config and adapts to light/dark automatically.
+ * Theme by defining the app tokens, or override --pd-progress-*.
+ *
+ * Two shapes:
+ *   • line   — a rounded track (.puredashboard-progress__track) + a fill whose WIDTH is
+ *              set inline by the component from the computed percent.
+ *   • circle — an SVG ring; the visible arc is the foreground <circle>'s stroke, whose
+ *              stroke-dasharray (circumference) + stroke-dashoffset (inline) draw exactly
+ *              the fraction.
+ * Indeterminate adds --indeterminate: a CSS-keyframe sweep (line) / rotation (circle) that
+ * collapses under prefers-reduced-motion.
+ */
+puredashboard-progress {
+  display: block;
+  --pd-accent:   var(--accent,  #3b82f6);
+  --pd-green:    var(--green,   #3fb950);
+  --pd-red:      var(--red,     #f85149);
+  --pd-text:     var(--text,    CanvasText);
+  --pd-muted:    var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel-3:  var(--panel-3, color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-radius-full: var(--radius-full, 999px);
+  --pd-duration: var(--duration-slow, 320ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-font-sm:  var(--font-size-sm, 12px);
+
+  /* component knobs — overridden per size below */
+  --pd-progress-line-h: 8px;
+  --pd-progress-circle: 96px;
+  --pd-progress-circle-sw: 8;   /* SVG stroke width in the 100-unit viewBox */
+  --pd-progress-pct: 0%;        /* dynamic; the component sets this inline per value */
+  --pd-progress-color: var(--pd-accent);   /* fill colour; status modifiers override */
+}
+
+/* size knobs */
+.puredashboard-progress--sm { --pd-progress-line-h: 5px;  --pd-progress-circle: 64px;  --pd-progress-circle-sw: 6; }
+.puredashboard-progress--lg { --pd-progress-line-h: 12px; --pd-progress-circle: 128px; --pd-progress-circle-sw: 10; }
+
+/* ── Line variant ─────────────────────────────────────────────────────────── */
+.puredashboard-progress--line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3, 12px);
+}
+.puredashboard-progress__track {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--pd-progress-line-h);
+  background: var(--pd-panel-3);
+  border-radius: var(--pd-radius-full);
+  overflow: hidden;
+}
+.puredashboard-progress__fill {
+  height: 100%;
+  width: 0;
+  background: var(--pd-progress-color);
+  border-radius: inherit;
+  transition: width var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-progress__fill--success { --pd-progress-color: var(--pd-green); }
+.puredashboard-progress__fill--error   { --pd-progress-color: var(--pd-red); }
+
+/* Indeterminate line: a fixed-width sweep travelling across the track. */
+.puredashboard-progress--line.puredashboard-progress--indeterminate .puredashboard-progress__fill {
+  width: 40%;
+  transition: none;
+  animation: puredashboard-progress-sweep 1.4s var(--ease-emphasized, cubic-bezier(0.3, 0, 0, 1)) infinite;
+}
+@keyframes puredashboard-progress-sweep {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(275%); }
+}
+
+/* ── Circle variant ───────────────────────────────────────────────────────── */
+.puredashboard-progress--circle {
+  display: inline-grid;
+  place-items: center;
+}
+.puredashboard-progress--circle > * { grid-area: 1 / 1; }   /* stack SVG + info */
+.puredashboard-progress__svg {
+  width: var(--pd-progress-circle);
+  height: var(--pd-progress-circle);
+  transform: rotate(-90deg);   /* start the arc at 12 o'clock */
+}
+.puredashboard-progress__ring-bg {
+  fill: none;
+  stroke: var(--pd-panel-3);
+  stroke-width: var(--pd-progress-circle-sw);
+}
+.puredashboard-progress__ring-fill {
+  fill: none;
+  stroke: var(--pd-progress-color);
+  stroke-width: var(--pd-progress-circle-sw);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-progress__ring-fill--success { --pd-progress-color: var(--pd-green); }
+.puredashboard-progress__ring-fill--error   { --pd-progress-color: var(--pd-red); }
+
+/* Indeterminate circle: spin the whole ring (a fixed short arc set by the component). */
+.puredashboard-progress--circle.puredashboard-progress--indeterminate .puredashboard-progress__svg {
+  animation: puredashboard-progress-spin 1.1s linear infinite;
+}
+.puredashboard-progress--circle.puredashboard-progress--indeterminate .puredashboard-progress__ring-fill {
+  transition: none;
+}
+@keyframes puredashboard-progress-spin {
+  to { transform: rotate(270deg); }   /* -90deg start + 360deg */
+}
+
+/* ── Info read-out (percent / status glyph) ───────────────────────────────── */
+.puredashboard-progress__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pd-muted);
+  font-size: var(--pd-font-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.puredashboard-progress--line .puredashboard-progress__info { flex: none; min-width: 4ch; text-align: right; }
+.puredashboard-progress__glyph { display: inline-flex; font-size: 1.1em; }
+.puredashboard-progress__glyph--success { color: var(--pd-green); }
+.puredashboard-progress__glyph--error   { color: var(--pd-red); }
+
+/* Reduced motion: stop the indeterminate animations (the duration tokens already
+ * collapse determinate transitions to 0ms). */
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-progress--indeterminate .puredashboard-progress__fill,
+  .puredashboard-progress--indeterminate .puredashboard-progress__svg { animation: none; }
+}

@@ -1,0 +1,159 @@
+/* puredashboard-timeline — styles for <puredashboard-timeline> (timeline.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Colours resolve through a --pd-* chain that falls
+ * back to your app tokens (--accent, --green, --amber, --red, --muted, --border,
+ * --text, …) and finally to neutral system colours — so it looks right with NO
+ * theme linked and adapts to light/dark automatically. Theme by defining the app
+ * tokens, or override the --pd-timeline-* knobs below.
+ *
+ * Layout: each item is a two-track grid — a fixed rail column (the dot + the
+ * connector line drawn behind it) and a flexible content column. The connector
+ * is a full-height bar centred under the dot; the FIRST item masks the segment
+ * above its dot and the LAST the segment below, so the line spans dot-to-dot
+ * only. `--left`/`--right` swap the two columns; `--alternate` (per-item side
+ * modifiers) yields the zig-zag. An item's `color` tints its dot via a modifier.
+ */
+puredashboard-timeline {
+  display: block;
+  --pd-accent:  var(--accent, #3b82f6);
+  --pd-green:   var(--green,  #16a34a);
+  --pd-amber:   var(--amber,  #d29922);
+  --pd-red:     var(--red,    #f85149);
+  --pd-text:    var(--text,   CanvasText);
+  --pd-muted:   var(--muted,  color-mix(in srgb, CanvasText 55%, Canvas));
+  --pd-faint:   var(--faint,  color-mix(in srgb, CanvasText 40%, Canvas));
+  --pd-panel:   var(--panel,  Canvas);
+  --pd-border:  var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-border-2: var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
+
+  /* component knobs (overridable via --pd-timeline-*) */
+  --pd-timeline-dot: 12px;
+  --pd-timeline-connector: 2px;
+  --pd-timeline-gap: var(--sp-5, 20px);
+  /* the rail column width holds the dot + a little breathing room each side */
+  --pd-timeline-rail: calc(var(--pd-timeline-dot) + var(--sp-4, 16px));
+  --pd-timeline-color: var(--pd-accent); /* resolved per colour modifier below */
+}
+
+.puredashboard-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── item: a two-column grid (rail | content) with a gap between rows ── */
+.puredashboard-timeline__item {
+  position: relative;
+  display: grid;
+  gap: var(--sp-3, 12px);
+  padding-bottom: var(--pd-timeline-gap);
+}
+.puredashboard-timeline__item:last-child { padding-bottom: 0; }
+
+/* mode=right — rail (dot) on the left, content on the right (default reading order) */
+.puredashboard-timeline__list--right > .puredashboard-timeline__item { grid-template-columns: var(--pd-timeline-rail) 1fr; }
+.puredashboard-timeline__list--right > .puredashboard-timeline__item > .puredashboard-timeline__dot  { grid-column: 1; }
+.puredashboard-timeline__list--right > .puredashboard-timeline__item > .puredashboard-timeline__body { grid-column: 2; text-align: left; }
+/* mode=left — content on the left, rail on the right */
+.puredashboard-timeline__list--left > .puredashboard-timeline__item { grid-template-columns: 1fr var(--pd-timeline-rail); }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item > .puredashboard-timeline__dot  { grid-column: 2; }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
+/* mode=alternate — a CENTRED rail (line down the middle); content alternates side */
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item { grid-template-columns: 1fr var(--pd-timeline-rail) 1fr; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item > .puredashboard-timeline__dot { grid-column: 2; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item--left  > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item--right > .puredashboard-timeline__body { grid-column: 3; text-align: left; }
+
+/* ── connector line: a bar centred behind the dot, spanning the full row height
+ *    (into the padding gap) so consecutive dots read as one thread. The rail is
+ *    var(--pd-timeline-rail) wide and the dot is centred in it. ── */
+.puredashboard-timeline__dot {
+  position: relative;
+  z-index: 1;
+  align-self: start;
+  justify-self: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pd-timeline-dot);
+  height: var(--pd-timeline-dot);
+  margin-top: 2px; /* nudge to sit on the first text line */
+  border-radius: var(--radius-full, 999px);
+  background: var(--pd-timeline-color);
+  color: var(--pd-timeline-color);
+  font-size: var(--pd-timeline-dot);
+  line-height: 1;
+}
+/* the connector: drawn on the ITEM (not the dot) so it spans the FULL row height —
+ * including the padding-gap down to the next item — and therefore always reaches
+ * the next dot no matter how tall the content is. The dot (z-index 1) sits on top
+ * and masks the line where it passes through, so the thread reads as continuous. */
+.puredashboard-timeline__item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--pd-timeline-connector);
+  background: var(--pd-border-2);
+  z-index: 0;
+}
+.puredashboard-timeline__list--right > .puredashboard-timeline__item::before { left: calc(var(--pd-timeline-rail) / 2); transform: translateX(-50%); }
+.puredashboard-timeline__list--left > .puredashboard-timeline__item::before  { right: calc(var(--pd-timeline-rail) / 2); transform: translateX(50%); }
+/* alternate: the line runs down the CENTRED rail (the middle grid column) */
+.puredashboard-timeline__list--alternate > .puredashboard-timeline__item::before { left: 50%; transform: translateX(-50%); }
+/* trim the ends: start the thread at the first dot's centre, stop it at the last */
+.puredashboard-timeline__item:first-child::before { top: calc(2px + var(--pd-timeline-dot) / 2); }
+.puredashboard-timeline__item:last-child::before  { bottom: auto; height: calc(2px + var(--pd-timeline-dot) / 2); }
+.puredashboard-timeline__item:first-child:last-child::before { display: none; }
+
+/* a custom SVG glyph (or the spinner) fills the dot instead of the plain circle */
+.puredashboard-timeline__dot > svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── body: label (time/meta) above the content ── */
+.puredashboard-timeline__body {
+  min-width: 0;
+  padding-top: 0;
+}
+.puredashboard-timeline__label {
+  color: var(--pd-muted);
+  font-size: var(--font-size-sm, 12px);
+  line-height: var(--line-tight, 1.25);
+  margin-bottom: 2px;
+}
+.puredashboard-timeline__content {
+  color: var(--pd-text);
+  font-size: var(--font-size-md, 13px);
+  line-height: var(--line-normal, 1.5);
+}
+
+/* ── colour modifiers: each resolves the shared dot colour token ── */
+.puredashboard-timeline__item--accent  { --pd-timeline-color: var(--pd-accent); }
+.puredashboard-timeline__item--success { --pd-timeline-color: var(--pd-green); }
+.puredashboard-timeline__item--warning { --pd-timeline-color: var(--pd-amber); }
+.puredashboard-timeline__item--error   { --pd-timeline-color: var(--pd-red); }
+.puredashboard-timeline__item--muted   { --pd-timeline-color: var(--pd-faint); }
+
+/* ── pending: a ghosted trailing item with an animated spinner dot ── */
+.puredashboard-timeline__item--pending { --pd-timeline-color: var(--pd-muted); }
+.puredashboard-timeline__item--pending .puredashboard-timeline__dot {
+  background: none; /* the spinner glyph draws the marker, not a filled circle */
+}
+.puredashboard-timeline__item--pending .puredashboard-timeline__content { color: var(--pd-muted); }
+.puredashboard-timeline__spinner {
+  animation: puredashboard-timeline-rotate 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes puredashboard-timeline-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion — do NOT spin (zeroing a duration would freeze a "running"
+ * spinner mid-frame). Remove the animation and show a static ring glyph. */
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-timeline__spinner { animation: none; }
+}

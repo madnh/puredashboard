@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-skin="macos">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureDashboard — desktop (macOS skin) demo</title>
+
+    <link rel="stylesheet" href="../src/theme/tokens.css" />
+    <link rel="stylesheet" href="../src/theme/base.css" />
+    <link rel="stylesheet" href="../src/theme/native.css" />   <!-- the macOS skin -->
+    <link rel="stylesheet" href="../src/components.css" />
+
+    <style>
+      /* demo-only: fake a desktop so the window's vibrancy has a wallpaper to blur */
+      html, body { height: 100%; margin: 0; }
+      body {
+        display: grid; place-items: center;
+        background:
+          radial-gradient(1200px 800px at 15% 10%, #3b6ea5 0%, transparent 55%),
+          radial-gradient(1000px 900px at 85% 90%, #8e5aa8 0%, transparent 55%),
+          linear-gradient(135deg, #1b2a4a, #3a2a52 55%, #123141);
+        font: 13px var(--sans);
+      }
+      /* the app window — translucent so the wallpaper shows through the frosted chrome */
+      .win {
+        width: min(1040px, 94vw); height: min(680px, 92vh);
+        display: flex; flex-direction: column;
+        border-radius: 12px; overflow: hidden;
+        background: color-mix(in srgb, var(--panel) 88%, transparent);
+        box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 0.5px rgba(255,255,255,.10);
+      }
+      .win puredashboard-layout { flex: 1 1 auto; min-height: 0; }
+      /* macOS traffic-lights (fake — real ones come from the OS in a frameless window) */
+      .lights { display: flex; gap: 8px; align-items: center; }
+      .lights i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+      .lights .r { background: #ff5f57; } .lights .y { background: #febc2e; } .lights .g { background: #28c840; }
+      .content-body { display: grid; gap: 16px; }
+      .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .muted { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="win">
+      <puredashboard-titlebar platform="mac" title="Acme Admin" controls>
+        <span slot="leading" data-titlebar-leading class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+        <puredashboard-button variant="text" data-titlebar-trailing id="refresh">Refresh</puredashboard-button>
+      </puredashboard-titlebar>
+
+      <puredashboard-layout>
+        <puredashboard-sider width="220">
+          <puredashboard-nav id="nav" style="padding:8px"></puredashboard-nav>
+        </puredashboard-sider>
+        <puredashboard-content>
+          <div class="content-body">
+            <h1 style="margin:0;font-size:22px">Overview</h1>
+            <p class="muted" style="margin:0">A frameless macOS window — frosted title bar &amp; sidebar over the desktop, all PureDashboard.</p>
+            <div class="kpis" id="kpis"></div>
+            <puredashboard-card title="Recent activity" id="card"></puredashboard-card>
+          </div>
+        </puredashboard-content>
+      </puredashboard-layout>
+    </div>
+
+    <script type="module">
+      import "../src/button.js"; import "../src/nav.js"; import "../src/card.js";
+      import "../src/statistic.js"; import "../src/list.js"; import "../src/tag.js";
+      import "../src/layout.js"; import "../src/titlebar.js";
+
+      const h = (t, p, k) => { const n = Object.assign(document.createElement(t), p||{}); if (k) n.append(...[].concat(k)); return n; };
+
+      document.getElementById("nav").items = [
+        { label: "Overview", href: "#/", icon: '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+        { label: "Services", href: "#/services", children: [ { label: "Web", href: "#/services/web" }, { label: "DB", href: "#/services/db" } ] },
+        { label: "Alerts", href: "#/alerts", badge: "3" },
+        { label: "Settings", href: "#/settings" },
+      ];
+      document.getElementById("nav").current = "#/";
+
+      const kpi = (title, value, opts) => { const c = h("puredashboard-card"); c.append(h("puredashboard-statistic", Object.assign({ title, value }, opts||{}))); return c; };
+      document.getElementById("kpis").append(
+        kpi("Requests / day", 1250341, { trend: "up" }),
+        kpi("Uptime", 99.98, { suffix: "%", precision: 2, trend: "up" }),
+        kpi("Error rate", 0.42, { suffix: "%", precision: 2, trend: "down" }),
+      );
+
+      const list = h("puredashboard-list", { items: [
+        { title: "Deployed api-gateway", description: "v1.4.0 · us-east-1", extra: "2m" },
+        { title: "Autoscaled media-cdn", description: "4 → 8 nodes", extra: "18m" },
+        { title: "billing-cron failed", description: "health check", extra: "34m" },
+      ]});
+      document.getElementById("card").append(list);
+
+      // In a real Tauri/Wails app you'd wire these to the window API (see docs/DESKTOP.md).
+      const bar = document.querySelector("puredashboard-titlebar");
+      for (const ev of ["minimize","maximizetoggle","close"]) bar.addEventListener(ev, () => console.debug("window:", ev));
+
+      requestAnimationFrame(() => requestAnimationFrame(() => { document.documentElement.dataset.ready = "1"; }));
+    </script>
+  </body>
+</html>
