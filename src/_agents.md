@@ -45,6 +45,10 @@ document.body.append(t);
 - Theme = CSS custom properties. Dark by default; light via `prefers-color-scheme`,
   or force with `<html data-theme="light">`. Override any `--*` token to retheme.
 - Compact density: put `data-density="compact"` on any container.
+- Desktop apps (Tauri/Wails/Electron): opt into the macOS-native look with
+  `<link rel="stylesheet" href="LIB/theme/native.css">` + `<html data-skin="macos">`
+  (vibrancy, hairlines, macOS controls). Pair with `puredashboard-titlebar` for a
+  frameless window — recipe in `docs/DESKTOP.md`.
 
 ## Which `html` tag? (only relevant if you EXTEND the library)
 
@@ -152,7 +156,11 @@ CSS custom props: `_custom-elements.json`.
 | `puredashboard-button` | `variant`(primary/default/dashed/text/link), `size`, `danger`, `loading`, `block`, `href`, `type`, `icon` | native `click` | label = children; renders `<a>` when `href` set |
 | `puredashboard-divider` | `orientation`, `dashed`, `textAlign`, `text` | — | text = children or `text` |
 | `puredashboard-space` | `direction`, `size`, `align`, `justify`, `wrap` | — | flex gap container; children stay flex items |
+| `puredashboard-flex` | `vertical`, `justify`, `align`, `wrap`, `gap` | — | thin flexbox wrapper; children stay flex items |
 | `puredashboard-row` / `puredashboard-col` | row: `gutter`,`align`,`justify` · col: `span`(1-24),`offset`,`xs/sm/md/lg/xl` | — | 24-column grid |
+| `puredashboard-layout` + `-header`/`-sider`/`-content`/`-footer` | sider: `width`, `collapsedWidth`, `collapsible`, `collapsed`, `breakpoint` | sider `collapse`{collapsed} | page scaffold; auto side-by-side when a `-sider` is present; sider self-adds a collapse trigger |
+| `puredashboard-splitter` | `vertical`, `minSize`, `gutterSize` | `resize`{sizes} | adopts direct children as panels; drag gutters between them |
+| `puredashboard-titlebar` | `platform`(mac/windows/linux), `title`, `controls`, `maximized` | `minimize`, `maximizetoggle`, `close` (bubble+composed) | custom titlebar for frameless Tauri/Wails/Electron; whole bar is an OS drag region; slot children via `data-titlebar-leading`/`-center`/`-trailing` |
 | `puredashboard-segmented` | `options`, `value`, `size`, `block`, `disabled` | `change`{value} | single-select button group |
 
 ### Form (all form-associated: submit + validity via `name`)
