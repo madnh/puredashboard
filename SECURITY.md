@@ -23,6 +23,12 @@ allow reasonable time to patch before any public disclosure.
 
 [advisories]: ../../security/advisories
 
+## Past reviews
+
+A point-in-time source audit and its remediations are recorded in
+[docs/SECURITY-REVIEW.md](docs/SECURITY-REVIEW.md) (2026-07 — 6 findings, all fixed; no
+critical/high).
+
 ## Supported versions
 
 Fixes land on the **latest release / `main`**. There are no long-term support branches —
