@@ -96,9 +96,9 @@ func main() {
 ```
 
 **Embed only what ships.** `//go:embed` skips files/dirs whose name starts with `_` or
-`.`. Keep `test/` out of your `web/` tree (it's dev-only) — or, if you must colocate
-test assets, prefix the folder with `_` (e.g. `_test/`) so the embed walker ignores it.
-Same for docs: don't copy this repo's `README.md`/`docs/` into `web/`.
+`.`. Keep `test/` and `tools/` out of your `web/` tree (both are dev-only) — or, if you
+must colocate them, prefix the folder with `_` (e.g. `_test/`) so the embed walker
+ignores it. Same for docs: don't copy this repo's `README.md`/`docs/` into `web/`.
 
 **CSP.** The library compiles templates by cloning `<template>` nodes — no `eval` /
 `new Function` — so it runs under a strict `script-src 'self'`. It uses inline

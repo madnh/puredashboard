@@ -183,7 +183,7 @@ set uniform and safe:
 - [ ] CSP-safe: no `eval`/`new Function`; untrusted content reaches the DOM only via
       `textContent` (never `innerHTML`/`html\`\``).
 - [ ] JSDoc on the public API (`@prop`/`@attr`/`@fires`/`@example` — the analyzer tags),
-      then regenerate the agent reference: `make -C test/cem` → `src/_components.jsonl`.
+      then regenerate the agent reference: `make -C tools/api-reference` → `src/_components.jsonl`.
 - [ ] jsdom test in `test/<name>.test.mjs`; entry in `test/showcase.html`; `@import` added
       to `src/components.css`.
 - [ ] `make -C test` is green.

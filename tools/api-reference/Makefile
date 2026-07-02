@@ -1,6 +1,6 @@
 # Regenerate the agent API reference (src/_components.jsonl). Dev-only; needs Docker.
 #
-#   make -C test/cem        # → writes src/_components.jsonl
+#   make -C tools/api-reference        # → writes src/_components.jsonl
 #
 # Run this after adding or changing a component's JSDoc so the reference stays in
 # sync. It's one JSON line per component, consumed by AI agents (which read it by

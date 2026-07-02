@@ -256,7 +256,7 @@ so it never bloats your binary:
   example). One line = one component, so an agent greps the single line it needs and
   pipes it to `jq`/node/python — no need to load the whole file. Generated from the
   JSDoc via the [Custom Elements Manifest][cem] analyzer; regenerate with
-  `make -C test/cem` after JSDoc changes.
+  `make -C tools/api-reference` after JSDoc changes.
 
 **Preview every component:** serve the repo (`python3 -m http.server`) and open
 `test/gallery.html` — a mini component gallery (built from the reusable
