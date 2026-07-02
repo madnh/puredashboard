@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureDashboard — demo dashboard</title>
+
+    <!-- The opt-in theme (tokens + base + shell) … -->
+    <link rel="stylesheet" href="../src/theme/dashboard.css" />
+    <!-- … and every component's stylesheet in one link. -->
+    <link rel="stylesheet" href="../src/components.css" />
+
+    <style>
+      /* demo-only layout helpers (not part of the library) */
+      .kpi .card { padding: 16px 18px; }
+      .stack { display: grid; gap: 16px; }
+      .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: start; }
+      @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+      .muted { color: var(--muted); }
+      .card > h3 { margin: 0 0 12px; font-size: 15px; }
+      .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      form.settings { display: grid; gap: 18px; max-width: 620px; }
+      form.settings label > span { display: block; margin-bottom: 6px; font-size: 13px; color: var(--muted); }
+      .field-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .field-2 { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="logo">P</span> PureDashboard <small>· Demo</small></div>
+      <nav class="tabs" id="tabs">
+        <a class="tab" href="#/overview" data-path="/overview">Overview</a>
+        <a class="tab" href="#/services" data-path="/services">Services</a>
+        <a class="tab" href="#/settings" data-path="/settings">Settings</a>
+      </nav>
+      <div class="header-right">
+        <puredashboard-tooltip text="Toggle light / dark">
+          <button id="theme-toggle" aria-label="Toggle theme">◐</button>
+        </puredashboard-tooltip>
+        <span class="health"><span class="dot up"></span> <span class="health-text">Online</span></span>
+        <puredashboard-badge count="3"><span class="muted" style="font-size:20px" aria-label="Notifications">🔔</span></puredashboard-badge>
+        <puredashboard-avatar name="Ada Lovelace" size="sm"></puredashboard-avatar>
+      </div>
+    </header>
+
+    <main><div class="page" id="view"><!-- router mounts here --></div></main>
+
+    <script type="module">
+      // ---- the whole component library ----
+      import "../src/table.js"; import "../src/input.js"; import "../src/textarea.js";
+      import "../src/number.js"; import "../src/select.js"; import "../src/combobox.js";
+      import "../src/checkbox.js"; import "../src/switch.js"; import "../src/radio-group.js";
+      import "../src/slider.js"; import "../src/date.js"; import "../src/time.js";
+      import "../src/color.js"; import "../src/rate.js"; import "../src/form.js";
+      import "../src/button.js"; import "../src/divider.js"; import "../src/space.js";
+      import "../src/grid.js"; import "../src/segmented.js"; import "../src/statistic.js";
+      import "../src/tabs.js"; import "../src/breadcrumb.js"; import "../src/pagination.js";
+      import "../src/steps.js"; import "../src/nav.js"; import "../src/card.js";
+      import "../src/descriptions.js"; import "../src/tag.js"; import "../src/badge.js";
+      import "../src/avatar.js"; import "../src/empty.js"; import "../src/collapse.js";
+      import "../src/tree.js"; import "../src/list.js"; import "../src/timeline.js";
+      import "../src/result.js"; import "../src/tooltip.js"; import "../src/popover.js";
+      import "../src/popconfirm.js"; import "../src/alert.js"; import "../src/progress.js";
+      import "../src/spinner.js"; import "../src/skeleton.js";
+      import { toast } from "../src/toast.js";
+      import { Router } from "../src/router.js";
+
+      // tiny helper: create + assign props + append kids
+      const h = (tag, props, kids) => {
+        const n = Object.assign(document.createElement(tag), props || {});
+        if (kids) n.append(...[].concat(kids).filter(Boolean));
+        return n;
+      };
+      const card = (title, kids) => h("div", { className: "card" }, [title ? h("h3", { textContent: title }) : null, ...[].concat(kids)]);
+      const col = (span, kid) => h("puredashboard-col", { span }, [kid]);
+
+      const SERVICES = [
+        { name: "api-gateway", region: "us-east-1", reqs: 184203, status: "online" },
+        { name: "auth-service", region: "eu-west-1", reqs: 91044, status: "online" },
+        { name: "worker-batch", region: "us-east-1", reqs: 12876, status: "paused" },
+        { name: "image-resizer", region: "ap-south-1", reqs: 44120, status: "online" },
+        { name: "billing-cron", region: "eu-west-1", reqs: 873, status: "offline" },
+        { name: "search-index", region: "us-west-2", reqs: 60912, status: "online" },
+        { name: "notify-fanout", region: "us-east-1", reqs: 30188, status: "online" },
+        { name: "media-cdn", region: "ap-south-1", reqs: 220934, status: "online" },
+        { name: "rate-limiter", region: "us-east-1", reqs: 132770, status: "online" },
+        { name: "session-store", region: "us-west-2", reqs: 98410, status: "online" },
+      ];
+      const fmt = (n) => n.toLocaleString("en-US");
+      const statusColor = { online: "success", paused: "warning", offline: "danger" };
+
+      // ============================ OVERVIEW ============================
+      function overview(outlet) {
+        const crumb = h("puredashboard-breadcrumb", { items: [{ label: "Home", href: "#/overview" }, { label: "Overview" }] });
+
+        const kpis = h("puredashboard-row", { gutter: "md" });
+        kpis.className = "kpi";
+        const kpi = (title, value, opts) => col(6, card(null, h("puredashboard-statistic", Object.assign({ title, value }, opts || {}))));
+        kpis.append(
+          kpi("Requests / day", 1250341, { trend: "up" }),
+          kpi("Uptime", 99.98, { suffix: "%", precision: 2, trend: "up" }),
+          kpi("Active services", 9),
+          kpi("Error rate", 0.42, { suffix: "%", precision: 2, trend: "down" }),
+        );
+
+        const alert = h("puredashboard-alert", { type: "warning", showIcon: true,
+          title: "Quota warning", message: "media-cdn is at 86% of its monthly egress quota.", closable: true });
+
+        // recent activity list
+        const list = h("puredashboard-list", { split: true, items: [
+          { title: "Deployed api-gateway", description: "v1.4.0 · us-east-1", extra: "2m ago" },
+          { title: "Autoscaled media-cdn", description: "4 → 8 nodes", extra: "18m ago" },
+          { title: "billing-cron failed", description: "health check timeout", extra: "34m ago" },
+          { title: "Rotated auth keys", description: "eu-west-1", extra: "1h ago" },
+        ]});
+
+        // capacity progress
+        const caps = h("div", { className: "stack" }, [
+          h("div", {}, [h("div", { className: "row-between" }, [h("span", { className: "muted", textContent: "CPU" }), h("span", { className: "muted", textContent: "62%" })]), h("puredashboard-progress", { value: 62, showInfo: false })]),
+          h("div", {}, [h("div", { className: "row-between" }, [h("span", { className: "muted", textContent: "Memory" }), h("span", { className: "muted", textContent: "78%" })]), h("puredashboard-progress", { value: 78, showInfo: false })]),
+          h("div", {}, [h("div", { className: "row-between" }, [h("span", { className: "muted", textContent: "Egress quota" }), h("span", { className: "muted", textContent: "86%" })]), h("puredashboard-progress", { value: 86, status: "error", showInfo: false })]),
+        ]);
+
+        const timeline = h("puredashboard-timeline", { items: [
+          { label: "09:24", content: "Deployed v1.4.0", color: "success" },
+          { label: "09:31", content: "Autoscaled to 8 nodes", color: "accent" },
+          { label: "09:47", content: "billing-cron failed health check", color: "error" },
+          { label: "10:02", content: "Keys rotated", color: "muted" },
+        ], pending: "Monitoring…" });
+
+        const left = h("div", { className: "stack" }, [card("Recent activity", list), card("Capacity", caps)]);
+        const right = card("Timeline", timeline);
+
+        outlet.replaceChildren(h("div", { className: "stack" }, [
+          crumb,
+          h("h1", { className: "page-title", textContent: "Overview" }),
+          h("p", { className: "page-sub muted", textContent: "Fleet health at a glance — assembled entirely from PureDashboard components." }),
+          kpis,
+          alert,
+          h("div", { className: "two-col" }, [left, right]),
+        ]));
+      }
+
+      // ============================ SERVICES ============================
+      function services(outlet) {
+        const seg = h("puredashboard-segmented", { value: "all", options: [
+          { value: "all", label: "All" }, { value: "online", label: "Online" },
+          { value: "paused", label: "Paused" }, { value: "offline", label: "Offline" },
+        ]});
+
+        const table = h("puredashboard-table");
+        table.columns = [
+          { key: "name", label: "Service", sortable: true },
+          { key: "region", label: "Region", sortable: true },
+          { key: "reqs", label: "Requests / day", sortable: true, align: "right", render: (r) => fmt(r.reqs) },
+          { key: "status", label: "Status", sortable: true, render: (r) => { const t = document.createElement("puredashboard-tag"); t.setAttribute("color", statusColor[r.status]); t.textContent = r.status; return t; } },
+        ];
+        const apply = (f) => { table.rows = f === "all" ? SERVICES : SERVICES.filter((r) => r.status === f); };
+        apply("all");
+        table.rowKey = (r) => r.name;
+        table.selectable = true;
+        table.actions = [{ name: "restart", label: "Restart" }, { name: "delete", label: "Delete", danger: true }];
+        table.bulkActions = [{ name: "restart", label: "Restart" }, { name: "delete", label: "Delete", danger: true }];
+        table.pageSize = 6; table.pageSizes = [6, 10, 25];
+        table.addEventListener("action", (e) => {
+          if (e.detail.name === "restart") toast.success(`Restarting ${e.detail.row.name}…`);
+          else toast.error(`Deleted ${e.detail.row.name}`);
+        });
+        table.addEventListener("bulkaction", (e) => toast.info(`${e.detail.name} ${e.detail.rows.length} service(s)`));
+        seg.addEventListener("change", (e) => apply(e.detail.value));
+
+        const toolbar = h("div", { className: "row-between", style: "margin-bottom:14px" }, [
+          seg,
+          h("puredashboard-popconfirm", { title: "Purge offline services?", description: "This removes all offline services.", okDanger: true },
+            [h("puredashboard-button", { danger: true }, [document.createTextNode("Purge offline")])]),
+        ]);
+        toolbar.querySelector("puredashboard-popconfirm").addEventListener("confirm", () => toast.error("Purged offline services"));
+
+        outlet.replaceChildren(h("div", { className: "stack" }, [
+          h("puredashboard-breadcrumb", { items: [{ label: "Home", href: "#/overview" }, { label: "Services" }] }),
+          h("h1", { className: "page-title", textContent: "Services" }),
+          card(null, [toolbar, table]),
+        ]));
+      }
+
+      // ============================ SETTINGS ============================
+      function settings(outlet) {
+        const form = h("puredashboard-form");
+        const f = h("form", { className: "settings" });
+        const field = (labelText, node) => h("label", {}, [h("span", { textContent: labelText }), node]);
+
+        f.append(
+          field("Service name", h("puredashboard-input", { value: "api-gateway", required: true })),
+          h("div", { className: "field-2" }, [
+            field("Region", h("puredashboard-combobox", { placeholder: "Search region…", value: "us-east-1", options: [
+              { value: "us-east-1", label: "us-east-1" }, { value: "us-west-2", label: "us-west-2" },
+              { value: "eu-west-1", label: "eu-west-1" }, { value: "ap-south-1", label: "ap-south-1" },
+            ]})),
+            field("Tier", h("puredashboard-select", { value: "pro", options: [
+              { value: "free", label: "Free" }, { value: "pro", label: "Pro" }, { value: "ent", label: "Enterprise" },
+            ]})),
+          ]),
+          h("div", { className: "field-2" }, [
+            field("Instances", h("puredashboard-number", { value: "8", min: 1, max: 32 })),
+            field("Max CPU %", h("puredashboard-slider", { value: "80", min: 10, max: 100, showValue: true })),
+          ]),
+          h("div", { className: "field-2" }, [
+            field("Maintenance date", h("puredashboard-date", { value: "2026-07-15" })),
+            field("Window start", h("puredashboard-time", { value: "02:00" })),
+          ]),
+          field("Deploy strategy", h("puredashboard-radio-group", { value: "rolling", options: [
+            { value: "rolling", label: "Rolling" }, { value: "bluegreen", label: "Blue / green" }, { value: "recreate", label: "Recreate" },
+          ]})),
+          field("Notes", h("puredashboard-textarea", { rows: 3, placeholder: "Optional notes…" })),
+          h("div", { className: "field-2" }, [
+            field("Accent", h("puredashboard-color", { value: "#4f9cf9", showValue: true })),
+            field("Satisfaction", h("puredashboard-rate", { value: 4 })),
+          ]),
+          h("puredashboard-switch", { label: "Email notifications on failure", checked: true }),
+          h("puredashboard-checkbox", { label: "I understand this restarts the service", required: true }),
+          h("puredashboard-divider", {}),
+          h("puredashboard-space", { size: "sm" }, [
+            h("puredashboard-button", { variant: "primary", type: "submit" }, [document.createTextNode("Save changes")]),
+            h("puredashboard-button", { type: "reset" }, [document.createTextNode("Reset")]),
+          ]),
+        );
+        form.append(f);
+        form.addEventListener("submit", (e) => toast.success("Settings saved"));
+        form.addEventListener("invalid", () => toast.error("Please fix the highlighted fields"));
+
+        // right column: a config tree + descriptions
+        const tree = h("puredashboard-tree", { expandedKeys: ["env", "secrets"], selectedKey: "DB_URL", nodes: [
+          { id: "env", label: "Environment", children: [
+            { id: "DB_URL", label: "DATABASE_URL" }, { id: "REGION", label: "AWS_REGION" }, { id: "LOG", label: "LOG_LEVEL" },
+          ]},
+          { id: "secrets", label: "Secrets", children: [{ id: "API_KEY", label: "API_KEY" }, { id: "JWT", label: "JWT_SECRET" }] },
+        ]});
+        const desc = h("puredashboard-descriptions", { columns: 1, bordered: true, items: [
+          { label: "Version", value: "v1.4.0" }, { label: "Owner", value: "platform-team" },
+          { label: "Created", value: "2025-11-02" }, { label: "SLA", value: "99.95%" },
+        ]});
+
+        outlet.replaceChildren(h("div", { className: "stack" }, [
+          h("puredashboard-breadcrumb", { items: [{ label: "Home", href: "#/overview" }, { label: "Settings" }] }),
+          h("h1", { className: "page-title", textContent: "Settings" }),
+          h("div", { className: "two-col" }, [card("Service configuration", form), h("div", { className: "stack" }, [card("Details", desc), card("Config keys", tree)])]),
+        ]));
+      }
+
+      // ---- router ----
+      const page = (fn) => () => Promise.resolve({ default: fn });
+      const router = new Router({
+        outlet: "#view", appName: "PureDashboard", mode: "hash",
+        routes: {
+          "/": { title: "Overview", load: page(overview) },
+          "/overview": { title: "Overview", load: page(overview) },
+          "/services": { title: "Services", load: page(services) },
+          "/settings": { title: "Settings", load: page(settings) },
+          "*": { title: "Not found", load: page((o) => o.replaceChildren(
+            h("puredashboard-result", { status: "404", title: "Page not found", subtitle: "That page doesn't exist." }))) },
+        },
+      });
+      router.start();
+
+      // reflect the active top-bar tab from the hash
+      const syncTabs = () => {
+        const path = (location.hash.replace(/^#/, "") || "/overview");
+        for (const a of document.querySelectorAll("#tabs .tab")) {
+          if (path.startsWith(a.dataset.path)) a.setAttribute("aria-current", "page");
+          else a.removeAttribute("aria-current");
+        }
+      };
+      window.addEventListener("hashchange", syncTabs); syncTabs();
+      if (!location.hash) location.hash = "#/overview";
+
+      // light/dark toggle
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        const el = document.documentElement;
+        el.dataset.theme = el.dataset.theme === "dark" ? "light" : "dark";
+      });
+
+      // signal readiness for the screenshot driver
+      requestAnimationFrame(() => requestAnimationFrame(() => { document.documentElement.dataset.ready = "1"; }));
+    </script>
+  </body>
+</html>
