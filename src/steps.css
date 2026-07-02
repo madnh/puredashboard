@@ -59,14 +59,19 @@ puredashboard-steps {
 }
 .puredashboard-steps__list--vertical > .puredashboard-steps__item:last-child { padding-bottom: 0; }
 
-/* ── connector line: drawn from the previous bubble to this one; hidden on the
- *    first item (nothing precedes it). Position flips per orientation. ── */
+/* ── connector line: a thin bar between two adjacent bubbles. Horizontal reaches
+ *    BACK to the previous bubble (hidden on the first item); vertical reaches DOWN
+ *    to the next bubble (hidden on the last item). The down form uses only FIXED
+ *    offsets, so it lands exactly on the next bubble regardless of differing step
+ *    heights. Opaque bubbles (z-index:1) mask the ends. ── */
 .puredashboard-steps__connector {
   position: absolute;
   background: var(--pd-border);
   transition: background-color var(--pd-duration) var(--pd-ease);
 }
-.puredashboard-steps__item:first-child > .puredashboard-steps__connector { display: none; }
+
+/* horizontal: reach back to the previous bubble; hide on the first item */
+.puredashboard-steps__list--horizontal > .puredashboard-steps__item:first-child > .puredashboard-steps__connector { display: none; }
 .puredashboard-steps__list--horizontal > .puredashboard-steps__item > .puredashboard-steps__connector {
   /* the bubble sits below the step's sp-1 padding, so its centre is sp-1 + bubble/2
    * from the item top — align the line to that, not to bubble/2 alone. */
@@ -76,17 +81,26 @@ puredashboard-steps {
   left: -50%;
   transform: translateY(-50%);
 }
+
+/* vertical: reach DOWN to the next bubble; hide on the last item. top = this
+ * bubble's centre; bottom extends a fixed amount BELOW the item so it always meets
+ * the next bubble's centre (always sp-1 + bubble/2 below the next item's top =
+ * below this item's bottom) — independent of either step's height. */
+.puredashboard-steps__list--vertical > .puredashboard-steps__item:last-child > .puredashboard-steps__connector { display: none; }
 .puredashboard-steps__list--vertical > .puredashboard-steps__item > .puredashboard-steps__connector {
   left: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
   width: var(--pd-steps-connector);
-  top: calc(-1 * var(--sp-6, 24px));
-  bottom: calc(100% - var(--pd-steps-bubble));
+  top: calc(var(--sp-1, 4px) + var(--pd-steps-bubble) / 2);
+  bottom: calc(-1 * (var(--sp-1, 4px) + var(--pd-steps-bubble) / 2));
   transform: translateX(-50%);
 }
-/* completed & current items pull their connector to accent, so the "done" trail
- * reads as a filled progress line. */
-.puredashboard-steps__item--complete > .puredashboard-steps__connector,
-.puredashboard-steps__item--current > .puredashboard-steps__connector { background: var(--pd-accent); }
+
+/* filled "done" trail. Horizontal fills the segment leading INTO each complete/
+ * current step; vertical (reach-down) fills the segment leading OUT of each
+ * COMPLETE step, so the line after the current step stays neutral. */
+.puredashboard-steps__list--horizontal > .puredashboard-steps__item--complete > .puredashboard-steps__connector,
+.puredashboard-steps__list--horizontal > .puredashboard-steps__item--current > .puredashboard-steps__connector,
+.puredashboard-steps__list--vertical > .puredashboard-steps__item--complete > .puredashboard-steps__connector { background: var(--pd-accent); }
 
 /* ── the step itself (span or button) ── */
 .puredashboard-steps__step {

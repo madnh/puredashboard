@@ -1,8 +1,11 @@
 import { el } from "./_util.js";
 
 // A visible panel: padded content on a --panel-2 surface so the split is obvious.
+// No width/height on the split axis — the splitter sizes panels via flex-grow and
+// stretches them on the cross axis; an explicit height:100% would break the
+// vertical (column) layout.
 const panel = (label, size) =>
-  el("div", { "data-size": size, style: "padding:12px; background:var(--panel-2); height:100%; box-sizing:border-box" }, label);
+  el("div", { "data-size": size, style: "padding:12px; background:var(--panel-2); box-sizing:border-box" }, label);
 
 // Wrap a splitter in a bordered, fixed-height box so the drag area is visible.
 const box = (kids) =>

@@ -54,23 +54,22 @@ puredashboard-descriptions {
   word-break: break-word;
 }
 
-/* bordered — table-like cells with a boxed frame and dividers between them. */
+/* bordered — table-like cells with a boxed frame and dividers between them.
+ * Grid lines are drawn by the 1px GAP showing the list's (border-coloured)
+ * background through the opaque cells — so every divider is exactly 1px with no
+ * doubling, and it needs no per-cell border logic (which previously relied on an
+ * invalid `nth-child(var())`). Works for any column count and `span` cells. */
 .puredashboard-descriptions__list--bordered {
-  gap: 0;
+  gap: 1px;
+  background: var(--pd-border);
   border: 1px solid var(--pd-border);
   border-radius: var(--pd-radius);
   overflow: hidden;
 }
 .puredashboard-descriptions__list--bordered .puredashboard-descriptions__pair {
   padding: var(--sp-2, 8px) var(--sp-3, 12px);
-  border-top: 1px solid var(--pd-border);
-  border-left: 1px solid var(--pd-border);
   background: var(--pd-panel-2);
 }
-/* top row has no top border; first column has no left border (frame supplies the edge) */
-.puredashboard-descriptions__list--bordered .puredashboard-descriptions__pair:nth-child(-n + var(--pd-descriptions-cols)) { border-top: none; }
-.puredashboard-descriptions__list--bordered .puredashboard-descriptions__pair:first-child { border-top: none; }
-.puredashboard-descriptions__list--bordered .puredashboard-descriptions__pair[style*="span"] { border-left: none; }
 
 .puredashboard-descriptions__empty {
   padding: var(--sp-5, 20px) var(--sp-4, 16px);
