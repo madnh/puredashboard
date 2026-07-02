@@ -121,7 +121,7 @@
           h("div", {}, [h("div", { className: "row-between" }, [h("span", { className: "muted", textContent: "Egress quota" }), h("span", { className: "muted", textContent: "86%" })]), h("puredashboard-progress", { value: 86, status: "error", showInfo: false })]),
         ]);
 
-        const timeline = h("puredashboard-timeline", { items: [
+        const timeline = h("puredashboard-timeline", { mode: "right", items: [
           { label: "09:24", content: "Deployed v1.4.0", color: "success" },
           { label: "09:31", content: "Autoscaled to 8 nodes", color: "accent" },
           { label: "09:47", content: "billing-cron failed health check", color: "error" },

@@ -81,22 +81,25 @@ puredashboard-timeline {
   font-size: var(--pd-timeline-dot);
   line-height: 1;
 }
-/* the line: full-height pseudo-bar behind the dot */
-.puredashboard-timeline__dot::before {
+/* the connector: drawn on the ITEM (not the dot) so it spans the FULL row height —
+ * including the padding-gap down to the next item — and therefore always reaches
+ * the next dot no matter how tall the content is. The dot (z-index 1) sits on top
+ * and masks the line where it passes through, so the thread reads as continuous. */
+.puredashboard-timeline__item::before {
   content: "";
   position: absolute;
-  top: calc(-1 * var(--sp-3, 12px));
-  bottom: calc(-1 * var(--pd-timeline-gap) - var(--sp-3, 12px));
-  left: 50%;
+  top: 0;
+  bottom: 0;
   width: var(--pd-timeline-connector);
-  transform: translateX(-50%);
   background: var(--pd-border-2);
-  z-index: -1;
+  z-index: 0;
 }
-/* trim the thread at the ends: nothing precedes the first dot, nothing follows
- * the last — so the line starts and stops at the dots, not the list edges. */
-.puredashboard-timeline__item:first-child > .puredashboard-timeline__dot::before { top: 0; }
-.puredashboard-timeline__item:last-child  > .puredashboard-timeline__dot::before { bottom: auto; height: 0; }
+.puredashboard-timeline__item--right::before { left: calc(var(--pd-timeline-rail) / 2); transform: translateX(-50%); }
+.puredashboard-timeline__item--left::before  { right: calc(var(--pd-timeline-rail) / 2); transform: translateX(50%); }
+/* trim the ends: start the thread at the first dot's centre, stop it at the last */
+.puredashboard-timeline__item:first-child::before { top: calc(2px + var(--pd-timeline-dot) / 2); }
+.puredashboard-timeline__item:last-child::before  { bottom: auto; height: calc(2px + var(--pd-timeline-dot) / 2); }
+.puredashboard-timeline__item:first-child:last-child::before { display: none; }
 
 /* a custom SVG glyph (or the spinner) fills the dot instead of the plain circle */
 .puredashboard-timeline__dot > svg {
