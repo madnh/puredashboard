@@ -45,6 +45,8 @@ const SPINNER_SVG =
 
 const VARIANTS = new Set(["primary", "default", "dashed", "text", "link"]);
 const SIZES = new Set(["sm", "md", "lg"]);
+const STATUSES = new Set(["success", "warning", "danger"]);
+const SHAPES = new Set(["default", "round", "circle"]);
 
 /**
  * A themed button — or link — that wraps its author-provided label content in a
@@ -60,7 +62,9 @@ const SIZES = new Set(["sm", "md", "lg"]);
  *
  * @prop {string}  variant  - `"primary"` | `"default"` (secondary) | `"dashed"` | `"text"` | `"link"`. Default `"default"`.
  * @prop {string}  size     - `"sm"` | `"md"` | `"lg"`. Default `"md"`.
- * @prop {boolean} danger   - Destructive (red) styling. Default `false`.
+ * @prop {string}  status   - Intent colour that recolours the button across every variant: `"success"` (green) | `"warning"` (amber) | `"danger"` (red). Unset by default. `danger` is the legacy shorthand for `status="danger"`.
+ * @prop {string}  shape    - `"default"` | `"round"` (pill) | `"circle"` (1:1, for an icon-only button). Default `"default"`.
+ * @prop {boolean} danger   - Destructive (red) styling — shorthand for `status="danger"`. Default `false`.
  * @prop {boolean} disabled - Disable the control (blocks interaction; `aria-disabled` on links). Default `false`.
  * @prop {boolean} loading  - Show a leading spinner glyph, set `aria-busy`, and block interaction. Default `false`.
  * @prop {boolean} block    - Full-width (fills the host). Default `false`.
@@ -72,6 +76,8 @@ const SIZES = new Set(["sm", "md", "lg"]);
  *
  * @attr {string}  variant    - Declarative form of `variant`.
  * @attr {string}  size       - Declarative form of `size`.
+ * @attr {string}  status     - Declarative form of `status`.
+ * @attr {string}  shape      - Declarative form of `shape`.
  * @attr {boolean} danger     - Declarative form of `danger`.
  * @attr {boolean} disabled   - Declarative form of `disabled`.
  * @attr {boolean} loading    - Declarative form of `loading`.
@@ -98,7 +104,7 @@ const SIZES = new Set(["sm", "md", "lg"]);
  */
 class PuredashboardButton extends HTMLElement {
   static get observedAttributes() {
-    return ["variant", "size", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right"];
+    return ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right"];
   }
 
   constructor() {
@@ -110,7 +116,7 @@ class PuredashboardButton extends HTMLElement {
     // A template engine may set properties before upgrade, leaving plain
     // own-properties that shadow the accessors. Reconcile them (same pattern as
     // the rest of the library).
-    for (const p of ["variant", "size", "danger", "disabled", "loading", "block", "type", "href", "icon", "iconRight", "labels"]) {
+    for (const p of ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "iconRight", "labels"]) {
       this._upgrade(p);
     }
   }
@@ -135,6 +141,12 @@ class PuredashboardButton extends HTMLElement {
 
   get icon() { return this.getAttribute("icon"); }
   set icon(v) { v == null ? this.removeAttribute("icon") : this.setAttribute("icon", v); }
+
+  get status() { return this.getAttribute("status"); }
+  set status(v) { v == null ? this.removeAttribute("status") : this.setAttribute("status", v); }
+
+  get shape() { return this.getAttribute("shape") || "default"; }
+  set shape(v) { v == null ? this.removeAttribute("shape") : this.setAttribute("shape", v); }
 
   get danger() { return this.hasAttribute("danger"); }
   set danger(v) { this._reflectBool("danger", v); }
@@ -239,7 +251,15 @@ class PuredashboardButton extends HTMLElement {
     const cls = ["puredashboard-button__el", "js-puredashboard-button__el"];
     if (variant !== "default") cls.push(`puredashboard-button__el--${variant}`);
     if (size !== "md") cls.push(`puredashboard-button__el--${size}`);
-    if (this.danger) cls.push("puredashboard-button__el--danger");
+    // status intent color (success/warning/danger). `danger` boolean is the
+    // legacy shorthand for status="danger"; keep emitting `--danger` for back-compat.
+    const status = STATUSES.has(this.status) ? this.status : (this.danger ? "danger" : null);
+    if (status) {
+      cls.push("puredashboard-button__el--status");
+      cls.push(status === "danger" ? "puredashboard-button__el--danger" : `puredashboard-button__el--status-${status}`);
+    }
+    const shape = SHAPES.has(this.shape) ? this.shape : "default";
+    if (shape !== "default") cls.push(`puredashboard-button__el--${shape}`);
     if (this.block) cls.push("puredashboard-button__el--block");
     if (this.loading) cls.push("puredashboard-button__el--loading");
     el.className = cls.join(" ");

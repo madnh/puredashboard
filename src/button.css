@@ -25,6 +25,8 @@ puredashboard-button {
   --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 9%, Canvas));
   --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
   --pd-red:       var(--danger,   var(--red, #dc2626));
+  --pd-success:   var(--success,  #16a34a);
+  --pd-warning:   var(--warning,  #d97706);
   --pd-radius:    var(--radius-sm, var(--radius, 8px));
   --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
   --pd-weight:    var(--weight-medium, 500);
@@ -103,17 +105,38 @@ puredashboard-button.puredashboard-button--block { display: flex; width: 100%; }
 }
 .puredashboard-button__el--link:hover { background: transparent; text-decoration: underline; }
 
-/* ── danger modifier (destructive) ── */
-.puredashboard-button__el--danger { color: var(--pd-red); border-color: color-mix(in srgb, var(--pd-red) 40%, var(--pd-border)); }
-.puredashboard-button__el--danger:hover { background: color-mix(in srgb, var(--pd-red) 14%, transparent); }
-.puredashboard-button__el--primary.puredashboard-button__el--danger {
+/* ── status modifiers (intent colour) ── danger/success/warning recolour every
+ * variant through the shared --pd-status var. `--danger` is kept as the legacy
+ * class (== status="danger") so existing markup/selectors keep working. */
+.puredashboard-button__el--danger,
+.puredashboard-button__el--status-danger  { --pd-status: var(--pd-red); }
+.puredashboard-button__el--status-success { --pd-status: var(--pd-success); }
+.puredashboard-button__el--status-warning { --pd-status: var(--pd-warning); }
+
+/* outlined/default status: coloured text + tinted border + tinted hover */
+.puredashboard-button__el--status { color: var(--pd-status); border-color: color-mix(in srgb, var(--pd-status) 40%, var(--pd-border)); }
+.puredashboard-button__el--status:hover { background: color-mix(in srgb, var(--pd-status) 14%, transparent); }
+/* solid status (primary + status): ink on the status fill */
+.puredashboard-button__el--primary.puredashboard-button__el--status {
   color: var(--pd-accent-ink);
-  background: var(--pd-red);
-  border-color: var(--pd-red);
+  background: var(--pd-status);
+  border-color: var(--pd-status);
 }
-.puredashboard-button__el--primary.puredashboard-button__el--danger:hover { background: color-mix(in srgb, var(--pd-red) 86%, #000); border-color: color-mix(in srgb, var(--pd-red) 86%, #000); }
-.puredashboard-button__el--text.puredashboard-button__el--danger,
-.puredashboard-button__el--link.puredashboard-button__el--danger { color: var(--pd-red); background: transparent; }
+.puredashboard-button__el--primary.puredashboard-button__el--status:hover { background: color-mix(in srgb, var(--pd-status) 86%, #000); border-color: color-mix(in srgb, var(--pd-status) 86%, #000); }
+/* text/link status: coloured glyph, transparent surface */
+.puredashboard-button__el--text.puredashboard-button__el--status,
+.puredashboard-button__el--link.puredashboard-button__el--status { color: var(--pd-status); background: transparent; }
+.puredashboard-button__el--text.puredashboard-button__el--status:hover { background: color-mix(in srgb, var(--pd-status) 12%, transparent); }
+
+/* ── shape modifiers ── round = pill; circle = 1:1 for an icon-only button ── */
+.puredashboard-button__el--round  { border-radius: var(--radius-full, 999px); }
+.puredashboard-button__el--circle {
+  border-radius: 50%;
+  padding: 0;
+  width: var(--pd-button-height);
+  min-width: var(--pd-button-height);
+  aspect-ratio: 1 / 1;
+}
 
 /* ── size modifiers — remap the height/padding tokens ── */
 .puredashboard-button__el--sm { --pd-button-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); padding: 0 var(--sp-2, 8px); }

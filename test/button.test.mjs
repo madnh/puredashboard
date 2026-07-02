@@ -44,6 +44,53 @@ void PuredashboardButton;
   ok(el.classList.contains("puredashboard-button--block"), "block sets the host modifier too");
 }
 
+// ---- danger boolean is the legacy shorthand for status="danger" ----
+{
+  const el = mount("puredashboard-button");
+  el.danger = true;
+  await tick();
+  const inner = el.querySelector(".js-puredashboard-button__el");
+  ok(inner.classList.contains("puredashboard-button__el--status"), "danger adds the umbrella --status class");
+  ok(inner.classList.contains("puredashboard-button__el--danger"), "danger keeps the legacy --danger class");
+}
+
+// ---- status=success/warning add the umbrella + specific class ----
+for (const s of ["success", "warning"]) {
+  const el = mount("puredashboard-button");
+  el.variant = "primary"; el.status = s;
+  await tick();
+  const inner = el.querySelector(".js-puredashboard-button__el");
+  ok(inner.classList.contains("puredashboard-button__el--status"), `status=${s} adds the umbrella --status class`);
+  ok(inner.classList.contains(`puredashboard-button__el--status-${s}`), `status=${s} adds the specific --status-${s} class`);
+  ok(!inner.classList.contains("puredashboard-button__el--danger"), `status=${s} does not add --danger`);
+}
+
+// ---- an invalid status adds no status class ----
+{
+  const el = mount("puredashboard-button");
+  el.status = "nope";
+  await tick();
+  const inner = el.querySelector(".js-puredashboard-button__el");
+  ok(!inner.className.includes("--status"), "unknown status adds no status class");
+}
+
+// ---- shape=round/circle add the modifier; default adds none ----
+{
+  const el = mount("puredashboard-button");
+  el.shape = "circle";
+  await tick();
+  let inner = el.querySelector(".js-puredashboard-button__el");
+  ok(inner.classList.contains("puredashboard-button__el--circle"), "shape=circle adds the modifier class");
+  el.shape = "round";
+  await tick();
+  ok(inner.classList.contains("puredashboard-button__el--round") && !inner.classList.contains("puredashboard-button__el--circle"), "shape=round replaces circle");
+  ok(el.shape === "round", "shape getter reflects the attribute");
+  el.shape = null;
+  await tick();
+  ok(!inner.className.includes("--round") && !inner.className.includes("--circle"), "default shape adds no modifier");
+  ok(el.shape === "default", "shape getter defaults to 'default'");
+}
+
 // ---- default variant/size add NO class (base) ----
 {
   const el = mount("puredashboard-button");
