@@ -152,9 +152,10 @@ strings are overridable via the `labels` property on every component.
 **This table is the front door — it covers 95% of tasks; read it, not the JSON.**
 The full machine-readable API (every prop/attr/event + CSS custom props, from the
 JSDoc) lives in `_custom-elements.json` (~65k tokens — do NOT read it whole). To
-consult ONE component, grep its tag and read just that slice:
-`grep -n '"tagName": "puredashboard-<tag>"' src/_custom-elements.json` → read ~240
-lines up from that hit (~2k tokens).
+consult ONE component, find its module block (each starts at a `"path"` line) and
+read forward to the next block — blocks run ~30–500 lines (~0.5–3k tokens):
+`grep -n '"path": "src/<file>.js"' src/_custom-elements.json` gives the start line;
+read from there to the next `"path"` hit.
 
 ### General & layout
 | Tag | Key props | Events | Notes |
