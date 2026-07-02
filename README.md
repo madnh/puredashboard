@@ -2,13 +2,16 @@
 
 **Build an embedded admin dashboard with nothing but the browser.**
 
-PureDashboard is a small UI module library for apps that need a real dashboard UI —
-tables, dialogs, menus, uploads, toasts, routing, markdown,... — but **don't want to drag
-in a frontend framework, a bundler, and a 200 MB `node_modules`** to get one.
+PureDashboard is a **complete** UI component library for apps that need a real
+dashboard UI — 50+ components spanning forms, tables, navigation, data display,
+feedback, overlays and layout, plus a router, safe Markdown, and even native-style
+desktop window chrome — but **don't want to drag in a frontend framework, a bundler,
+and a 200 MB `node_modules`** to get one.
 
 It's plain ES modules and standard DOM. **No dependencies. No build step. No
-minification. No transpile.** The files you write are the files that ship. Drop the
-folder into your backend, `import` what you need, and serve it.
+minification. No transpile.** The files you write are the files that ship — so what
+you read *is* what runs in the browser, auditable line by line. Drop the folder into
+your backend, `import` what you need, and serve it.
 
 ## Showcase
 
@@ -23,25 +26,35 @@ design tokens (light/dark) and a `labels` object (any language), and the optiona
 
 <sub>Sortable columns · filter · pagination + rows-per-page · row selection with a bulk-action bar · per-row actions · a top-layer toast — all client-side, all zero-dependency.</sub>
 
+…and a whole dashboard assembled from nothing but PureDashboard components — top bar,
+nav, KPI cards, alerts, lists, a timeline and progress meters:
+
+![PureDashboard — an assembled admin dashboard, dark theme](docs/images/dashboard-dark.png)
+
+<sub>The demo above is real, runnable code — `test/dashboard.html` (serve the repo and open it).</sub>
+
 **The platform guarantees**
 
 - 🚫 **Zero dependencies** — no npm packages at runtime, nothing to vet or patch.
 - 🛠️ **No build / no bundler** — no transpile, no minify; the files you write are the files that ship.
 - 🔒 **CSP-safe** — no `eval` / `new Function`; runs under a strict `script-src 'self'`.
 - 📦 **Embeds straight into a backend binary** — `//go:embed` the folder and ship the whole UI; works equally from any static file server or `file://`.
-- 🪶 **Tiny & auditable** — plain ES modules + standard DOM.
+- 🔎 **Transparent & verifiable** — no build, no minify, no transpile, so the source *is* the artifact: what you read is exactly what runs. Plain ES modules + standard DOM you can diff, review, and pin — nothing hidden in a bundle.
 
-**What you get**
+**What you get — a complete component catalog (50+)**
 
-- 📊 **Data table** (`<puredashboard-table>`) — sortable columns, search filter, pagination, row selection with bulk actions, per-row actions.
-- 📤 **File upload** (`<puredashboard-upload>`) — drag-and-drop, image thumbnails, per-file progress, native multipart form submit.
-- 🪟 **Overlays** (`dialog` / `drawer` / `alert` / `confirm` / `prompt`) — built on native `<dialog>`: focus trap, Esc + backdrop dismiss, top-layer stacking.
-- 📋 **Action menus** (`menu()`) — anchored dropdowns in the top layer, real `<a href>` links, keyboard + light-dismiss.
-- 🔔 **Toasts** (`toast` + `.success/.error/.warn/.info`) — transient top-layer notifications, auto- or manual-dismiss.
-- 🧭 **SPA router** (`Router`) — hash or History API, params, catch-all 404, lazy-loaded pages, layouts and guards.
-- 📝 **Safe Markdown** (`<puredashboard-markdown>`) — XSS-safe `textContent`-only rendering with an href whitelist, for **untrusted** content.
+- 🧱 **General & layout** — `button`, `segmented`, `divider`, `space`, `flex`, 24-column `grid` (`row`/`col`), a page-scaffold `layout` (`header`/`sider`/`content`/`footer`), and a draggable `splitter`.
+- 📝 **Forms** (all form-associated — real `submit` + validity via `ElementInternals`) — `input`, `textarea`, `number`, `select`, `combobox`, `checkbox`, `switch`, `radio-group`, `slider`, `date`, `time`, `color`, `rate`, and a `form` wrapper.
+- 🧭 **Navigation** — `tabs`, `breadcrumb`, `pagination`, `steps`, a collapsible sidebar `nav`, and a `router` (hash or History API, params, catch-all 404, lazy pages, layouts, guards).
+- 📊 **Data display** — `table` (sort · filter · paginate · row-select + bulk actions · per-row actions), `card`, `descriptions`, `statistic`, `tag`, `badge`, `avatar`, `list`, `tree`, `collapse`, `timeline`, `empty`, and XSS-safe `markdown`.
+- 💬 **Overlays** (native top layer) — `dialog` / `drawer` / `alert` / `confirm` / `prompt`, anchored `menu()`, `tooltip`, `popover`, `popconfirm`, and `toast` — focus-trapped, Esc/backdrop/light-dismiss.
+- 🔔 **Feedback** — `alert`, `progress` (line + circle), `spinner`, `skeleton`, `result`.
+- 📤 **File upload** — drag-and-drop, image thumbnails, per-file progress, native multipart submit.
+- 🖥️ **Native-style desktop** — a custom `titlebar` for frameless Tauri/Wails/Electron windows and an optional macOS **skin** (`theme/native.css`, vibrancy + hairlines). See [DESKTOP.md](docs/DESKTOP.md).
 - ⚡ **Reactive engine** (`reactive.js`) — a lit-html-style template engine that diffs the DOM **in place**, so `<input>` focus, caret and scroll survive re-renders.
 - 🎨 **Self-contained theming** — one stylesheet per component, themed through a `--pd-*` token chain; looks right with zero config and auto-adapts to light/dark. An **optional [theme](#a-cohesive-look-the-optional-theme)** (`src/theme/`) adds a cohesive palette + dashboard frame in one link.
+
+<sub>Full API for every component: [`src/_components.jsonl`](#documentation) · preview them all in the gallery (`test/gallery.html`).</sub>
 
 ---
 
@@ -91,10 +104,13 @@ PureDashboard's answer is to **remove the surface, not monitor it**:
 - **CSP-safe by construction.** No `eval`, no `new Function`. It runs under a strict
   `script-src 'self'`, so even an injected string can't become executing code — a real
   requirement for internal/admin tooling.
-- **You own every line.** It's ~2,200 lines of plain ES modules you can read top to
-  bottom, audit _once_, and trust — not a black box you pin a version of. No upstream
-  churn, no breaking majors, no dependency bumps to chase, no lockfile to watch. Need a
-  change? **Open the file and edit it.** It's yours to fork, patch, and keep.
+- **You own every line — and every line is readable.** It's plain ES modules with **no
+  build, no minify, no transpile**, so the source *is* the shipped artifact: what you
+  review is exactly what runs, byte for byte. Nothing is hidden inside a bundle, and
+  there's no generated blob to trust. Pin a tag, read it, diff the next one — a real
+  code review, not a version bump you hope is fine. No upstream churn, no breaking
+  majors, no lockfile to watch. Need a change? **Open the file and edit it.** It's yours
+  to fork, patch, and keep.
 
 This makes it a good fit for embedded/admin UIs where the frontend should be a thin,
 safe, dependency-free layer over the backend — and a poor fit for large public SPAs
@@ -104,28 +120,44 @@ that genuinely need a full framework.
 
 ## What's inside
 
+Every component is a self-contained `*.js` + `*.css` pair (one stylesheet each, themed
+via the `--pd-*` token palette — link only what you use). The full, machine-readable
+API for all 50+ lives in [`src/_components.jsonl`](#documentation). Underneath them sit
+a few **shared modules** — the engine and the standalone utilities:
+
 | Module        | Exports                                                       | Purpose                                                                                                                                                                        |
 | ------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `reactive.js` | `Reactive`, `html`, `repeat`, `renderResult`                  | **The core.** A lit-html-style template engine that diffs the DOM **in place** (so `<input>` focus/scroll survive re-renders) + a `ReactiveElement`-style custom-element base. |
 | `html.js`     | `html`, `raw`, `icon`, `escapeHTML`                           | Lightweight **string → innerHTML** templating (escapes by default). For one-shot output, not in-place diffing.                                                                 |
-| `table.js`    | `<puredashboard-table>`                                       | Data table/list: sort, filter, pagination, row selection + bulk actions, per-row actions.                                                                                      |
-| `menu.js`     | `menu()`                                                      | Anchored dropdown / action menu in the top layer.                                                                                                                              |
-| `upload.js`   | `<puredashboard-upload>`, `uploadFile()`                      | Drag-and-drop file picker: thumbnails, per-file progress, native multipart submit.                                                                                             |
 | `dialog.js`   | `dialog`, `drawer`, `alert`, `confirm`, `prompt`              | Native `<dialog>` overlays (modal/drawer + alert/confirm/prompt).                                                                                                              |
+| `menu.js`     | `menu()`                                                      | Anchored dropdown / action menu in the top layer.                                                                                                                              |
 | `toast.js`    | `toast` (+ `.success/.error/.warn/.info`)                     | Transient notifications in the top layer.                                                                                                                                      |
 | `router.js`   | `Router`                                                      | Zero-config SPA router (hash or History API, params, lazy modules, layouts, guards).                                                                                           |
 | `md.js`       | `<puredashboard-markdown>`, `renderMarkdown`, `parseMarkdown` | XSS-safe Markdown → DOM (textContent-only, href whitelist). For **untrusted** content.                                                                                         |
-| `*.css`       | —                                                             | One self-contained stylesheet per component, themed via the `--pd-*` token palette. Link the ones you use.                                                                     |
 
-### The components, up close
+### The catalog, up close
 
-| Dialog (native `<dialog>`) | Action menu (top layer) | Toasts (top layer) |
+| Forms (form-associated) | Data display | Feedback |
 |:--:|:--:|:--:|
-| ![dialog](docs/images/dialog.png) | ![menu](docs/images/menu.png) | ![toasts](docs/images/toast.png) |
+| ![forms](docs/images/forms-dark.png) | ![data display](docs/images/data-dark.png) | ![feedback](docs/images/feedback-dark.png) |
 
-| Drag-and-drop upload | Safe Markdown (`textContent`-only) |
+| Navigation | Dialog (native `<dialog>`) | Action menu (top layer) |
+|:--:|:--:|:--:|
+| ![navigation](docs/images/nav-dark.png) | ![dialog](docs/images/dialog.png) | ![menu](docs/images/menu.png) |
+
+| Toasts (top layer) | Drag-and-drop upload | Safe Markdown (`textContent`-only) |
+|:--:|:--:|:--:|
+| ![toasts](docs/images/toast.png) | ![upload](docs/images/upload.png) | ![markdown](docs/images/markdown.png) |
+
+### Native-style desktop (Tauri / Wails / Electron)
+
+A custom `<puredashboard-titlebar>` for frameless windows plus an optional macOS **skin**
+(`theme/native.css` — vibrancy, hairlines, macOS controls) turn the same components into
+a native-feeling desktop app. Recipe: [docs/DESKTOP.md](docs/DESKTOP.md).
+
+| Frameless macOS window · dark | · light |
 |:--:|:--:|
-| ![upload](docs/images/upload.png) | ![markdown](docs/images/markdown.png) |
+| ![desktop macOS, dark](docs/images/desktop-mac-dark.png) | ![desktop macOS, light](docs/images/desktop-mac-light.png) |
 
 ---
 
@@ -274,13 +306,17 @@ puredashboard/
 ├─ src/        ← the library — ship these
 │  ├─ *.js     ← components + engine
 │  ├─ *.css    ← one self-contained stylesheet per component
-│  └─ theme/   ← optional tokens + base + dashboard shell (the cohesive look)
-├─ test/       ← jsdom tests + demo harnesses (incl. showcase.html) — dev-only, never shipped
-└─ docs/       ← architecture, usage, development guides + images
+│  ├─ theme/   ← optional tokens + base + dashboard shell + native (macOS) skin
+│  ├─ _agents.md         ← guide for AI agents (travels in src/, skipped by go:embed)
+│  └─ _components.jsonl  ← machine-readable API, one line per component
+├─ test/       ← jsdom tests + demo harnesses (gallery, dashboard, desktop, showcase) — dev-only
+├─ tools/      ← dev-only generators (api-reference → src/_components.jsonl)
+└─ docs/       ← architecture, usage, development, desktop guides + images
 ```
 
-Only `src/` reaches production. Tests run in a throwaway Docker image so the runtime
-stays strictly zero-dependency — `make -C test`. See
+Only `src/` reaches production (`test/`, `tools/`, `docs/` are dev-only and stay out of
+the go:embed binary). Tests run in a throwaway Docker image so the runtime stays
+strictly zero-dependency — `make -C test`. See
 [DEVELOPMENT.md](docs/DEVELOPMENT.md#testing).
 
 ---
