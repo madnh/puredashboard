@@ -46,6 +46,7 @@
 @import "grid.css";
 @import "layout.css";
 @import "splitter.css";
+@import "titlebar.css";
 /* navigation */
 @import "tabs.css";
 @import "breadcrumb.css";
