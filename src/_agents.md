@@ -256,6 +256,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-empty` | `description`, `compact` | — | actions = children |
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
 | `puredashboard-markdown` | `value` | — | XSS-safe (textContent only) |
+| `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
 
 ### Overlay (wrap a trigger child)
 | Tag | Key props | Events | Notes |

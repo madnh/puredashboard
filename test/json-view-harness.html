@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>puredashboard-json-view — harness</title>
+  <!-- optional app tokens (component also works with none) -->
+  <link rel="stylesheet" href="../src/theme/tokens.css" />
+  <link rel="stylesheet" href="../src/json-view.css" />
+  <style>
+    body { font: 14px/1.5 system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+    h1 { font-size: 1.2rem; }
+    .bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: 1rem 0; }
+    .bar button { padding: .35rem .7rem; cursor: pointer; }
+    puredashboard-json-view { margin-bottom: 1.5rem; }
+    .note { color: #888; font-size: .85rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>&lt;puredashboard-json-view&gt;</h1>
+  <p class="note">Theme follows the OS by default. Hover a leaf row to reveal its copy button; click it to copy that value (computed on click, textContent only).</p>
+
+  <div class="bar">
+    <strong>theme:</strong>
+    <select id="themePicker" style="padding:.35rem"></select>
+    <span style="width:1rem"></span>
+    <strong>copyable:</strong>
+    <button data-copyable="true">on</button>
+    <button data-copyable="false">off</button>
+    <span style="width:1rem"></span>
+    <button id="customMode">apply a custom "brand" mode</button>
+  </div>
+
+  <div class="bar">
+    <strong>level (auto-collapse):</strong>
+    <button data-level="">default (open all)</button>
+    <button data-level="0">0</button>
+    <button data-level="1">1</button>
+    <button data-level="2">2</button>
+    <button data-level="3">3</button>
+    <span class="note">— initial state only; you can still toggle any node afterwards</span>
+  </div>
+
+  <puredashboard-json-view id="jv"></puredashboard-json-view>
+
+  <h2 style="font-size:1rem">Side by side (pinned modes)</h2>
+  <div class="grid">
+    <puredashboard-json-view id="jvLight" theme="light"></puredashboard-json-view>
+    <puredashboard-json-view id="jvDark" theme="dark"></puredashboard-json-view>
+  </div>
+
+  <script type="module">
+    import { PuredashboardJsonView } from "../src/json-view.js";
+
+    const data = {
+      service: "web-01",
+      up: true,
+      replicas: 3,
+      ratio: 0.9821,
+      tags: ["edge", "prod", "eu-west"],
+      env: { REGION: "eu-west-1", DEBUG: false, TOKEN: "a-very-long-value-".repeat(6) + "END" },
+      lastError: null,
+      ports: [80, 443, 8080],
+      empty: {},
+    };
+
+    const jv = document.getElementById("jv");
+    jv.data = data;
+    document.getElementById("jvLight").data = data;
+    document.getElementById("jvDark").data = data;
+
+    // build the theme picker from the built-in list + "auto"
+    const picker = document.getElementById("themePicker");
+    for (const name of ["auto", ...PuredashboardJsonView.BUILT_IN_THEMES]) {
+      const o = document.createElement("option");
+      o.value = o.textContent = name;
+      picker.append(o);
+    }
+    picker.value = "auto";
+    picker.addEventListener("change", () => { jv.theme = picker.value; });
+
+    for (const b of document.querySelectorAll("[data-copyable]"))
+      b.addEventListener("click", () => { jv.copyable = b.dataset.copyable === "true"; });
+
+    for (const b of document.querySelectorAll("[data-level]"))
+      b.addEventListener("click", () => { jv.level = b.dataset.level === "" ? undefined : Number(b.dataset.level); });
+
+    // a fully custom mode name, coloured entirely from data (no CSS block needed)
+    document.getElementById("customMode").addEventListener("click", () => {
+      jv.theme = "brand";
+      jv.themes = {
+        brand: { bg: "#1a1030", border: "#3b2a5a", text: "#e9d5ff", muted: "#a78bfa", key: "#f0abfc", string: "#fde68a", number: "#67e8f9", boolean: "#fca5a5", null: "#a78bfa" },
+      };
+      picker.value = "auto";
+    });
+  </script>
+</body>
+</html>

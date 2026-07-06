@@ -9,6 +9,18 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- **`<puredashboard-json-view>`** (`json-view.js`): a collapsible, syntax-highlighted JSON
+  tree. Takes any JS value or a JSON string (invalid JSON falls back to raw text). Colour
+  mode is light/dark aware — `theme="auto"` follows the OS live — with **10 built-in
+  palettes** (`light`, `dark`, `github-light`/`-dark`, `monokai`, `dracula`,
+  `solarized-light`/`-dark`, `nord`, `one-dark`) plus custom per-mode palettes via the
+  `themes` prop. `level` sets the initial expand depth (`0` = all collapsed incl. root,
+  `1` = the root's fields, …) without locking the user's own toggles. Each leaf value has
+  a copy button that reads `textContent` on click and keeps escapes (no raw newline / ANSI
+  reaches the clipboard → paste-injection safe). XSS-safe: keys/values render as escaped
+  text nodes.
+
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
   (`href`/`src`/`formaction`/…) now drop `javascript:`/`vbscript:` (and `data:` on
