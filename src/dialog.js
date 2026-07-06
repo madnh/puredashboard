@@ -74,10 +74,13 @@ export function dialog(opts = {}) {
   if (isDrawer) {
     Object.assign(el.style, { position: "fixed", margin: "0", maxWidth: "none", maxHeight: "none", transition: "transform .2s ease", transform: offscreen });
     const W = "var(--puredashboard-dialog-drawer-w, min(92vw, 380px))", H = "var(--puredashboard-dialog-drawer-h, 45vh)";
-    if (position === "right") Object.assign(el.style, { top: "0", right: "0", bottom: "0", height: "100%", width: W });
-    if (position === "left") Object.assign(el.style, { top: "0", left: "0", bottom: "0", height: "100%", width: W });
-    if (position === "top") Object.assign(el.style, { top: "0", left: "0", right: "0", width: "100%", height: H });
-    if (position === "bottom") Object.assign(el.style, { bottom: "0", left: "0", right: "0", width: "100%", height: H });
+    // Reset the OPPOSITE inset to auto: the UA stylesheet gives a modal <dialog> a
+    // default `inset: 0`, so pinning only `right`/`bottom` leaves the UA `left`/`top: 0`
+    // in place and the panel sticks to the wrong edge. Set both axes explicitly.
+    if (position === "right") Object.assign(el.style, { top: "0", right: "0", bottom: "0", left: "auto", height: "100%", width: W });
+    if (position === "left") Object.assign(el.style, { top: "0", left: "0", bottom: "0", right: "auto", height: "100%", width: W });
+    if (position === "top") Object.assign(el.style, { top: "0", left: "0", right: "0", bottom: "auto", width: "100%", height: H });
+    if (position === "bottom") Object.assign(el.style, { bottom: "0", left: "0", right: "0", top: "auto", width: "100%", height: H });
   }
 
   // ---- light-dismiss fallback for browsers without closedby (Safari) ----------
