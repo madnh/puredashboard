@@ -48,7 +48,11 @@ puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; heig
 .puredashboard-gallery__title { font-size: 16px; margin: 0 auto 0 0; }
 .puredashboard-gallery__toolbar label { color: var(--pd-muted); font-size: 13px; }
 .puredashboard-gallery__toolbar select { font: inherit; margin-left: 4px; padding: 5px 10px; background: var(--pd-panel-2); color: var(--pd-text); border: 1px solid var(--pd-border); border-radius: var(--radius-sm, 8px); cursor: pointer; }
-.puredashboard-gallery__canvas { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 24px; display: grid; gap: 24px; align-content: start; }
+/* grid-auto-rows: min-content sizes each story row to its own content — without it,
+ * a story that's a scroll container (overflow:hidden makes its auto min-height 0) can
+ * be shrunk below its content and clipped when the canvas overflows. The canvas itself
+ * still scrolls (overflow-y:auto), so tall stories are fully visible. */
+.puredashboard-gallery__canvas { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 24px; display: grid; grid-auto-rows: min-content; gap: 24px; align-content: start; }
 
 /* small screens: fall back to normal page scroll with a capped sidebar */
 @media (max-width: 640px) {
