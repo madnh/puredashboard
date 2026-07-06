@@ -49,7 +49,7 @@ const LABELS = {
  *
  * @element puredashboard-segmented
  *
- * @prop {Array<{value:string,label:string,icon?:string,disabled?:boolean}>|string[]} options - The segments. A plain `string[]` is shorthand for `{ value, label }` pairs. `icon` is trusted inline SVG markup. Default `[]`.
+ * @prop {Array<{value:string,label:string|Node,icon?:string,disabled?:boolean}>|string[]} options - The segments. A plain `string[]` is shorthand for `{ value, label }` pairs. Each `label` accepts a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped). `icon` is trusted inline SVG markup. Default `[]`.
  * @prop {string}  value    - Value of the selected segment (get/set). Defaults to the first enabled option.
  * @prop {string}  size     - `"sm"` | `"md"` | `"lg"`. Default `"md"`.
  * @prop {boolean} block    - Full width with equal-width segments. Default `false`.

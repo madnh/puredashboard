@@ -48,7 +48,12 @@ const LABELS = {
  *
  * @element puredashboard-steps
  *
- * @prop {Array<{label:string, description?:string}>} steps - The steps to show, in order. Default `[]`.
+ * @prop {Array<{label:string|Node, description?:string|Node}>} steps - The steps to show, in order.
+ *   Each `description` accepts a string (auto-escaped) OR a DOM node / nested `html` template / array —
+ *   pass a node or template to embed a custom element (you build it, you own its safety; plain strings
+ *   stay escaped). Each `label` accepts a string OR a DOM node / nested `html` template — but keep it a
+ *   plain string when the accessible name matters: it also feeds `aria-label`, where a node would
+ *   stringify to `[object Object]`. Default `[]`.
  * @prop {number}  current   - 0-based index of the active step. Default `0`.
  * @prop {boolean} vertical  - Stack steps vertically instead of horizontally. Default `false`.
  * @prop {boolean} clickable - Render each step as a `<button>` that emits `stepchange`. Default `false`.

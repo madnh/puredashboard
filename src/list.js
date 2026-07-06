@@ -5,9 +5,13 @@
 //
 // Class naming (BEM, block = the component tag): style classes are namespaced
 // `puredashboard-list__<element>[--<modifier>]` so they never collide — restyle
-// freely. This component is purely presentational (no events); item text is
-// escaped through the reactive `html` parts engine (never `raw()`), so untrusted
-// titles/descriptions can't inject markup.
+// freely. This component is purely presentational (no events). Content-bearing
+// fields (item `title`/`description`/`extra`, plus `header`/`footer`) are
+// interpolated at a child position in the reactive `html` parts engine (never
+// `raw()`): a plain string is auto-escaped, so untrusted titles/descriptions
+// can't inject markup — but each field also accepts a DOM node / nested `html`
+// template / array, letting you embed a custom element (you build it, you own
+// its safety).
 import { Reactive, html, repeat } from "./reactive.js";
 
 // All user-facing strings (English defaults). Override any subset via the `labels`
@@ -26,9 +30,9 @@ const LABELS = {
  *
  * @element puredashboard-list
  *
- * @prop {Array<{title:string, description?:string, extra?:string}>} items - Row data. Default `[]`.
- * @prop {string}  [header]   - Optional header text shown above the list.
- * @prop {string}  [footer]   - Optional footer text shown below the list.
+ * @prop {Array<{title:string|Node, description?:string|Node, extra?:string|Node}>} items - Row data. Each of `title`/`description`/`extra` accepts a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `[]`.
+ * @prop {string|Node}  [header]   - Optional header shown above the list: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (author-owned safety).
+ * @prop {string|Node}  [footer]   - Optional footer shown below the list: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (author-owned safety).
  * @prop {boolean} [bordered] - Wrap the list in a bordered panel. Default `false`.
  * @prop {string}  [size]     - Row padding density: `"sm"` | `"md"` | `"lg"`. Default `"md"`.
  * @prop {boolean} [split]    - Draw dividers between rows. Default `true`; set `false` to remove them.

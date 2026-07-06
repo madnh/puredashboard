@@ -4,10 +4,14 @@
 // This is NOT a form control (no ElementInternals) — it's a disclosure widget.
 // Each item is a header <button aria-expanded aria-controls> that toggles its
 // own region <div role="region" aria-labelledby> (native buttons give Enter /
-// Space for free). The header text AND the region content are author CONTENT
-// supplied via the `items` data; both are rendered through the reactive.js parts
-// engine's ESCAPED interpolation (never raw()), so untrusted strings can't inject
-// markup. Only the fixed chrome strings (the group aria-label) live in LABELS.
+// Space for free). The header AND the region content are author CONTENT supplied
+// via the `items` data. Both are interpolated at CHILD position through the
+// reactive.js parts engine, so each accepts EITHER a string (auto-escaped — an
+// untrusted string can't inject markup) OR a DOM node / nested `html` template /
+// array — pass a node or template to embed a custom element (e.g. a
+// <puredashboard-table>). Nodes/templates are NOT escaped: you build them, so you
+// own their safety (see the trust boundary in `src/_agents.md`). Only the fixed
+// chrome strings (the group aria-label) live in LABELS.
 //
 // Class naming (BEM, block = the component tag): style classes are namespaced
 // `puredashboard-collapse__<element>[--<modifier>]`. Script hooks are SEPARATE
@@ -49,7 +53,7 @@ const chevron = html`<svg class="puredashboard-collapse__chevron" viewBox="0 0 2
  *
  * @element puredashboard-collapse
  *
- * @prop {Array} items - Item defs: `{ key: string, header: string, content: string, disabled?: boolean }`. `header` and `content` are plain text (escaped on render).
+ * @prop {Array} items - Item defs: `{ key: string, header: string|Node, content: string|Node, disabled?: boolean }`. `header`/`content` each accept a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped).
  * @prop {boolean} multiple - When `false` (default) the group is an ACCORDION: at most one item open, opening one closes the rest. When `true`, items open/close independently.
  * @prop {(string|string[])} value - Open state. In accordion mode a single open key (or `undefined`); in `multiple` mode an array of open keys. Get/set.
  * @prop {Object} labels - Override UI strings. Keys: `group` (the group `aria-label`). Unset keys keep the English default.

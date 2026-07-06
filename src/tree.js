@@ -53,8 +53,10 @@ const twisty = raw('<svg class="puredashboard-tree__twisty-icon" viewBox="0 0 24
  * @element puredashboard-tree
  *
  * @prop {Array} nodes - Hierarchical data. A node is `{ id, label, icon?, children? }`:
- *   `id` (string, required) is its stable key; `label` (string, required) is the visible
- *   text (author CONTENT, escaped); `icon` (string of trusted SVG markup) renders before
+ *   `id` (string, required) is its stable key; `label` (string|Node, required) is the visible
+ *   text — it accepts a string (auto-escaped) OR a DOM node / nested `html` template / array,
+ *   so pass a node or template to embed a custom element (you build it, you own its safety;
+ *   plain strings stay escaped); `icon` (string of trusted SVG markup) renders before
  *   the label; `children` (node[]) makes it an expandable parent. Default `[]`.
  * @prop {string} selectedKey - `id` of the selected node (get/set). Default `""` (none).
  * @prop {Array<string>|Set<string>} expandedKeys - `id`s of expanded parents; accepts an

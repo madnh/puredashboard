@@ -7,8 +7,10 @@
 // dismiss it. Four semantic types drive the colour, the leading glyph, and the ARIA
 // live-region politeness (errors/warnings are assertive `role="alert"`, info/success
 // are polite `role="status"`). All fixed strings live in a LABELS map, overridable
-// via the `labels` property; `title` and `message` are author CONTENT (escaped via
-// the reactive html`` interpolation, never raw()). Theme through the shared design
+// via the `labels` property; `title` and `message` are author CONTENT, interpolated
+// at a child position in the reactive html`` engine (never raw()): a plain string is
+// auto-escaped, but each also accepts a DOM node / nested html`` template / array to
+// embed a custom element (you build it, you own its safety). Theme through the shared design
 // tokens (--danger-bg/--success-bg/--warning-bg/--info-bg, --red/--green/--amber/
 // --accent, --text, --radius, …) with a --pd-* fallback chain so it works with no
 // theme linked. See docs/DEVELOPMENT.md → "Definition of Done".
@@ -49,8 +51,8 @@ const normType = (t) => (ALIAS[t] || (TYPES[t] ? t : "info"));
  * @element puredashboard-alert
  *
  * @prop {string}  type     - `"info"` (default) | `"success"` | `"warning"` | `"error"` (`"danger"` is an alias for `"error"`). Unknown values fall back to `"info"`.
- * @prop {string}  title    - Optional bold heading (author content, escaped). Default `""`.
- * @prop {string}  message  - Body text (author content, escaped). Default `""`.
+ * @prop {string|Node}  title    - Optional bold heading: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
+ * @prop {string|Node}  message  - Body: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
  * @prop {boolean} closable - Render a close button that dismisses the banner. Default `false`.
  * @prop {boolean} showIcon - Show the per-type leading glyph. Default `true`.
  * @prop {Object}  labels   - Override UI strings. Keys: `close` (the close button's aria-label). Unset keys keep the English default.
