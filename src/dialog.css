@@ -36,10 +36,14 @@
   padding: 0;
   max-width: var(--puredashboard-dialog-max-w);
   max-height: 85vh;
+  /* flex column so the head + footer stay put and only the body scrolls */
+  display: flex;
+  flex-direction: column;
 }
 .puredashboard-dialog::backdrop { background: var(--puredashboard-dialog-backdrop); }
 
 .puredashboard-dialog__head {
+  flex: 0 0 auto;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: var(--puredashboard-dialog-pad);
   border-bottom: 1px solid var(--pd-border);
@@ -48,13 +52,21 @@
 .puredashboard-dialog__close { all: unset; cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0 6px; border-radius: 6px; }
 .puredashboard-dialog__close:hover { background: var(--pd-panel-2); }
 
-.puredashboard-dialog__body { padding: var(--puredashboard-dialog-pad); display: flex; flex-direction: column; gap: var(--puredashboard-dialog-gap); overflow: auto; }
+/* the body takes the leftover height and scrolls only when it overflows
+ * (min-height:0 lets a flex child shrink below its content so overflow can kick in) */
+.puredashboard-dialog__body { flex: 1 1 auto; min-height: 0; padding: var(--puredashboard-dialog-pad); display: flex; flex-direction: column; gap: var(--puredashboard-dialog-gap); overflow: auto; }
 .puredashboard-dialog__message { margin: 0; }
 .puredashboard-dialog__input {
   font: inherit; color: inherit; background: transparent;
   padding: 8px 10px; border-radius: 8px; border: 1px solid var(--pd-border);
 }
 
+/* the optional footer slot — always pinned below the scrolling body */
+.puredashboard-dialog__footer {
+  flex: 0 0 auto;
+  padding: var(--puredashboard-dialog-pad);
+  border-top: 1px solid var(--pd-border);
+}
 .puredashboard-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
 .puredashboard-dialog__button {
   font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;

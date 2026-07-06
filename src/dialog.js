@@ -11,15 +11,20 @@
 //   const d = dialog({
 //     title: "Add node",
 //     content: (body) => { body.append(myForm); },   // fn | Node | string(text)
+//     footer: (foot) => { foot.append(saveBtn); },    // optional, same shape as content
 //     onClose: (value) => { if (value === "ok") save(); },
 //   }).show();
 //   // later: d.close("ok");  →  d.closed resolves to "ok"
 //
 //   drawer({ position: "right", title: "Filters", content: (b) => {…} }).show();
 //
-// Contract: content is a function (body) => void | a DOM Node | a plain string
-// (inserted as TEXT — safe). For trusted markup, pass a function and render into
-// `body` yourself (e.g. body.appendChild(node) or your own html`` helper).
+// Layout: the dialog is a flex column — the header and the optional footer stay
+// pinned, and only the body scrolls (overflow:auto) once the content exceeds the
+// dialog's max-height. Put actions (button rows) in `footer` so they stay visible.
+//
+// Contract: `content` (and `footer`) is a function (el) => void | a DOM Node | a
+// plain string (inserted as TEXT — safe). For trusted markup, pass a function and
+// render into the given element yourself (e.g. el.appendChild(node) or html``).
 
 let _seq = 0;
 
@@ -65,6 +70,21 @@ export function dialog(opts = {}) {
   else if (typeof c === "string") body.textContent = c;
   el.appendChild(body);
 
+  // ---- footer (optional) — pinned below the scrolling body --------------------
+  // Same shape as `content` (function | Node | string). The dialog is a flex column
+  // (see dialog.css): head + footer stay fixed, only the body scrolls when the
+  // content overflows the dialog's max-height.
+  let foot = null;
+  const fc = opts.footer;
+  if (fc != null) {
+    foot = document.createElement("div");
+    foot.className = "puredashboard-dialog__footer";
+    if (typeof fc === "function") fc(foot);
+    else if (fc instanceof Node) foot.appendChild(fc);
+    else if (typeof fc === "string") foot.textContent = fc;
+    el.appendChild(foot);
+  }
+
   document.body.appendChild(el);
 
   // ---- drawer layout + slide (inline, CSP-safe) -------------------------------
@@ -107,7 +127,7 @@ export function dialog(opts = {}) {
   el.addEventListener("close", teardown);          // Esc / native closedby path
 
   const ctrl = {
-    el, body, closed,
+    el, body, footer: foot, closed,
     show() {
       if (typeof el.showModal === "function") { try { el.showModal(); } catch { /* jsdom */ } }
       if (!el.open) el.open = true;                // fallback where modal isn't supported
@@ -175,11 +195,11 @@ export function alert(text, opts = {}) {
       title: opts.title, ariaLabel: opts.title ? undefined : (opts.ariaLabel || "Alert"),
       className: "puredashboard-dialog--alert" + (opts.className ? " " + opts.className : ""),
       dismissable: opts.dismissable !== false, closeButton: !!opts.closeButton,
-      content: (body) => {
-        body.append(msg);
+      content: (body) => { body.append(msg); },
+      footer: (foot) => {
         const ok = mkBtn(opts.okText || "OK", opts.okClass || "puredashboard-dialog__button puredashboard-dialog__button--primary", () => d.close("ok"));
         ok.setAttribute("autofocus", "");
-        body.append(actions(ok));
+        foot.append(actions(ok));
       },
       onClose: () => { if (!settled) { settled = true; resolve(); } },
     });
@@ -199,12 +219,12 @@ export function confirm(text, opts = {}) {
       title: opts.title, ariaLabel: opts.title ? undefined : (opts.ariaLabel || "Confirm"),
       className: "puredashboard-dialog--confirm" + (opts.className ? " " + opts.className : ""),
       dismissable: opts.dismissable !== false, closeButton: !!opts.closeButton,
-      content: (body) => {
-        body.append(msg);
+      content: (body) => { body.append(msg); },
+      footer: (foot) => {
         const cancel = mkBtn(opts.cancelText || "Cancel", opts.cancelClass || "puredashboard-dialog__button", () => finish(false));
         const ok = mkBtn(opts.okText || "OK", opts.okClass || ("puredashboard-dialog__button puredashboard-dialog__button--primary" + (opts.danger ? " puredashboard-dialog__button--danger" : "")), () => finish(true));
         ok.setAttribute("autofocus", "");
-        body.append(actions(cancel, ok));
+        foot.append(actions(cancel, ok));
       },
       onClose: () => { if (!settled) { settled = true; resolve(result); } },  // Esc/backdrop → false
     });
@@ -232,9 +252,11 @@ export function prompt(text, opts = {}) {
         input.setAttribute("autofocus", "");
         input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); finish(true); } });
         body.append(input);
+      },
+      footer: (foot) => {
         const cancel = mkBtn(opts.cancelText || "Cancel", opts.cancelClass || "puredashboard-dialog__button", () => finish(false));
         const ok = mkBtn(opts.okText || "OK", opts.okClass || "puredashboard-dialog__button puredashboard-dialog__button--primary", () => finish(true));
-        body.append(actions(cancel, ok));
+        foot.append(actions(cancel, ok));
       },
       onClose: () => { if (!settled) { settled = true; resolve(result); } },  // Esc/backdrop → null
     });
