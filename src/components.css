@@ -67,6 +67,7 @@
 @import "tree.css";
 @import "list.css";
 @import "result.css";
+@import "json-view.css";
 /* overlays & content */
 @import "upload.css";
 @import "dialog.css";

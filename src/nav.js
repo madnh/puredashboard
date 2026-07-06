@@ -43,9 +43,15 @@ let uid = 0;
  * @element puredashboard-nav
  *
  * @prop {Array}  items   - Tree of nodes. A node is `{ label, href?, icon?, badge?, children? }`:
- *   `label` (string, required) is the visible text; `href` (string) makes a leaf link;
- *   `icon` (string of trusted SVG markup) renders before the label; `badge` (string) shows
- *   a small count/status chip; `children` (node[]) makes it a collapsible group.
+ *   `label` (string|Node, required) is the visible text — it accepts a string OR a DOM node /
+ *   nested `html` template. A leaf label renders freely, but a GROUP node's label also feeds the
+ *   toggle button's `aria-label` (via the `expand`/`collapse` strings), where a node would stringify
+ *   to `[object Object]`; to be safe, keep `label` a plain string when the accessible name matters.
+ *   `href` (string) makes a leaf link; `icon` (string of trusted SVG markup) renders before the label;
+ *   `badge` (string|Node) shows a small count/status chip — it accepts a string (auto-escaped) OR a
+ *   DOM node / nested `html` template / array, so pass a node or template to embed a custom element
+ *   (you build it, you own its safety; plain strings stay escaped); `children` (node[]) makes it a
+ *   collapsible group.
  * @prop {string} current - The `href` (or id) of the active item; the matching leaf gets `aria-current="page"`. Default `""`.
  * @prop {Object} [labels] - Override UI strings (English defaults). Keys: `ariaLabel`, `expand(group)`, `collapse(group)`.
  *

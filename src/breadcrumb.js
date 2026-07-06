@@ -36,9 +36,11 @@ const LABELS = {
  *
  * @element puredashboard-breadcrumb
  *
- * @prop {Array<{label: string, href?: string}>} items - The crumbs, root → current.
- *   Each `{ label, href? }`: `label` is the visible text; `href` (when present, and
- *   not the last crumb) makes that crumb a link. Default `[]`.
+ * @prop {Array<{label: string|Node, href?: string}>} items - The crumbs, root → current.
+ *   Each `{ label, href? }`: `label` accepts a string (auto-escaped) OR a DOM node /
+ *   nested `html` template / array — pass a node or template to embed a custom element
+ *   (you build it, you own its safety; plain strings stay escaped); `href` (when present,
+ *   and not the last crumb) makes that crumb a link. Default `[]`.
  * @prop {number} maxItems - When set and there are more crumbs than this, the middle
  *   is collapsed to a non-interactive ellipsis crumb, keeping the first crumb and the
  *   last two. `0`/unset = show all. Default `0`.

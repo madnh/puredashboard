@@ -44,7 +44,7 @@ let uid = 0;
  *
  * @element puredashboard-radio-group
  *
- * @prop {Array<{value:string,label:string,disabled?:boolean}>} options - The options to render. Default `[]`.
+ * @prop {Array<{value:string,label:string|Node,disabled?:boolean}>} options - The options to render. Each `label` accepts a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `[]`.
  * @prop {string}  value    - Value of the selected option (get/set). Default `""` (none selected).
  * @prop {boolean} disabled - Disable the whole group. Default `false`.
  * @prop {boolean} required - A selection is required (none → `valueMissing`). Default `false`.

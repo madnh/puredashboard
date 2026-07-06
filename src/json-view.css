@@ -1,0 +1,222 @@
+/* puredashboard-json-view — styles for <puredashboard-json-view> (json-view.js).
+ * BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Structural colours resolve through a --pd-* chain
+ * that falls back to your app tokens and finally to neutral literals, so it looks
+ * right with NO config. The component sets `data-mode="light|dark"` on itself
+ * (from its `theme` prop; "auto" tracks the OS live), and this stylesheet swaps the
+ * syntax palette on that attribute — so forcing a mode actually re-colours the tree
+ * regardless of the OS. The `themes` JS prop layers per-mode overrides on top as
+ * inline `--pd-json-view-*` custom properties (highest priority).
+ */
+puredashboard-json-view {
+  display: block;
+  --pd-accent: var(--accent, #3b82f6);
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+  --pd-radius: var(--radius, 10px);
+  --pd-duration: var(--duration-fast, 120ms);
+  --pd-ease: var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-json-view-indent: var(--sp-4, 16px);
+  --pd-json-view-pad: var(--sp-3, 12px);
+
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace);
+  font-size: var(--font-size-sm, 12px);
+  line-height: 1.7;
+
+  color: var(--pd-json-view-text);
+  background: var(--pd-json-view-bg);
+  border: 1px solid var(--pd-json-view-border);
+  border-radius: var(--pd-radius);
+  padding: var(--pd-json-view-pad);
+  overflow: auto;
+}
+
+/* ---- palettes: self-contained per data-mode (like a code editor surface), so
+   pinning a mode actually re-colours the whole panel regardless of the OS / app
+   theme. Override any knob via the `themes` prop or these --pd-json-view-* vars.
+   dark is the default (also when data-mode isn't set yet). ---- */
+puredashboard-json-view,
+puredashboard-json-view[data-mode="dark"] {
+  --pd-json-view-bg:      #0d1117;
+  --pd-json-view-border:  #30363d;
+  --pd-json-view-text:    #c9d1d9;
+  --pd-json-view-muted:   #8b949e;
+  --pd-json-view-key:     #79c0ff;
+  --pd-json-view-string:  #7ee787;
+  --pd-json-view-number:  #ffa657;
+  --pd-json-view-boolean: #d2a8ff;
+  --pd-json-view-null:    #8b949e;
+  --pd-json-view-punct:   var(--pd-json-view-muted);
+  --pd-json-view-summary: var(--pd-json-view-muted);
+}
+
+puredashboard-json-view[data-mode="light"] {
+  --pd-json-view-bg:      #ffffff;
+  --pd-json-view-border:  #d0d7de;
+  --pd-json-view-text:    #1f2328;
+  --pd-json-view-muted:   #6e7781;
+  --pd-json-view-key:     #0550ae;
+  --pd-json-view-string:  #116329;
+  --pd-json-view-number:  #953800;
+  --pd-json-view-boolean: #8250df;
+  --pd-json-view-null:    #6e7781;
+  --pd-json-view-punct:   var(--pd-json-view-muted);
+  --pd-json-view-summary: var(--pd-json-view-muted);
+}
+
+/* ---- extra built-in palettes (pinned via theme="…") --------------------------
+   Popular editor themes, so a consumer can pick one by NAME without supplying
+   colours (the `themes` prop still layers overrides on top; `punct`/`summary`
+   derive from `muted` via the base rule above). Keep this list ≤ 10 total. ---- */
+puredashboard-json-view[data-mode="github-light"] {
+  --pd-json-view-bg: #ffffff; --pd-json-view-border: #d1d9e0; --pd-json-view-text: #1f2328; --pd-json-view-muted: #59636e;
+  --pd-json-view-key: #0550ae; --pd-json-view-string: #0a3069; --pd-json-view-number: #0550ae; --pd-json-view-boolean: #cf222e; --pd-json-view-null: #59636e;
+}
+puredashboard-json-view[data-mode="github-dark"] {
+  --pd-json-view-bg: #0d1117; --pd-json-view-border: #30363d; --pd-json-view-text: #e6edf3; --pd-json-view-muted: #8b949e;
+  --pd-json-view-key: #79c0ff; --pd-json-view-string: #a5d6ff; --pd-json-view-number: #79c0ff; --pd-json-view-boolean: #ff7b72; --pd-json-view-null: #8b949e;
+}
+puredashboard-json-view[data-mode="monokai"] {
+  --pd-json-view-bg: #272822; --pd-json-view-border: #414339; --pd-json-view-text: #f8f8f2; --pd-json-view-muted: #75715e;
+  --pd-json-view-key: #a6e22e; --pd-json-view-string: #e6db74; --pd-json-view-number: #ae81ff; --pd-json-view-boolean: #f92672; --pd-json-view-null: #f92672;
+}
+puredashboard-json-view[data-mode="dracula"] {
+  --pd-json-view-bg: #282a36; --pd-json-view-border: #44475a; --pd-json-view-text: #f8f8f2; --pd-json-view-muted: #6272a4;
+  --pd-json-view-key: #8be9fd; --pd-json-view-string: #f1fa8c; --pd-json-view-number: #bd93f9; --pd-json-view-boolean: #bd93f9; --pd-json-view-null: #ff79c6;
+}
+puredashboard-json-view[data-mode="solarized-light"] {
+  --pd-json-view-bg: #fdf6e3; --pd-json-view-border: #eee8d5; --pd-json-view-text: #657b83; --pd-json-view-muted: #93a1a1;
+  --pd-json-view-key: #268bd2; --pd-json-view-string: #2aa198; --pd-json-view-number: #d33682; --pd-json-view-boolean: #b58900; --pd-json-view-null: #93a1a1;
+}
+puredashboard-json-view[data-mode="solarized-dark"] {
+  --pd-json-view-bg: #002b36; --pd-json-view-border: #073642; --pd-json-view-text: #93a1a1; --pd-json-view-muted: #586e75;
+  --pd-json-view-key: #268bd2; --pd-json-view-string: #2aa198; --pd-json-view-number: #d33682; --pd-json-view-boolean: #b58900; --pd-json-view-null: #586e75;
+}
+puredashboard-json-view[data-mode="nord"] {
+  --pd-json-view-bg: #2e3440; --pd-json-view-border: #3b4252; --pd-json-view-text: #d8dee9; --pd-json-view-muted: #616e88;
+  --pd-json-view-key: #8fbcbb; --pd-json-view-string: #a3be8c; --pd-json-view-number: #b48ead; --pd-json-view-boolean: #81a1c1; --pd-json-view-null: #616e88;
+}
+puredashboard-json-view[data-mode="one-dark"] {
+  --pd-json-view-bg: #282c34; --pd-json-view-border: #3e4451; --pd-json-view-text: #abb2bf; --pd-json-view-muted: #5c6370;
+  --pd-json-view-key: #e06c75; --pd-json-view-string: #98c379; --pd-json-view-number: #d19a66; --pd-json-view-boolean: #c678dd; --pd-json-view-null: #5c6370;
+}
+
+/* ---- structure ---- */
+.puredashboard-json-view__tree { min-width: max-content; }
+
+/* children indent + a subtle guide rail per nesting level */
+.puredashboard-json-view__children {
+  margin-left: calc(var(--pd-json-view-indent) / 2);
+  padding-left: calc(var(--pd-json-view-indent) / 2);
+  border-left: 1px solid color-mix(in srgb, var(--pd-json-view-border) 70%, transparent);
+}
+
+.puredashboard-json-view__row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 1.7em;
+  border-radius: calc(var(--pd-radius) / 2);
+  padding-inline: 2px;
+}
+.puredashboard-json-view__row:hover {
+  background: color-mix(in srgb, var(--pd-json-view-text) 6%, transparent);
+}
+
+/* the toggle for an object/array is a real button (Enter/Space, focus, a11y) */
+.puredashboard-json-view__toggle {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0 2px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--pd-radius) / 2);
+  cursor: pointer;
+}
+.puredashboard-json-view__toggle:hover {
+  background: color-mix(in srgb, var(--pd-json-view-text) 6%, transparent);
+}
+.puredashboard-json-view__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+.puredashboard-json-view__chevron-wrap {
+  flex: none;
+  display: inline-flex;
+  width: 1.1em;
+  color: var(--pd-json-view-muted);
+}
+.puredashboard-json-view__chevron {
+  transition: transform var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-json-view__toggle--open .puredashboard-json-view__chevron {
+  transform: rotate(90deg);
+}
+
+/* ---- tokens (syntax highlight) ---- */
+.puredashboard-json-view__key { color: var(--pd-json-view-key); }
+.puredashboard-json-view__punct,
+.puredashboard-json-view__brace { color: var(--pd-json-view-punct); }
+.puredashboard-json-view__summary {
+  color: var(--pd-json-view-summary);
+  font-style: italic;
+  margin-inline: 0.5ch;
+}
+.puredashboard-json-view__value--string  { color: var(--pd-json-view-string); word-break: break-word; }
+.puredashboard-json-view__value--number  { color: var(--pd-json-view-number); }
+.puredashboard-json-view__value--boolean { color: var(--pd-json-view-boolean); }
+.puredashboard-json-view__value--null    { color: var(--pd-json-view-null); font-style: italic; }
+
+.puredashboard-json-view__raw {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--pd-json-view-text);
+}
+
+/* ---- copy affordance ---- */
+.puredashboard-json-view__copy {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* sits right after the value's trailing comma (last in the row), so a value's
+     comma stays hugged to it and the hidden button only reserves trailing space */
+  margin-inline-start: 0.4ch;
+  padding: 2px;
+  width: 1.5em;
+  height: 1.5em;
+  color: var(--pd-json-view-muted);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--pd-radius) / 2);
+  cursor: pointer;
+  /* hidden until the row is hovered / this button is focused — keeps the tree clean */
+  opacity: 0;
+  transition: opacity var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-json-view__row:hover .puredashboard-json-view__copy,
+.puredashboard-json-view__copy:focus-visible,
+.puredashboard-json-view__copy--copied {
+  opacity: 1;
+}
+.puredashboard-json-view__copy:hover { color: var(--pd-json-view-accent, var(--pd-accent)); }
+.puredashboard-json-view__copy:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+
+/* icon swap: copy by default, check (green) once copied */
+.puredashboard-json-view__icon { display: inline-flex; }
+.puredashboard-json-view__icon--check { display: none; }
+.puredashboard-json-view__copy--copied { color: var(--success, #2ea043); }
+.puredashboard-json-view__copy--copied .puredashboard-json-view__icon--copy { display: none; }
+.puredashboard-json-view__copy--copied .puredashboard-json-view__icon--check { display: inline-flex; }

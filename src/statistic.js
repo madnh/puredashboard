@@ -7,9 +7,13 @@
 // freely. There are no script hooks here (the element is display-only), so no `js-…`
 // classes are needed.
 //
-// Content vs strings: `title`, `value`, `prefix`, `suffix` are AUTHOR CONTENT and are
-// interpolated through the reactive `html` (auto-escaped) — never `raw()`. The only
-// trusted markup is the inline trend arrow, built with a local `svg()`/`raw()` helper.
+// Content vs strings: `title`, `value`, `prefix`, `suffix` are AUTHOR CONTENT,
+// interpolated at a child position in the reactive `html` engine (never `raw()`).
+// `title`/`prefix`/`suffix` each accept a plain string (auto-escaped) OR a DOM node /
+// nested `html` template / array to embed a custom element (you build it, you own its
+// safety). `value` is coerced with `String()` before render, so it only takes real
+// text (numbers are formatted, strings auto-escaped). The only trusted markup is the
+// inline trend arrow, built with a local `svg()`/`raw()` helper.
 // Fixed UI strings (the sr-only trend descriptions) live in `LABELS` + a `labels` prop.
 import { Reactive, html } from "./reactive.js";
 import { raw } from "./html.js";
@@ -39,12 +43,12 @@ let uid = 0;
  *
  * @element puredashboard-statistic
  *
- * @prop {string}          title          - Label shown above the value. Author content (escaped). Default `""`.
+ * @prop {string|Node}      title          - Label shown above the value: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
  * @prop {number|string}   value          - The figure. Numbers are formatted (`precision` + grouping); strings pass through escaped. Default `""`.
  * @prop {number}          precision      - Decimal places for numeric values (`toFixed`). Default `0`.
  * @prop {boolean}         groupSeparator - Thousands grouping for numeric values. Default `true`.
- * @prop {string}          prefix         - Text before the value, e.g. `"$"`. Author content (escaped). Default `""`.
- * @prop {string}          suffix         - Text after the value, e.g. `"%"`. Author content (escaped). Default `""`.
+ * @prop {string|Node}      prefix         - Before the value, e.g. `"$"`: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
+ * @prop {string|Node}      suffix         - After the value, e.g. `"%"`: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
  * @prop {"up"|"down"|null} trend         - Trend direction → a coloured arrow + green/red value tint + sr-only text. Default `null`.
  * @prop {boolean}         loading        - Show a skeleton-ish placeholder in place of the value. Default `false`.
  * @prop {Object}          labels         - Override UI strings. Keys: `increase`, `decrease`. Unset keys keep the English default.

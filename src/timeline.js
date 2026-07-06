@@ -8,10 +8,13 @@
 // explicit per-item `color` and simply lays events out in order (oldest→newest,
 // or reversed). It emits NO events and holds no interactive state.
 //
-// Item content/label are CONTENT (passed in `items`), rendered via escaped
-// html`` interpolation — only the fixed accessibility wording lives in LABELS.
-// An item's optional `dot` is trusted inline SVG markup (like menu.js icons),
-// spliced in via raw(); pass author-controlled markup only.
+// Item content/label are CONTENT (passed in `items`), interpolated at a child
+// position in the reactive html`` engine: a plain string is auto-escaped, but
+// each also accepts a DOM node / nested html`` template / array to embed a
+// custom element (you build it, you own its safety). Only the fixed
+// accessibility wording lives in LABELS. An item's optional `dot` is trusted
+// inline SVG markup (like menu.js icons), spliced in via raw(); pass
+// author-controlled markup only.
 import { Reactive, html, repeat } from "./reactive.js";
 import { raw } from "./html.js";
 
@@ -42,7 +45,7 @@ const COLORS = new Set(["accent", "success", "warning", "error", "muted"]);
  *
  * @element puredashboard-timeline
  *
- * @prop {Array<{content:string, label?:string, color?:"accent"|"success"|"warning"|"error"|"muted", dot?:string}>} items - The events, in order. `content` is the body; `label` an optional time/meta line; `color` picks the dot hue (default `accent`); `dot` is optional trusted inline SVG markup replacing the plain dot. Default `[]`.
+ * @prop {Array<{content:string|Node, label?:string|Node, color?:"accent"|"success"|"warning"|"error"|"muted", dot?:string}>} items - The events, in order. `content` is the body and `label` an optional time/meta line — each accepts a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). `color` picks the dot hue (default `accent`); `dot` is optional trusted inline SVG markup replacing the plain dot. Default `[]`.
  * @prop {string}  mode    - Which side content sits on: `"left"` (default), `"right"`, or `"alternate"` (zig-zag). Default `"left"`.
  * @prop {boolean} reverse - Render the items in reverse order (newest first). Default `false`.
  * @prop {(string|boolean)} pending - Append a trailing ghost item with an animated spinner dot. A string is its content; `true` uses the `pending` label. Falsy → no pending item. Default `false`.

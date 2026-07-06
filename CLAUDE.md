@@ -87,6 +87,17 @@ multi-line `html\`<el>\n  text\n</el>\`` puts newlines into `textContent` and fa
   (e.g. Go `//go:embed`), keep them out — names starting with `_` or `.` are skipped by
   the embed walker. See `docs/USAGE.md`. (`tools/api-reference/` regenerates
   `src/_components.jsonl` — a generator, not a test, so it lives outside `test/`.)
+- **Two docs channels ship inside `src/` for AI agents that CONSUME the library**
+  (they travel when someone copies `src/`, but the leading `_` keeps them out of the
+  go:embed binary): `src/_agents.md` is the front-door guide (rules + recipes +
+  component index), and `src/_components.jsonl` is the machine-readable API (one JSON
+  line per component, grep the one you need). **`_components.jsonl` is GENERATED from
+  each component's JSDoc** — the JSDoc is the source of truth. So when you change a
+  component's behaviour or a prop's description, keep all three in sync: edit the JSDoc,
+  regenerate the jsonl (`make -C tools/api-reference`, needs Docker), and update
+  `_agents.md` if a cross-cutting rule changed. A prop documented as "text" that is
+  interpolated at a child position actually accepts a string OR a node/nested-`html`
+  template — see the "Rich content" recipe in `_agents.md`.
 - **Not published to any registry** (no npm package — by design). Distributed as source +
   GitHub Releases. Version via git tags + `CHANGELOG.md` (currently `v0.1.0`, `0.x` = API may change).
 - **Pull requests are not accepted** (issues-only; see `CONTRIBUTING.md`). When proposing

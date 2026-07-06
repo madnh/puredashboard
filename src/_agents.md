@@ -134,6 +134,35 @@ const md = document.createElement("puredashboard-markdown");
 md.value = someUntrustedMarkdown;   // rendered with textContent only; href-whitelisted
 ```
 
+### Rich content in a component (embed a child element)
+Most **content-bearing props** are interpolated at a **child position** by the reactive
+engine, so a prop documented as "text" is not text-only — each accepts **either** a
+**string** (auto-escaped; safe for untrusted text) **or** a **DOM node**, a nested
+**`html\`\`` template** (from `reactive.js`), or an **array** of those — rendered as-is,
+to embed a custom element / rich markup. This covers e.g. `collapse` item
+`header`/`content`; `list` `title`/`description`/`extra`/`header`/`footer`; `alert`
+`title`/`message`; `statistic` `title`/`prefix`/`suffix` (not `value`); `timeline`
+`content`/`label`; `descriptions` `label`/`value`/`title`; `tabs`/`segmented`/
+`radio-group`/`breadcrumb`/`tree`/`nav` `label`; `nav` `badge`; `checkbox`/`switch`
+`label`. (`table` `columns[].label`/`actions[].label` and a `column.render(row)` return
+value work the same way.)
+```js
+import { html } from "LIB/reactive.js";   // the parts-engine html, NOT html.js
+const c = document.createElement("puredashboard-collapse");
+c.items = [
+  { key: "a", header: "Metrics", content: html`<puredashboard-table></puredashboard-table>` },
+  { key: "b", header: "Note",    content: someElement },   // a real DOM node also works
+  { key: "c", header: "Plain",   content: "just text" },   // a string is auto-escaped
+];
+```
+Two caveats:
+- **Nodes/templates are NOT escaped** — you build them, so you own their safety (same
+  trust boundary as `raw()`/`icon`/`render`; see Invariants). Untrusted data still goes
+  through `textContent` / `<puredashboard-markdown>` or as a **plain string** (escaped).
+- A few labels double as an **accessible name**: `steps` step `label` and `nav` **group**
+  `label` also feed an `aria-label`. A node there renders visually but corrupts the a11y
+  name (`[object Object]`) — keep those a plain string.
+
 ### Preview your own components (the gallery is reusable)
 ```js
 import "LIB/gallery.js";
@@ -227,6 +256,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-empty` | `description`, `compact` | — | actions = children |
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
 | `puredashboard-markdown` | `value` | — | XSS-safe (textContent only) |
+| `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
 
 ### Overlay (wrap a trigger child)
 | Tag | Key props | Events | Notes |

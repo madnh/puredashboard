@@ -52,6 +52,7 @@
     <link rel="stylesheet" href="../src/rate.css" />
     <link rel="stylesheet" href="../src/color.css" />
     <link rel="stylesheet" href="../src/list.css" />
+    <link rel="stylesheet" href="../src/json-view.css" />
     <link rel="stylesheet" href="../src/timeline.css" />
     <link rel="stylesheet" href="../src/result.css" />
     <!-- the OPT-IN theme: tokens + base + shell, all in one -->
@@ -88,6 +89,7 @@
       import "../src/rate.js";      // <puredashboard-rate>
       import "../src/color.js";     // <puredashboard-color>
       import "../src/list.js";      // <puredashboard-list>
+      import "../src/json-view.js"; // <puredashboard-json-view>
       import "../src/timeline.js";  // <puredashboard-timeline>
       import "../src/result.js";    // <puredashboard-result>
       import "../src/tabs.js";      // <puredashboard-tabs>
@@ -379,6 +381,21 @@
         const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";
         wrap.append(card, emptyCard);
         gallery([wrap], { wide: true });
+      } else if (shot === "json") {
+        const jv = document.createElement("puredashboard-json-view");
+        jv.theme = theme || "auto";            // match the requested light/dark for the shot
+        jv.data = {
+          service: "api-gateway",
+          region: "us-east-1",
+          up: true,
+          replicas: 8,
+          ratio: 0.9998,
+          tags: ["edge", "prod", "eu-west"],
+          env: { REGION: "us-east-1", DEBUG: false, retries: 2 },
+          ports: [80, 443, 8080],
+          lastError: null,
+        };
+        gallery([jv], { wide: true });
       } else if (shot === "interactive") {
         const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
         const wrap = el("div", {}); wrap.style.cssText = "display:grid;gap:20px";

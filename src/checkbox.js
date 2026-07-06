@@ -41,7 +41,7 @@ let uid = 0;
  * @prop {boolean} disabled      - Disable the control. Default `false`.
  * @prop {boolean} required      - Must be checked to be valid (unchecked → `valueMissing`). Default `false`.
  * @prop {string}  value         - Value submitted when checked. Default `"on"`.
- * @prop {string}  label         - Author content shown beside the box. Default `""`.
+ * @prop {string|Node} label     - Content shown beside the box: a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
  * @prop {string}  error         - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels        - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name          - Field name for native `<form>` submission.

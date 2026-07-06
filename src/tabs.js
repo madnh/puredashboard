@@ -37,7 +37,7 @@ let uid = 0;
  *
  * @element puredashboard-tabs
  *
- * @prop {Array}   tabs   - Tab defs: `{ id: string, label: string, disabled?: boolean, panelId?: string }`.
+ * @prop {Array}   tabs   - Tab defs: `{ id: string, label: string|Node, disabled?: boolean, panelId?: string }`. Each `label` accepts a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped).
  * @prop {string}  value  - Active tab id (get/set). Defaults to the first enabled tab.
  * @prop {Object}  labels - Override UI strings. Keys: `tablist`. Unset keys keep the English default.
  *
