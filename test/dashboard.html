@@ -58,7 +58,7 @@
       import "../src/steps.js"; import "../src/nav.js"; import "../src/card.js";
       import "../src/descriptions.js"; import "../src/tag.js"; import "../src/badge.js";
       import "../src/avatar.js"; import "../src/empty.js"; import "../src/collapse.js";
-      import "../src/tree.js"; import "../src/list.js"; import "../src/timeline.js";
+      import "../src/tree.js"; import "../src/list.js"; import "../src/json-view.js"; import "../src/timeline.js";
       import "../src/result.js"; import "../src/tooltip.js"; import "../src/popover.js";
       import "../src/popconfirm.js"; import "../src/alert.js"; import "../src/progress.js";
       import "../src/spinner.js"; import "../src/skeleton.js";
@@ -240,10 +240,25 @@
           { label: "Created", value: "2025-11-02" }, { label: "SLA", value: "99.95%" },
         ]});
 
+        // the resolved config as a collapsible JSON tree; theme follows the dashboard's
+        // light/dark toggle (data-theme), and each value has a copy button.
+        const json = h("puredashboard-json-view", { level: 1, data: {
+          service: "api-gateway",
+          region: "us-east-1",
+          tier: "pro",
+          scaling: { instances: 8, maxCpu: 80, strategy: "rolling" },
+          maintenance: { date: "2026-07-15", window: "02:00" },
+          notifications: { emailOnFailure: true },
+          meta: { version: "v1.4.0", owner: "platform-team", sla: "99.95%" },
+        }});
+        const syncJsonTheme = () => { json.theme = document.documentElement.dataset.theme || "auto"; };
+        syncJsonTheme();
+        new MutationObserver(syncJsonTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
         outlet.replaceChildren(h("div", { className: "stack" }, [
           h("puredashboard-breadcrumb", { items: [{ label: "Home", href: "#/overview" }, { label: "Settings" }] }),
           h("h1", { className: "page-title", textContent: "Settings" }),
-          h("div", { className: "two-col" }, [card("Service configuration", form), h("div", { className: "stack" }, [card("Details", desc), card("Config keys", tree)])]),
+          h("div", { className: "two-col" }, [card("Service configuration", form), h("div", { className: "stack" }, [card("Details", desc), card("Config keys", tree), card("Effective config (JSON)", json)])]),
         ]));
       }
 
