@@ -49,6 +49,7 @@ import empty from "./empty.stories.js";
 import md from "./md.stories.js";
 import upload from "./upload.stories.js";
 // Overlay
+import dialogStory from "./dialog.stories.js";
 import tooltip from "./tooltip.stories.js";
 import popover from "./popover.stories.js";
 import popconfirm from "./popconfirm.stories.js";
@@ -65,6 +66,6 @@ export const STORIES = [
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
   tabs, breadcrumb, pagination, steps, nav,
   table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, timeline, empty, md, upload,
-  tooltip, popover, popconfirm,
+  dialogStory, tooltip, popover, popconfirm,
   alert, progress, spinner, skeleton, result,
 ];
