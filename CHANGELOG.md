@@ -10,6 +10,17 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-menubar>`** (`menubar.js`): a desktop-style application menu bar
+  (File · Edit · View …). The bar is the only custom element — each dropdown is opened by
+  `menu()`, so items get icons in a reserved gutter, shortcut hints, separators, groups,
+  checkbox / radio items and nested submenus for free. Implements the WAI-ARIA APG
+  "Menubar" pattern: `role=menubar` + `role=menuitem` triggers with
+  `aria-haspopup`/`aria-expanded`, roving tabindex, Arrow/Home/End along the bar,
+  click-to-toggle, hover-to-switch once a menu is open, and ArrowLeft/ArrowRight to walk
+  to the neighbouring menu (via `menu()`'s new `onEdgeNav` hook). `orientation="vertical"`
+  turns it into a vertical bar (menus open beside it, titles reserve the icon slot so
+  they line up). Emits `select` `{value,menu,index}` and `openchange` `{open,index}`;
+  `open(i)`/`close()`/`openIndex` drive it programmatically.
 - **`menu()`** (`menu.js`) grew the parts a real application menu needs, matching the
   Base UI Menu surface: **labelled groups** (`{ group, items }`), **checkbox items**
   (`{ checked }` → `role=menuitemcheckbox`), **radio groups**

@@ -97,6 +97,7 @@
       import "../src/pagination.js"; // <puredashboard-pagination>
       import "../src/steps.js";     // <puredashboard-steps>
       import "../src/nav.js";       // <puredashboard-nav>
+      import "../src/menubar.js";   // <puredashboard-menubar>
       import "../src/card.js";      // <puredashboard-card>
       import "../src/descriptions.js"; // <puredashboard-descriptions>
       import "../src/tag.js";       // <puredashboard-tag>
@@ -356,7 +357,22 @@
           { label: vi ? "Triển khai" : "Deploy" },
         ]});
         const pager = el("puredashboard-pagination", { page: 5, total: 200, pageSize: 10 });
-        wrap.append(crumb, tabs, steps, pager);
+        const bar = el("puredashboard-menubar", { menus: [
+          { label: vi ? "Tệp" : "File", items: [
+            { label: vi ? "Tệp mới" : "New file", value: "new", shortcut: "⌘N" },
+            { separator: true },
+            { label: vi ? "Xuất ra" : "Export as", items: [{ label: "JSON", value: "json" }, { label: "CSV", value: "csv" }] },
+          ] },
+          { label: vi ? "Sửa" : "Edit", items: [
+            { label: vi ? "Hoàn tác" : "Undo", value: "undo", shortcut: "⌘Z" },
+            { label: vi ? "Làm lại" : "Redo", value: "redo", shortcut: "⇧⌘Z", disabled: true },
+          ] },
+          { label: vi ? "Xem" : "View", items: [
+            { label: vi ? "Thanh bên" : "Sidebar", checked: true },
+            { label: vi ? "Thanh trạng thái" : "Status bar", checked: false },
+          ] },
+        ]});
+        wrap.append(crumb, bar, tabs, steps, pager);
         gallery([wrap], { wide: true });
       } else if (shot === "data") {
         const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };

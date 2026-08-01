@@ -44,7 +44,7 @@
  * @function menu
  * @param {HTMLElement} anchor - Element to position under (usually the trigger button). Gets `aria-haspopup`/`aria-expanded` while open, and focus back on close.
  * @param {Array<Object>} items - Items and groups. Item: `{ label, value?, href?, target?, icon?, shortcut?, danger?, disabled?, checked?, closeOnSelect?, onSelect?, items?, separator? }`. Group: `{ group: label, items, radio?, onSelect? }`.
- * @param {Object} [opts] - `{ placement?: "bottom-start"|"bottom-end"|"top-start"|"top-end"|"right-start"|"left-start", className?: string, labels?: Object, hoverDelay?: number, finalFocus?: boolean }`.
+ * @param {Object} [opts] - `{ placement?: "bottom-start"|"bottom-end"|"top-start"|"top-end"|"right-start"|"left-start", className?: string, labels?: Object, hoverDelay?: number, finalFocus?: boolean, onEdgeNav?: (dir: -1|1) => boolean }`. `onEdgeNav` is called when Arrow{Left,Right} at the root level has no submenu to open/close — `<puredashboard-menubar>` uses it to walk to the adjacent menu.
  * @returns {Promise<*>} Resolves with the picked item's `value`, or `null` if dismissed (Esc / click-outside). The promise also carries `.close(value?)` and `.el` (the root popup) so a caller can drive it (e.g. a menubar).
  *
  * @example
@@ -346,11 +346,14 @@ export function menu(anchor, items, opts = {}) {
         const open = levels[lv.depth + 1];
         if (open && open.trigger === el) focusItem(open, enabledItems(open)[0]);
         else openSubmenu(el.__pdItem, el, lv, true);
+        return;
       }
+      if (lv.depth === 0 && edgeNav(1)) e.preventDefault();
       return;
     }
     if (k === "ArrowLeft") {
       if (lv.depth > 0) { e.preventDefault(); const t = lv.trigger; closeDeeperThan(lv.depth - 1); focusItem(levels[lv.depth - 1], t); }
+      else if (edgeNav(-1)) e.preventDefault();
       return;
     }
     if (k === " " || k === "Enter") {
@@ -367,6 +370,11 @@ export function menu(anchor, items, opts = {}) {
     }
     if (k.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && /\S/.test(k)) { e.preventDefault(); typeahead(lv, k); }
   }
+
+  // Escape hatch for a horizontal parent (the menubar): Arrow{Left,Right} at the ROOT
+  // level with no submenu to open/close hands off, so the neighbouring menu can take
+  // over. Returns true when the host consumed it.
+  function edgeNav(dir) { return !!(opts.onEdgeNav && opts.onEdgeNav(dir) !== false); }
 
   function onOutside(e) {
     if (levels.some((lv) => lv.el.contains(e.target)) || e.target === anchor) return;

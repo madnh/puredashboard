@@ -32,6 +32,7 @@ import breadcrumb from "./breadcrumb.stories.js";
 import pagination from "./pagination.stories.js";
 import steps from "./steps.stories.js";
 import nav from "./nav.stories.js";
+import menubar from "./menubar.stories.js";
 // Data display
 import table from "./table.stories.js";
 import card from "./card.stories.js";
@@ -65,7 +66,7 @@ export const STORIES = [
   button, segmented,
   divider, space, flex, grid, layout, splitter, titlebar,
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
-  tabs, breadcrumb, pagination, steps, nav,
+  tabs, breadcrumb, pagination, steps, nav, menubar,
   table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, timeline, empty, md, upload,
   dialogStory, menuStory, tooltip, popover, popconfirm,
   alert, progress, spinner, skeleton, result,
