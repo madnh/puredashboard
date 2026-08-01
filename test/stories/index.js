@@ -58,6 +58,7 @@ import popconfirm from "./popconfirm.stories.js";
 // Feedback
 import alert from "./alert.stories.js";
 import progress from "./progress.stories.js";
+import meter from "./meter.stories.js";
 import spinner from "./spinner.stories.js";
 import skeleton from "./skeleton.stories.js";
 import result from "./result.stories.js";
@@ -69,5 +70,5 @@ export const STORIES = [
   tabs, breadcrumb, pagination, steps, nav, menubar,
   table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, timeline, empty, md, upload,
   dialogStory, menuStory, tooltip, popover, popconfirm,
-  alert, progress, spinner, skeleton, result,
+  alert, progress, meter, spinner, skeleton, result,
 ];

@@ -1,0 +1,65 @@
+/* puredashboard-meter — styles for <puredashboard-meter> (meter.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able: values resolve through a --pd-* chain that falls back to
+ * your app tokens (--accent, --green, --amber, --red, --panel-3, --text, --muted,
+ * --radius-full, --font-size-sm, --duration-*) and finally to neutral system colours —
+ * so it looks right with NO theme linked and adapts to light/dark on its own.
+ *
+ * The bar is a rounded track (.puredashboard-meter__track) plus a fill whose WIDTH comes
+ * from --pd-meter-pct, set inline by the component from the computed fraction (a
+ * dynamic value, so it stays inside the CSP style policy). When low/high/optimum are
+ * given, a zone modifier repaints the fill: optimum = green, suboptimal = amber,
+ * poor = red — the native <meter> element's colour semantics.
+ */
+puredashboard-meter {
+  display: block;
+  --pd-accent:   var(--accent,  #3b82f6);
+  --pd-green:    var(--green,   #3fb950);
+  --pd-amber:    var(--amber,   #d29922);
+  --pd-red:      var(--red,     #f85149);
+  --pd-text:     var(--text,    CanvasText);
+  --pd-muted:    var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel-3:  var(--panel-3, color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-radius-full: var(--radius-full, 999px);
+  --pd-duration: var(--duration-slow, 320ms);
+  --pd-ease:     var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-font-sm:  var(--font-size-sm, 12px);
+
+  /* component knobs */
+  --pd-meter-h: 8px;                    /* track thickness — overridden per size */
+  --pd-meter-pct: 0%;                   /* dynamic; the component sets this inline */
+  --pd-meter-color: var(--pd-accent);   /* bar colour; zone modifiers override it */
+}
+
+/* size knobs */
+.puredashboard-meter--sm { --pd-meter-h: 5px; }
+.puredashboard-meter--lg { --pd-meter-h: 12px; }
+
+.puredashboard-meter__wrap { display: grid; gap: var(--sp-2, 6px); }
+
+/* label row: name on the left, reading on the right */
+.puredashboard-meter__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3, 12px);
+  font-size: var(--pd-font-sm);
+}
+.puredashboard-meter__label { color: var(--pd-text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.puredashboard-meter__value { color: var(--pd-muted); flex: none; font-variant-numeric: tabular-nums; }
+
+.puredashboard-meter__track {
+  position: relative; overflow: hidden;
+  height: var(--pd-meter-h);
+  background: var(--pd-panel-3);
+  border-radius: var(--pd-radius-full);
+}
+.puredashboard-meter__fill {
+  height: 100%;
+  width: var(--pd-meter-pct);
+  background: var(--pd-meter-color);
+  border-radius: inherit;
+  transition: width var(--pd-duration) var(--pd-ease), background-color var(--pd-duration) var(--pd-ease);
+}
+
+/* zone modifiers — native <meter> semantics (see meter.js `_zone()`) */
+.puredashboard-meter__fill--optimum    { --pd-meter-color: var(--pd-green); }
+.puredashboard-meter__fill--suboptimal { --pd-meter-color: var(--pd-amber); }
+.puredashboard-meter__fill--poor       { --pd-meter-color: var(--pd-red); }

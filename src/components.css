@@ -81,5 +81,6 @@
 /* feedback */
 @import "alert.css";
 @import "progress.css";
+@import "meter.css";
 @import "spinner.css";
 @import "skeleton.css";

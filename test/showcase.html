@@ -111,6 +111,7 @@
       import "../src/tooltip.js";   // <puredashboard-tooltip>
       import "../src/alert.js";     // <puredashboard-alert>
       import "../src/progress.js";  // <puredashboard-progress>
+      import "../src/meter.js";     // <puredashboard-meter>
       import "../src/spinner.js";   // <puredashboard-spinner>
       import "../src/skeleton.js";  // <puredashboard-skeleton>
       import "../src/md.js";   // defines <puredashboard-markdown>
@@ -446,6 +447,8 @@
           el("puredashboard-progress", { value: 66, showInfo: true }),
           el("puredashboard-progress", { value: 100, status: "success" }),
           el("puredashboard-progress", { variant: "circle", value: 42 }),
+          el("puredashboard-meter", { label: vi ? "Đĩa đã dùng" : "Disk used", value: 88, low: 60, high: 80, optimum: 0 }),
+          el("puredashboard-meter", { label: vi ? "Bộ nhớ" : "Memory", value: 6.4, max: 16, format: { style: "unit", unit: "gigabyte", maximumFractionDigits: 1 }, locale: vi ? "vi-VN" : "en-US" }),
           (() => { const r = el("div", {}); r.style.cssText = "display:flex;gap:16px;align-items:center"; r.append(el("puredashboard-spinner", { labelVisible: true }), el("puredashboard-progress", { indeterminate: true })); return r; })(),
           el("puredashboard-skeleton", { variant: "text", lines: 3 }),
         );

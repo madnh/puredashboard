@@ -48,7 +48,7 @@ nav, KPI cards, alerts, lists, a timeline and progress meters:
 - 🧭 **Navigation** — `tabs`, `breadcrumb`, `pagination`, `steps`, a collapsible sidebar `nav`, a desktop-style `menubar`, and a `router` (hash or History API, params, catch-all 404, lazy pages, layouts, guards).
 - 📊 **Data display** — `table` (sort · filter · paginate · row-select + bulk actions · per-row actions), `card`, `descriptions`, `statistic`, `tag`, `badge`, `avatar`, `list`, `tree`, `collapse`, a `json-view` (collapsible JSON tree — 10 built-in themes, `level` auto-collapse, per-value copy), `timeline`, `empty`, and XSS-safe `markdown`.
 - 💬 **Overlays** (native top layer) — `dialog` / `drawer` / `alert` / `confirm` / `prompt`, anchored `menu()`, `tooltip`, `popover`, `popconfirm`, and `toast` — focus-trapped, Esc/backdrop/light-dismiss.
-- 🔔 **Feedback** — `alert`, `progress` (line + circle), `spinner`, `skeleton`, `result`.
+- 🔔 **Feedback** — `alert`, `progress` (line + circle), a `meter` gauge (native `<meter>` colour zones), `spinner`, `skeleton`, `result`.
 - 📤 **File upload** — drag-and-drop, image thumbnails, per-file progress, native multipart submit.
 - 🖥️ **Native-style desktop** — a custom `titlebar` for frameless Tauri/Wails/Electron windows and an optional macOS **skin** (`theme/native.css`, vibrancy + hairlines). See [DESKTOP.md](docs/DESKTOP.md).
 - ⚡ **Reactive engine** (`reactive.js`) — a lit-html-style template engine that diffs the DOM **in place**, so `<input>` focus, caret and scroll survive re-renders.

@@ -10,6 +10,18 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-meter>`** (`meter.js`): a gauge for a MEASUREMENT inside a known
+  range (disk used, memory, quota, a score) — `role="meter"` with
+  `aria-valuenow`/`min`/`max` + `aria-valuetext`, distinct from
+  `<puredashboard-progress>`'s `role="progressbar"` (a meter reading moves either way and
+  is never "done"; screen readers announce the two differently). Optional label row
+  (label left, reading right), `showValue`, and `format` (`Intl.NumberFormat` options,
+  applied to the raw value) + `locale` — so a meter can read "8.5 GB", "1.2K" or a
+  currency instead of a percent. Setting `low`/`high`/`optimum` turns on the **native
+  `<meter>` element's colour zones**: green in the optimum region, amber when
+  suboptimal, red in the region furthest from `optimum` (including the spec's rule that
+  an optimum in the middle band makes *both* ends merely suboptimal). Sizes `sm`/`md`/`lg`;
+  the fill width rides a dynamic `--pd-meter-pct` custom property, so it stays CSP-safe.
 - **`<puredashboard-menubar>`** (`menubar.js`): a desktop-style application menu bar
   (File · Edit · View …). The bar is the only custom element — each dropdown is opened by
   `menu()`, so items get icons in a reserved gutter, shortcut hints, separators, groups,

@@ -12,7 +12,7 @@
 
 ## What this is
 
-A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~45 custom
+A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~46 custom
 elements + a few imperative helpers. Files in `src/` are shipped to the browser
 **as-is** — no npm, no bundler, no transpile. It runs under `script-src 'self'`.
 
@@ -324,6 +324,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 |---|---|---|---|
 | `puredashboard-alert` | `type`, `title`, `message`, `showIcon`, `closable` | `close`(cancelable) | inline banner |
 | `puredashboard-progress` | `value`, `max`, `variant`(line/circle), `status`, `showInfo`, `indeterminate` | — | |
+| `puredashboard-meter` | `value`, `min`, `max`, `low`/`high`/`optimum`, `label`, `showValue`, `format`(Intl opts), `locale`, `size` | — | `role=meter` gauge for a READING in a range (disk/quota/score) — not a task's progress; low/high/optimum give the native `<meter>` green/amber/red zones |
 | `puredashboard-spinner` | `size`, `label`, `labelVisible`, `inline` | — | role=status |
 | `puredashboard-skeleton` | `variant`(text/rect/circle), `lines`, `width`, `height`, `animated` | — | loading placeholder |
 
