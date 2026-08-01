@@ -58,6 +58,7 @@ const LABELS = {
  * @prop {string}  size          - `"sm"` | `"md"` (default) | `"lg"` — track / ring thickness.
  * @prop {Object}  labels        - Override UI strings. Keys: `label(pct)`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-progress-line-h]    - Line track thickness (defaults per `size`).
  * @cssprop [--pd-progress-circle]    - Circle diameter (defaults per `size`).
  * @cssprop [--pd-progress-circle-sw] - Circle stroke width (defaults per `size`).
@@ -134,7 +135,7 @@ class PuredashboardProgress extends Reactive {
       min: "0",
       max: String(max),
       now: indet ? null : String(this.value ?? 0),
-      label: this._label("label", indet ? null : pct),
+      label: this.getAttribute("aria-label") ?? this._label("label", indet ? null : pct),
     };
 
     const wrapCls = `puredashboard-progress__wrap${variantCls}${sizeCls}${indetCls}`;

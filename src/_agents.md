@@ -170,6 +170,23 @@ const md = document.createElement("puredashboard-markdown");
 md.value = someUntrustedMarkdown;   // rendered with textContent only; href-whitelisted
 ```
 
+### Naming a component for screen readers
+Put **`aria-label` (or `aria-labelledby`) on the element itself** — every component
+routes it to whatever actually carries the semantics:
+```js
+input.setAttribute("aria-label", "Email address");          // → the inner <input>
+tabs.setAttribute("aria-label", "Service views");           // → the role="tablist"
+iconBtn.setAttribute("aria-label", "More actions");         // → the inner <button>
+```
+- Form controls mirror it onto the **inner native control** (as they do for a `<label>`
+  that wraps or points at the host) — that's the element AT announces.
+- Widgets apply it to their **role-bearing root**, overriding the built-in `LABELS`
+  name; `spinner`/`skeleton`/`avatar`/`divider`/`card` carry their role on the host, so
+  the name simply stays there.
+- A component's default name **never overwrites** one you set.
+- **Icon-only controls MUST have one** (a `<puredashboard-button>` with `icon` and no
+  children has no other name).
+
 ### Rich content in a component (embed a child element)
 Most **content-bearing props** are interpolated at a **child position** by the reactive
 engine, so a prop documented as "text" is not text-only — each accepts **either** a

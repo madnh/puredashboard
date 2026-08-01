@@ -40,6 +40,9 @@ const LABELS = {
   required: "This field is required.",
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 let uid = 0;
 
 /**
@@ -69,6 +72,7 @@ let uid = 0;
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `required`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission (on the host).
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires change - Bubbling `CustomEvent` fired on commit (selecting an option or, with `allowCustom`, committing free text). `detail.value` is the newly committed value.
  *
@@ -108,8 +112,9 @@ class PuredashboardCombobox extends Reactive {
   // configured the natural way inside a form — <puredashboard-combobox required name="x">
   // — not only via JS. Boolean attrs map by presence. (`options` are data, set via the
   // property, not an attribute.)
-  static observedAttributes = ["value", "placeholder", "disabled", "required", "name"];
+  static observedAttributes = ["value", "placeholder", "disabled", "required", "name", "aria-label", "aria-labelledby"];
   attributeChangedCallback(name, _old, val) {
+    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     if (name === "name") { this.requestUpdate(); return; } // used only for form submission
     const bool = name === "disabled" || name === "required";
     this[name] = bool ? val !== null : val;
@@ -292,6 +297,26 @@ class PuredashboardCombobox extends Reactive {
     else this._internals.setValidity({});
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? ""; }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const invalid = !!this.error;
     const open = !!this._open && !this.disabled;
@@ -302,7 +327,7 @@ class PuredashboardCombobox extends Reactive {
     const usePopover = typeof HTMLElement.prototype.showPopover === "function";
     return html`
       <div class="puredashboard-combobox__control">
-        <input class="puredashboard-combobox__input js-puredashboard-combobox__input" type="text" role="combobox" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
+        <input class="puredashboard-combobox__input js-puredashboard-combobox__input" type="text" role="combobox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
         <svg class="puredashboard-combobox__chevron" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         <div class="puredashboard-combobox__list js-puredashboard-combobox__list${open ? " puredashboard-combobox__list--open" : ""}" id="${this._listId}" role="listbox" popover="${usePopover ? "manual" : null}" ?hidden="${!open}">
           ${open && list.length === 0 ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("noResults")}</div>` : ""}

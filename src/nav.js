@@ -55,6 +55,7 @@ let uid = 0;
  * @prop {string} current - The `href` (or id) of the active item; the matching leaf gets `aria-current="page"`. Default `""`.
  * @prop {Object} [labels] - Override UI strings (English defaults). Keys: `ariaLabel`, `expand(group)`, `collapse(group)`.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires puredashboard-nav#toggle - When a group is expanded/collapsed. `detail`: `{ label, expanded }`.
  *
  * @cssprop [--pd-nav-item-height] - Row height (defaults to `--control-height-md`).
@@ -151,7 +152,7 @@ class PuredashboardNav extends Reactive {
 
   render() {
     const items = this.items || [];
-    return html`<nav class="puredashboard-nav__nav" aria-label="${this._label("ariaLabel")}">
+    return html`<nav class="puredashboard-nav__nav" aria-label="${this.getAttribute("aria-label") ?? this._label("ariaLabel")}">
       <ul class="puredashboard-nav__list puredashboard-nav__list--root" role="list">${items.map((n, i) => this._renderNode(n, [i], 0))}</ul>
     </nav>`;
   }

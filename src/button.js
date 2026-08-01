@@ -290,7 +290,8 @@ class PuredashboardButton extends HTMLElement {
     // onto the inner element — the host carries no role, so a name there is ignored by
     // assistive tech while the focusable <button>/<a> would stay nameless. This is what
     // makes an ICON-ONLY button (kebab ⋯ / hamburger ☰ menu triggers) announce itself.
-    const name = this.getAttribute("aria-label");
+    const raw = this.getAttribute("aria-label");
+    const name = raw === this._ariaOwn ? null : raw;      // ignore the fallback WE wrote
     const namedBy = this.getAttribute("aria-labelledby");
     if (name) el.setAttribute("aria-label", name);
     else if (this.loading) el.setAttribute("aria-label", this._label("loading"));
@@ -301,10 +302,16 @@ class PuredashboardButton extends HTMLElement {
     // only OURS to manage — an author-supplied aria-label is never clobbered.
     if (this.loading) {
       this.setAttribute("aria-busy", "true");
-      if (!name) { this.setAttribute("aria-label", this._label("loading")); this._ownName = true; }
+      // Writing an OBSERVED attribute re-enters attributeChangedCallback even when the
+      // value is unchanged — so only write when it actually differs, or this recurses.
+      if (!name) {
+        this._ariaOwn = this._label("loading");
+        if (raw !== this._ariaOwn) this.setAttribute("aria-label", this._ariaOwn);
+      }
     } else {
       this.removeAttribute("aria-busy");
-      if (this._ownName) { this.removeAttribute("aria-label"); this._ownName = false; }
+      // Only OUR fallback is removed — an author name set meanwhile stays put.
+      if (raw != null && raw === this._ariaOwn) { this.removeAttribute("aria-label"); this._ariaOwn = null; }
     }
 
     this._syncGlyphs();

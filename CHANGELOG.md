@@ -57,13 +57,26 @@ the API may still change between minor versions.
   so a field named `__proto__`/`constructor` can't corrupt it.
 
 ### Fixed
-- **`<puredashboard-button>` accessible name** (`button.js`): an author `aria-label` on
-  the host was **deleted** on every sync (the `loading` fallback owned the attribute
-  unconditionally) and was never mirrored onto the inner `<button>`/`<a>` — so an
-  icon-only button (a kebab `⋯` / hamburger `☰` menu trigger) ended up nameless for
-  assistive tech. `aria-label`/`aria-labelledby` are now observed, mirrored onto the
-  inner element, and left alone; the `loading` string only names the button when the
-  author gave none.
+- **Accessible names now reach the right element (library-wide).** A custom-element host
+  carries no role, so an `aria-label` put on it was silently dropped — and several
+  components additionally **deleted** the author's value on every render, overwriting it
+  with their own `LABELS` default. Found while building an icon-only menu trigger
+  (`<puredashboard-button>` + `icon`), then audited across every component:
+  - **Mirrored onto the inner native control** (so a screen reader announces it):
+    `button` (inner `<button>`/`<a>`), `input`, `textarea`, `number`, `select`,
+    `combobox`, `checkbox`, `switch`, `slider`, `date`, `time`, `color`, `upload`.
+    These also mirror `aria-labelledby` **and any `<label>` associated with the host**
+    (wrapping it, or `label[for]`) — previously a wrapping `<label>` named the
+    form-associated host and never reached the control inside it.
+  - **Applied to the role-bearing root, overriding the built-in name**: `rate`,
+    `progress`, `tabs`, `breadcrumb`, `pagination`, `nav`, `splitter`, `steps`,
+    `timeline`, `list`, `alert`, `table`, `collapse`, `badge`.
+  - **No longer clobbered on the host** (these carry their role on the host):
+    `spinner`, `skeleton`, `avatar`, `divider` — a component default now only fills in
+    when the author set no name, and only the component's own value is ever replaced.
+  - `tree`, `segmented`, `radio-group`, `menubar`, `card`, `grid` already behaved; they
+    are pinned by the new cross-cutting suite `test/a11y-names.test.mjs` (62 assertions)
+    plus `test/a11y-names-harness.html` for the computed names in a real browser.
 - **Router** (`router.js`): a malformed `%`-escape in a route param (e.g. `#/x/%`) no
   longer throws an uncaught `URIError` that wedged `render()` — it falls back to the raw
   capture.

@@ -41,6 +41,7 @@ let uid = 0;
  * @prop {string}  value  - Active tab id (get/set). Defaults to the first enabled tab.
  * @prop {Object}  labels - Override UI strings. Keys: `tablist`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires tabchange - Bubbling `CustomEvent`; `detail`: `{ value }` — fired when the active tab changes.
  *
  * @cssprop [--pd-tabs-gap]      - Gap between tabs (defaults to `--sp-1`).
@@ -132,7 +133,7 @@ class PuredashboardTabs extends Reactive {
   render() {
     const tabs = this.tabs || [];
     const active = this._current();
-    return html`<div class="puredashboard-tabs__list js-puredashboard-tabs__list" role="tablist" aria-label="${this._label("tablist")}">
+    return html`<div class="puredashboard-tabs__list js-puredashboard-tabs__list" role="tablist" aria-label="${this.getAttribute("aria-label") ?? this._label("tablist")}">
       ${tabs.map((t) => {
         const selected = t.id === active;
         return html`<button type="button" class="puredashboard-tabs__tab ${selected ? "puredashboard-tabs__tab--active" : ""} ${t.disabled ? "puredashboard-tabs__tab--disabled" : ""}" id="${this._tabElId(t.id)}" role="tab" data-tab="${t.id}" aria-selected="${selected ? "true" : "false"}" aria-controls="${t.panelId || ""}" tabindex="${selected ? "0" : "-1"}" ?disabled="${!!t.disabled}">${t.label}</button>`;
