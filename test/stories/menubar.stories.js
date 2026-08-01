@@ -1,4 +1,5 @@
 import { el } from "./_util.js";
+import { menu } from "../../src/menu.js";
 
 // <puredashboard-menubar> is the horizontal parent of menu(): every dropdown is a full
 // menu(), so items get icons in a reserved gutter, shortcut hints, separators, groups,
@@ -77,5 +78,21 @@ export default {
 
     { name: "Whole bar disabled", notes: "disabled bar: nothing opens, one flat opacity", render: () =>
       bar({ menus: APP_MENUS(), disabled: true }) },
+
+    // Narrow screens: the same `menus` array folds into ONE hamburger — each menu
+    // becomes a submenu, so no item is lost and nothing new has to be authored.
+    { name: "Collapsed into a hamburger", notes: "no room for a bar? map the same menus into one ☰ trigger — each title becomes a submenu", render: () => {
+      const menus = APP_MENUS();
+      const burger = el("puredashboard-button", {
+        variant: "text", shape: "circle", size: "sm", "aria-label": "Open menu",
+        icon: svg('<path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>'),
+      });
+      burger.addEventListener("click", (e) =>
+        menu(e.currentTarget.querySelector(".js-puredashboard-button__el") || e.currentTarget, menus.map((m) => ({ label: m.label, icon: m.icon, disabled: m.disabled, items: m.items })))
+          .then((v) => console.log("menubar (collapsed) select:", v)));
+      return el("div", { style: "display:flex;align-items:center;gap:10px;width:280px;padding:8px 10px;border:1px solid var(--border);border-radius:10px" }, [
+        burger, el("div", { style: "font-weight:600", textContent: "Editor" }),
+      ]);
+    } },
   ],
 };

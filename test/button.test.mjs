@@ -232,6 +232,48 @@ for (const s of ["success", "warning"]) {
   ok(el2.getAttribute("aria-label") === "Loading", "default loading label kept when not overridden");
 }
 
+// ---- accessible name: an author aria-label reaches the inner element and survives ----
+// This is what an ICON-ONLY trigger (kebab ⋯ / hamburger ☰ opening a menu()) depends on:
+// the host has no role, so the name has to land on the focusable <button>/<a>.
+{
+  const el = mount("puredashboard-button");
+  el.setAttribute("aria-label", "More actions");
+  el.icon = '<svg viewBox="0 0 16 16"></svg>';
+  await tick();
+  const inner = el.querySelector(".js-puredashboard-button__el");
+  ok(inner.getAttribute("aria-label") === "More actions", "aria-label is mirrored onto the inner button (icon-only trigger)");
+  ok(el.getAttribute("aria-label") === "More actions", "aria-label stays on the host");
+  el.loading = true;
+  await tick();
+  ok(el.getAttribute("aria-label") === "More actions" && inner.getAttribute("aria-label") === "More actions", "loading does NOT overwrite an author-supplied name");
+  ok(el.getAttribute("aria-busy") === "true", "loading still sets aria-busy");
+  el.loading = false;
+  await tick();
+  ok(el.getAttribute("aria-label") === "More actions" && inner.getAttribute("aria-label") === "More actions", "clearing loading keeps the author name");
+  el.setAttribute("aria-label", "Row actions");
+  await tick();
+  ok(inner.getAttribute("aria-label") === "Row actions", "changing aria-label re-syncs the inner element");
+  el.removeAttribute("aria-label");
+  await tick();
+  ok(!inner.hasAttribute("aria-label"), "removing aria-label clears it from the inner element");
+}
+{
+  const el = mount("puredashboard-button");
+  el.setAttribute("aria-labelledby", "lbl-1");
+  await tick();
+  ok(el.querySelector(".js-puredashboard-button__el").getAttribute("aria-labelledby") === "lbl-1", "aria-labelledby is mirrored onto the inner element");
+}
+{
+  const el = mount("puredashboard-button");
+  el.loading = true;
+  await tick();
+  const inner = el.querySelector(".js-puredashboard-button__el");
+  ok(inner.getAttribute("aria-label") === "Loading", "unnamed + loading: the LABELS fallback names the inner element");
+  el.loading = false;
+  await tick();
+  ok(!el.hasAttribute("aria-label") && !inner.hasAttribute("aria-label"), "the loading fallback name is removed again (it was ours)");
+}
+
 // ---- idempotent connect: re-connecting does not re-wrap or move children again ----
 {
   const el = mount("puredashboard-button");

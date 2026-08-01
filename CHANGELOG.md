@@ -57,6 +57,13 @@ the API may still change between minor versions.
   so a field named `__proto__`/`constructor` can't corrupt it.
 
 ### Fixed
+- **`<puredashboard-button>` accessible name** (`button.js`): an author `aria-label` on
+  the host was **deleted** on every sync (the `loading` fallback owned the attribute
+  unconditionally) and was never mirrored onto the inner `<button>`/`<a>` — so an
+  icon-only button (a kebab `⋯` / hamburger `☰` menu trigger) ended up nameless for
+  assistive tech. `aria-label`/`aria-labelledby` are now observed, mirrored onto the
+  inner element, and left alone; the `loading` string only names the button when the
+  author gave none.
 - **Router** (`router.js`): a malformed `%`-escape in a route param (e.g. `#/x/%`) no
   longer throws an uncaught `URIError` that wedged `render()` — it falls back to the raw
   capture.

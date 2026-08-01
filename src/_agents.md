@@ -119,6 +119,25 @@ const picked = await menu(anchorEl, [
   ArrowRight/ArrowLeft (or Enter/Esc) to enter/leave a submenu.
 - The returned promise also carries `.close(value?)` and `.el` so a caller (e.g. a
   menubar) can drive the open menu.
+
+**Overflow menus (keep a busy UI tidy).** Show the one or two frequent actions and
+collapse the rest behind a single icon trigger — a **kebab `⋯`** for one row/card's own
+actions, a **hamburger `☰`** for a whole nav/command set on narrow screens:
+```js
+const more = Object.assign(document.createElement("puredashboard-button"),
+  { variant: "text", shape: "circle", size: "sm", icon: ICON_KEBAB });
+more.setAttribute("aria-label", "More actions for api-gateway");   // REQUIRED: no visible text
+more.addEventListener("click", (e) => {
+  const btn = e.currentTarget.querySelector(".js-puredashboard-button__el");  // the real <button>
+  menu(btn, rareActions, { placement: "bottom-end" }).then(run);              // hugs the right edge
+});
+```
+- An **icon-only button MUST carry `aria-label`** — it's mirrored onto the inner
+  `<button>`, which is what screen readers announce.
+- Anchor the menu on that inner `.js-puredashboard-button__el`: it's the element that
+  takes focus and receives `aria-haspopup`/`aria-expanded`.
+- A whole `<puredashboard-menubar>` collapses the same way — map `menus` to items with
+  nested `items`, and each title becomes a submenu inside one `☰`.
 ```js
 import { toast } from "LIB/toast.js";
 toast.success("Saved"); toast.error("Failed", { duration: 0 /* sticky */ });
