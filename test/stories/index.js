@@ -3,6 +3,7 @@
 // General
 import button from "./button.stories.js";
 import segmented from "./segmented.stories.js";
+import toggle from "./toggle.stories.js";
 // Layout
 import divider from "./divider.stories.js";
 import space from "./space.stories.js";
@@ -64,7 +65,7 @@ import skeleton from "./skeleton.stories.js";
 import result from "./result.stories.js";
 
 export const STORIES = [
-  button, segmented,
+  button, segmented, toggle,
   divider, space, flex, grid, layout, splitter, titlebar,
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
   tabs, breadcrumb, pagination, steps, nav, menubar,

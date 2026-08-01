@@ -10,6 +10,18 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-toggle>`** (`toggle.js`): a two-state button — it stays visibly
+  pressed until pressed again — for a setting that applies IMMEDIATELY (bold/italic in a
+  toolbar, mute, pin, "show archived"). Renders a native `<button>` with `aria-pressed`,
+  so keyboard (Space/Enter), focus and `disabled` come from the platform. Deliberately
+  **not** form-associated: `<puredashboard-switch>` (role=switch) and
+  `<puredashboard-checkbox>` remain the form inputs — a toggle is an action button and
+  submits nothing. Props: `pressed`, `disabled`, `value` (its identity inside a toggle
+  group), `label` (string or node), `icon` (trusted SVG), `size`, `variant`
+  (`default`/`text` for toolbars), plus `tabbable` + `focus()` so a group can run a
+  roving tabindex. Emits `change` `{pressed, value}` on user action only — setting
+  `.pressed` in JS stays silent. `pressed` is reflected as an attribute; an icon-only
+  toggle takes its name from `aria-label` (mirrored onto the inner button).
 - **`<puredashboard-meter>`** (`meter.js`): a gauge for a MEASUREMENT inside a known
   range (disk used, memory, quota, a score) — `role="meter"` with
   `aria-valuenow`/`min`/`max` + `aria-valuetext`, distinct from
