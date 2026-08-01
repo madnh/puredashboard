@@ -51,6 +51,7 @@ const COLORS = new Set(["accent", "success", "warning", "error", "muted"]);
  * @prop {(string|boolean)} pending - Append a trailing ghost item with an animated spinner dot. A string is its content; `true` uses the `pending` label. Falsy → no pending item. Default `false`.
  * @prop {Object}  labels  - Override UI strings. Keys: `pending`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-timeline-dot]       - Dot diameter (defaults to `12px`).
  * @cssprop [--pd-timeline-connector] - Connector line thickness (defaults to `2px`).
  * @cssprop [--pd-timeline-gap]       - Vertical gap between items (defaults to `--sp-5`).
@@ -118,7 +119,7 @@ class PuredashboardTimeline extends Reactive {
     const listCls = `puredashboard-timeline__list puredashboard-timeline__list--${mode}`;
     // Key by index so reordering (reverse) rebuilds rows cleanly; there is no
     // per-row focus/state to preserve, so index keys are safe here.
-    return html`<ol class="${listCls}" role="list">${repeat(src, (s, i) => i, (s, i) => this._item(s, i, this._side(i, mode), false))}${pendingItem ? this._item(pendingItem, src.length, this._side(src.length, mode), true) : ""}</ol>`;
+    return html`<ol class="${listCls}" role="list" aria-label="${this.getAttribute("aria-label") ?? ""}">${repeat(src, (s, i) => i, (s, i) => this._item(s, i, this._side(i, mode), false))}${pendingItem ? this._item(pendingItem, src.length, this._side(src.length, mode), true) : ""}</ol>`;
   }
 }
 PuredashboardTimeline.define("puredashboard-timeline");

@@ -23,6 +23,9 @@ const LABELS = {
   required: "This field is required.",
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 let uid = 0;
 
 /**
@@ -47,6 +50,7 @@ let uid = 0;
  * @prop {string}  error    - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels   - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name     - Field name for native `<form>` submission.
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires input  - Native, bubbling `input` from the inner field (per edit). Read `.value` / `event.target.value`.
  * @fires change - Native, bubbling `change` from the inner field (commit). Read `.value` / `event.target.value`.
@@ -82,8 +86,9 @@ class PuredashboardDate extends Reactive {
   // can be configured the natural way inside a form — <puredashboard-date
   // min="2020-01-01" max="2030-12-31" required> — not only via JS. Boolean attrs
   // map by presence; min/max/value stay ISO strings.
-  static observedAttributes = ["value", "min", "max", "disabled", "required", "size", "name"];
+  static observedAttributes = ["value", "min", "max", "disabled", "required", "size", "name", "aria-label", "aria-labelledby"];
   attributeChangedCallback(name, _old, val) {
+    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     // `name` is a plain reflected attribute consumed by ElementInternals for form
     // submission; it isn't a reactive property, so leave it on the host attribute.
     if (name === "name") return;
@@ -130,11 +135,31 @@ class PuredashboardDate extends Reactive {
     else this._internals.setValidity({});
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? ""; }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const invalid = !!(this.invalid || this.error);
     const sizeCls = this.size === "sm" ? " puredashboard-date__field--sm" : this.size === "lg" ? " puredashboard-date__field--lg" : "";
     return html`
-      <input class="puredashboard-date__field js-puredashboard-date__field${sizeCls}" type="date" .value="${this.value ?? ""}" min="${this.min ?? ""}" max="${this.max ?? ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" ?readonly="${!!this.readonly}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}">
+      <input class="puredashboard-date__field js-puredashboard-date__field${sizeCls}" type="date" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" .value="${this.value ?? ""}" min="${this.min ?? ""}" max="${this.max ?? ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" ?readonly="${!!this.readonly}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}">
       ${this.error ? html`<div class="puredashboard-date__error" id="${this._errId}" role="alert">${this.error}</div>` : ""}`;
   }
 }

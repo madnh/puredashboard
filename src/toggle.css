@@ -1,0 +1,76 @@
+/* puredashboard-toggle — styles for <puredashboard-toggle> (toggle.js). BEM, block = the tag.
+ *
+ * A two-state button: the pressed state is a real visual state (tinted background +
+ * accent text), not just a focus/hover flourish, because it must read as "on" at a
+ * glance in a toolbar. Everything resolves through a --pd-* chain that falls back to the
+ * app tokens and finally to neutral system colours, so it looks right with NO theme
+ * linked and adapts to light/dark on its own.
+ *
+ * <puredashboard-toggle-group> re-styles the seams between its children (rounded ends,
+ * shared borders) from its own stylesheet — this file stays about the single control.
+ */
+puredashboard-toggle {
+  display: inline-flex;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 12%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:    var(--radius,   8px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  /* component knobs */
+  --pd-toggle-h: var(--control-height-md, 34px);
+  --pd-toggle-pad: var(--control-pad-x, 12px);
+}
+
+.puredashboard-toggle__btn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2, 8px);
+  min-height: var(--pd-toggle-h);
+  padding: 0 var(--pd-toggle-pad);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  background: var(--pd-panel);
+  color: var(--pd-text);
+  font: inherit; cursor: pointer; user-select: none; white-space: nowrap;
+  transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease), border-color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-toggle__btn:hover { background: var(--pd-panel-2); }
+.puredashboard-toggle__btn:focus-visible { outline: var(--focus-ring, 2px solid var(--pd-accent)); outline-offset: 2px; }
+
+/* pressed = ON. Tinted surface + accent text so the state is obvious without colour
+ * alone carrying it (the button also reports aria-pressed). */
+.puredashboard-toggle__btn--pressed {
+  background: color-mix(in srgb, var(--pd-accent) 16%, var(--pd-panel));
+  border-color: color-mix(in srgb, var(--pd-accent) 45%, var(--pd-border));
+  color: var(--pd-accent);
+}
+.puredashboard-toggle__btn--pressed:hover { background: color-mix(in srgb, var(--pd-accent) 24%, var(--pd-panel)); }
+
+/* borderless variant — for dense toolbars where the buttons sit on a shared surface */
+.puredashboard-toggle__btn--text { border-color: transparent; background: transparent; }
+.puredashboard-toggle__btn--text:hover { background: var(--pd-panel-2); }
+.puredashboard-toggle__btn--text.puredashboard-toggle__btn--pressed {
+  background: color-mix(in srgb, var(--pd-accent) 16%, transparent);
+  border-color: transparent;
+}
+
+.puredashboard-toggle__btn:disabled { opacity: var(--disabled-opacity, .5); cursor: default; }
+.puredashboard-toggle__btn:disabled:hover { background: var(--pd-panel); }
+.puredashboard-toggle__btn--text:disabled:hover { background: transparent; }
+
+/* sizes */
+.puredashboard-toggle__btn--sm { --pd-toggle-h: var(--control-height-sm, 28px); --pd-toggle-pad: var(--sp-2, 8px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-toggle__btn--lg { --pd-toggle-h: var(--control-height-lg, 40px); --pd-toggle-pad: var(--sp-4, 16px); }
+
+/* an icon-only toggle is square, so a toolbar of them lines up on both axes */
+.puredashboard-toggle__btn--icon-only { padding: 0; width: var(--pd-toggle-h); }
+
+.puredashboard-toggle__icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; }
+.puredashboard-toggle__icon > svg { width: 100%; height: 100%; }
+.puredashboard-toggle__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

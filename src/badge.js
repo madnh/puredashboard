@@ -60,6 +60,7 @@ const COLORS = new Set(["red", "accent", "success", "warning", "neutral"]);
  * @attr {boolean} show-zero  - Declarative form of `showZero`.
  * @attr {string}  color      - Declarative form of `color`.
  * @attr {boolean} standalone - Declarative form of `standalone`.
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @cssprop [--pd-badge-size]   - Diameter of the numeric badge (defaults to a small pill height).
  * @cssprop [--pd-badge-dot]    - Diameter of the dot (defaults to a fraction of the badge size).
@@ -178,13 +179,16 @@ class PuredashboardBadge extends HTMLElement {
     if (color !== "red") ind.classList.add(`puredashboard-badge__indicator--${color}`);
     if (!visible) ind.classList.add("puredashboard-badge__indicator--hidden");
 
+    // An aria-label on the HOST names the badge instead of the generated count string
+    // (the host has no role, so it would otherwise be dropped) — same rule as button.js.
+    const authored = this.getAttribute("aria-label");
     if (dot) {
       ind.textContent = "";                 // a dot shows no number
-      ind.setAttribute("aria-label", this._label("dot"));
+      ind.setAttribute("aria-label", authored ?? this._label("dot"));
     } else {
       const text = count > max ? `${max}+` : String(count);
       ind.textContent = text;               // textContent, never innerHTML
-      ind.setAttribute("aria-label", this._label("count", count));
+      ind.setAttribute("aria-label", authored ?? this._label("count", count));
     }
     // Decorative when hidden; otherwise the aria-label carries the meaning.
     ind.setAttribute("role", "status");

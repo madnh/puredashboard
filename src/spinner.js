@@ -54,6 +54,7 @@ let uid = 0;
  * @attr {string}  label         - Declarative form of `label`.
  * @attr {boolean} label-visible - Declarative form of `labelVisible`.
  * @attr {boolean} inline        - Declarative form of `inline`.
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @cssprop [--pd-spinner-size]  - Ring diameter (set automatically from a numeric `size`; defaults per named size).
  * @cssprop [--pd-spinner-track] - Track (ring background) colour (defaults to `--border` / `--panel-3`).
@@ -99,10 +100,17 @@ class PuredashboardSpinner extends Reactive {
     this.setAttribute("role", "status");
     this.setAttribute("aria-live", "polite");
     const text = this._text;
+    // An aria-label / aria-labelledby the AUTHOR put on the host names the spinner and
+    // is never touched — we only ever replace the value we wrote ourselves.
+    const cur = this.getAttribute("aria-label");
+    const by = this.getAttribute("aria-labelledby");
+    if ((cur != null && cur !== this._ariaOwn) || (by != null && by !== this._labelId)) { this._ariaOwn = null; return; }
     if (this.labelVisible) {
       this.setAttribute("aria-labelledby", this._labelId);
-      this.removeAttribute("aria-label");
+      if (cur != null) this.removeAttribute("aria-label");
+      this._ariaOwn = null;
     } else {
+      this._ariaOwn = text;
       this.setAttribute("aria-label", text);
       this.removeAttribute("aria-labelledby");
     }

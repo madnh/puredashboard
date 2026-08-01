@@ -44,6 +44,7 @@ const LABELS = {
  * @prop {boolean} animated - Run the shimmer animation. Default `true` (set `false` for a static block).
  * @prop {Object}  labels   - Override UI strings. Keys: `loading`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-skeleton-base]      - Base shape colour (defaults to `--panel-2`).
  * @cssprop [--pd-skeleton-highlight] - Shimmer highlight colour (defaults to `--panel-3`).
  * @cssprop [--pd-skeleton-radius]    - Corner radius of rect/text bars (defaults to `--radius`).
@@ -83,12 +84,21 @@ class PuredashboardSkeleton extends Reactive {
     // Signal "loading" on the host once; the shapes stay aria-hidden.
     this.setAttribute("role", "status");
     this.setAttribute("aria-busy", "true");
-    this.setAttribute("aria-label", this._label("loading"));
+    this._syncName();
   }
 
   updated() {
     // Keep the label in sync if `labels` changes after mount.
-    this.setAttribute("aria-label", this._label("loading"));
+    this._syncName();
+  }
+
+  // Our LABELS string is only the FALLBACK name: an aria-label (or aria-labelledby)
+  // set by the author is never overwritten — we only ever replace our own value.
+  _syncName() {
+    if (this.hasAttribute("aria-labelledby")) return;
+    if (this.hasAttribute("aria-label") && this.getAttribute("aria-label") !== this._ariaOwn) return;
+    this._ariaOwn = this._label("loading");
+    this.setAttribute("aria-label", this._ariaOwn);
   }
 
   // Build the dynamic inline style for a shape from width/height/radius. Inline style

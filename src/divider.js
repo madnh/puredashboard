@@ -50,6 +50,7 @@ const LABELS = {
  * @attr {boolean} dashed      - Declarative form of `dashed`.
  * @attr {string}  text-align  - Declarative form of `textAlign`.
  * @attr {string}  text        - Declarative form of `text` (used only when there are no author children).
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @cssprop [--pd-divider-color]   - Line colour (defaults to `--border`).
  * @cssprop [--pd-divider-spacing] - Block/inline margin around the divider (defaults to `--sp-4`).
@@ -157,7 +158,8 @@ class PuredashboardDivider extends HTMLElement {
       this.classList.add(`puredashboard-divider--align-${this.textAlign}`);
       this.removeAttribute("role");
       this.removeAttribute("aria-orientation");
-      this.removeAttribute("aria-label");
+      // Only OUR label is dropped — an aria-label set by the author stays (button.js rule).
+      if (this.getAttribute("aria-label") === this._ariaOwn) { this.removeAttribute("aria-label"); this._ariaOwn = null; }
 
       const before = document.createElement("span");
       before.className = "puredashboard-divider__line puredashboard-divider__line--before";
@@ -173,7 +175,11 @@ class PuredashboardDivider extends HTMLElement {
       // Plain rule: a semantic separator with an orientation the AT can announce.
       this.setAttribute("role", "separator");
       this.setAttribute("aria-orientation", vertical ? "vertical" : "horizontal");
-      this.setAttribute("aria-label", this._t("separator"));
+      // Default name only when the author didn't name the separator themselves.
+      if (!this.hasAttribute("aria-label") || this.getAttribute("aria-label") === this._ariaOwn) {
+        this._ariaOwn = this._t("separator");
+        this.setAttribute("aria-label", this._ariaOwn);
+      }
     }
   }
 }

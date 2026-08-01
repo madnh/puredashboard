@@ -39,6 +39,7 @@ const LABELS = {
  * @prop {boolean} [loading]  - Show skeleton placeholder rows instead of content. Default `false`.
  * @prop {Object}  [labels]   - Override UI strings (English defaults). Keys: `empty`.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @example
  * const list = document.createElement("puredashboard-list");
  * list.header = "Recent nodes";
@@ -77,13 +78,13 @@ class PuredashboardList extends Reactive {
     if (this.loading) {
       // A few skeleton-ish placeholder rows while data loads.
       const skeletons = [0, 1, 2];
-      body = html`<ul class="${listCls}" role="list" aria-busy="true">${
+      body = html`<ul class="${listCls}" role="list" aria-label="${this.getAttribute("aria-label") ?? ""}" aria-busy="true">${
         skeletons.map((i) => html`<li class="puredashboard-list__item puredashboard-list__item--skeleton" role="listitem" aria-hidden="true">
           <span class="puredashboard-list__main"><span class="puredashboard-list__skeleton puredashboard-list__skeleton--title"></span><span class="puredashboard-list__skeleton puredashboard-list__skeleton--desc"></span></span>
         </li>`)
       }</ul>`;
     } else if (items.length) {
-      body = html`<ul class="${listCls}" role="list">${
+      body = html`<ul class="${listCls}" role="list" aria-label="${this.getAttribute("aria-label") ?? ""}">${
         repeat(items, (_it, i) => i, (it) => html`<li class="puredashboard-list__item" role="listitem">
           <span class="puredashboard-list__main"><strong class="puredashboard-list__title">${it.title ?? ""}</strong>${it.description != null && it.description !== "" ? html`<span class="puredashboard-list__desc">${it.description}</span>` : ""}</span>${it.extra != null && it.extra !== "" ? html`<span class="puredashboard-list__extra">${it.extra}</span>` : ""}
         </li>`)

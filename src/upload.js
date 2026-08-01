@@ -44,6 +44,9 @@ const LABELS = {
   remove: (name) => `Remove ${name}`,
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 let uid = 0;
 
 function fmtBytes(n) {
@@ -70,6 +73,7 @@ const extOf = (name) => { const m = /\.([^.]+)$/.exec(name || ""); return m ? m[
  * @prop {Function} [uploader] - Custom transport `(file, onProgress:(0..1)=>void) => Promise<{response}>` used by `upload()` instead of the built-in multipart XHR.
  * @prop {File[]}   files      - (read-only getter) the currently-selected File objects.
  * @attr {string}   name       - Field name for native `<form>` multipart submit. Default `"files"`.
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires puredashboard-upload#files          - Selection changed. `detail`: `File[]`.
  * @fires puredashboard-upload#uploadstart    - `upload()` began. `detail`: `{ count: number }`.
@@ -196,11 +200,31 @@ class PuredashboardUpload extends Reactive {
     return "";
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? this._label("choose"); }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const items = this.items || [];
     return html`
       <label class="puredashboard-upload__zone js-puredashboard-upload__zone">
-        <input type="file" class="puredashboard-upload__input js-puredashboard-upload__input" accept="${this.accept || ""}" ?multiple="${!!this.multiple}" aria-label="${this._label("choose")}">
+        <input type="file" class="puredashboard-upload__input js-puredashboard-upload__input" accept="${this.accept || ""}" ?multiple="${!!this.multiple}" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}">
         <span class="puredashboard-upload__icon">${uploadCloud}</span>
         <span class="puredashboard-upload__label">${this._label("browse")}</span>
         ${this._label("hint") ? html`<span class="puredashboard-upload__hint">${this._label("hint")}</span>` : ""}

@@ -31,6 +31,15 @@ native platform features instead of re-implementing them.
   │ <…-table>         │      │ dialog/drawer      │      │ <…-markdown>       │
   │ <…-upload>        │      │ menu, toast        │      │ (textContent-only) │
   └───────────────────┘      └────────────────────┘      └────────────────────┘
+                                        │
+                              ┌────────────────────┐
+                              │ Child-adopting     │
+                              │ extends HTMLElement│
+                              │                    │
+                              │ <…-splitter>       │
+                              │ <…-toggle-group>   │
+                              │ <…-lazy>           │
+                              └────────────────────┘
 
   Standalone:  Router (router.js) · md parser/renderer (md.js)
   Per-component CSS:  *.css — self-contained, themed through a --pd-* token chain
@@ -155,6 +164,7 @@ shapes, each matched to its job:
 | **Reactive custom element** | `extends Reactive` | `<…-table>`, `<…-upload>` | Has a template that re-renders on state changes and contains inputs/scroll that must survive those re-renders. Needs the parts engine. |
 | **Imperative overlay** | plain function | `dialog`/`drawer`/`alert`/`confirm`/`prompt`, `menu`, `toast` | You *invoke and await* it; there's nothing to re-render. Each builds a DOM node, shows it in the **top layer** (modal `<dialog>` or Popover API), and returns a controller + a `Promise` of the result. |
 | **Pure-DOM element** | `extends HTMLElement` | `<…-markdown>` | Emits prebuilt DOM (`createElement` + `textContent`) for XSS-safety. It has no template and no parts to diff, so routing it through `Reactive` would gain nothing — and its non-`html` return value would hit the `innerHTML` fallback, defeating the textContent-only guarantee. |
+| **Child-adopting element** | `extends HTMLElement` | `<…-splitter>`, `<…-toggle-group>`, `<…-lazy>` | The author's light-DOM children ARE the content — panels to split, toggles to keep in sync, a `<template>` to clone later. A `Reactive` `render()` would replace exactly what these must preserve, so they wire behaviour *around* their children (adopt on connect, then a `MutationObserver` where children come and go) instead of producing them. |
 
 ### Overlays lean entirely on the native top layer
 

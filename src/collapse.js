@@ -58,6 +58,7 @@ const chevron = html`<svg class="puredashboard-collapse__chevron" viewBox="0 0 2
  * @prop {(string|string[])} value - Open state. In accordion mode a single open key (or `undefined`); in `multiple` mode an array of open keys. Get/set.
  * @prop {Object} labels - Override UI strings. Keys: `group` (the group `aria-label`). Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires change - Bubbling `CustomEvent`; `detail`: `{ value }` — the open key (accordion mode) or array of open keys (`multiple` mode). Fired when an item toggles.
  *
  * @cssprop [--pd-collapse-gap] - Gap between items (defaults to `--sp-2`).
@@ -148,7 +149,7 @@ class PuredashboardCollapse extends Reactive {
 
   render() {
     const items = this.items || [];
-    return html`<div class="puredashboard-collapse__group" role="presentation" aria-label="${this._label("group")}">
+    return html`<div class="puredashboard-collapse__group" role="presentation" aria-label="${this.getAttribute("aria-label") ?? this._label("group")}">
       ${repeat(items, (it) => it.key, (it) => {
         const open = this._isOpen(it.key);
         const disabled = !!it.disabled;

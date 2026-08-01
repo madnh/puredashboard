@@ -7,6 +7,7 @@ How to consume PureDashboard in an app. For *how it works internally* see
 - [Drop-in](#drop-in)
 - [Embedding in a backend (Go)](#embedding-in-a-backend-go)
 - [Composing components](#composing-components)
+- [Performance — many heavy items on one page](#performance--many-heavy-items-on-one-page)
 - [Theming](#theming)
 - [Per-component API](#per-component-api)
 
@@ -155,6 +156,90 @@ start inside `content` (a `setInterval`, a global listener, …) in the dialog's
 
 ---
 
+## Performance — many heavy items on one page
+
+Most components are cheap. A few are not: `<puredashboard-json-view>` builds a node per
+key, `<puredashboard-markdown>` parses and builds a document, and a `<puredashboard-table>`
+or a chart per row adds up fast. Render fifty of them and the browser pays for all fifty
+before the user has scrolled past the first three.
+
+**`<puredashboard-lazy>` defers that work until the item is actually needed** — the
+component equivalent of `<img loading="lazy">`.
+
+```html
+<link rel="stylesheet" href="./LIB/lazy.css" />
+<script type="module">
+  import "./LIB/lazy.js";
+  import "./LIB/json-view.js";
+</script>
+
+<puredashboard-lazy height="180px">
+  <template>                                  <!-- inert until it scrolls into view -->
+    <puredashboard-json-view></puredashboard-json-view>
+  </template>
+  <puredashboard-skeleton data-lazy-fallback lines="3"></puredashboard-skeleton>
+</puredashboard-lazy>
+```
+
+That is the whole thing for the markup case. `<template>` content is an **inert document
+fragment**: the elements inside are not parsed into the live tree and custom elements
+inside them are never upgraded — so the deferral is real, not a `display:none` trick.
+
+Measured in Chromium with **200 `<puredashboard-json-view>`s** in a scroll container
+(`test/stories/lazy.stories.js` is the same setup you can run yourself):
+
+| | Time to build | DOM nodes | Components upgraded |
+|---|---:|---:|---:|
+| Rendered eagerly | 1005 ms | 13 000 | 200 |
+| Wrapped in `lazy` | **53 ms** | **656** | **4** |
+
+### Three ways to give it content
+
+```js
+// 1. markup — the <template> child above (no JS at all)
+
+// 2. build it in JS, with this row's data
+const lz = document.createElement("puredashboard-lazy");
+lz.height = "240px";                                   // reserve the space → no layout jump
+lz.render = (host) => Object.assign(document.createElement("puredashboard-json-view"), { data: row });
+
+// 3. defer the MODULE too — the default export is a tag name or a mount function,
+//    the same contract as a router page, so one module serves both
+lz.load = () => import("./pages/heavy-chart.js");
+```
+
+### Knobs
+
+| | |
+|---|---|
+| `trigger` | `visible` (default — `IntersectionObserver`), `idle`, `eager`, `manual` |
+| `rootMargin` | how early to build, e.g. `"400px"` renders just before it scrolls in |
+| `height` | space reserved for the placeholder, so nothing jumps on swap |
+| `unrender` | tear the content down again when it scrolls far away (very long lists) |
+| `renderNow()` / `reset()` | drive it by hand |
+| `data-state` | `pending` → `rendering` → `rendered` \| `error`, reflected on the host |
+| events | `render` `{reason}`, `unrender`, `loaderror` `{error}` |
+
+Without a `[data-lazy-fallback]` child it shows a built-in shimmer of `height`.
+
+### Know the trade-offs
+
+- **Un-rendered content is not searchable.** Ctrl+F cannot find text that does not exist
+  yet. Don't lazy-render something the user is expected to search on the page.
+- **Printing is handled**: everything still pending renders on `beforeprint`.
+- **No JS → no content**, since `<template>` needs script to be cloned. If the content
+  must survive without JS, render it server-side and use `trigger="manual"` instead.
+- **Not the same as CSS `content-visibility: auto`**, which skips *layout and paint* of
+  off-screen content but still builds every node and upgrades every component. Use
+  `content-visibility` for content that is cheap to build and expensive to lay out, and
+  `lazy` when the *building* is the cost. They compose.
+- **Don't wrap everything.** For a handful of cheap components the observer is more
+  overhead than the render it saves; reach for it when a page holds many expensive items.
+- Where `IntersectionObserver` is unavailable, it renders immediately — content is never
+  lost, only the deferral.
+
+---
+
 ## Theming
 
 ### Option A — use the shipped theme (`src/theme/`)
@@ -227,7 +312,7 @@ fully from scratch, just don't link the component's `.css` and style its plain e
 
 The **full per-component API** — properties, events, methods, CSS custom properties,
 examples — is documented as **JSDoc on each class / function**. Read the source:
-`table.js`, `upload.js`, `menu.js`, `dialog.js`, `toast.js`, `router.js`, `md.js`. The
+`table.js`, `upload.js`, `menu.js`, `menubar.js`, `dialog.js`, `toast.js`, `router.js`, `md.js`, `lazy.js`, `meter.js`, `toggle.js` / `toggle-group.js`. The
 JSDoc uses custom-elements-manifest tags (`@element`, `@prop`, `@fires`, `@method`,
 `@cssprop`, `@example`) so editors and AI tools parse it precisely.
 

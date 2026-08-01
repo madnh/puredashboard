@@ -48,6 +48,7 @@ const LABELS = {
  *   default `"Breadcrumb"`), `ellipsis` (collapsed indicator, default `"…"`). Unset
  *   keys keep the English default. Crumb text is CONTENT, not a label.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-breadcrumb-gap]  - Space around each separator (defaults to `--sp-2`).
  * @cssprop [--pd-breadcrumb-sep]  - The separator glyph (defaults to `"/"`).
  *
@@ -86,7 +87,7 @@ class PuredashboardBreadcrumb extends Reactive {
     // Key by index for real crumbs (stable across label edits); the sole ellipsis
     // gets a fixed key so it is never confused with a crumb during reconciliation.
     return html`
-      <nav class="puredashboard-breadcrumb" aria-label="${this._label("ariaLabel")}">
+      <nav class="puredashboard-breadcrumb" aria-label="${this.getAttribute("aria-label") ?? this._label("ariaLabel")}">
         <ol class="puredashboard-breadcrumb__list">
           ${repeat(rows, (r) => (r.ellipsis ? "…" : r.index), (r) => this._crumb(r, last))}
         </ol>

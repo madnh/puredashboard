@@ -12,7 +12,7 @@
 
 ## What this is
 
-A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~44 custom
+A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~49 custom
 elements + a few imperative helpers. Files in `src/` are shipped to the browser
 **as-is** — no npm, no bundler, no transpile. It runs under `script-src 'self'`.
 
@@ -57,13 +57,16 @@ properties. If you author a component: `reactive.js` `html` (diffs the DOM in pl
 for input-bearing elements) vs `html.js` `html` (one-shot string→innerHTML, escaped).
 See `docs/DEVELOPMENT.md`.
 
-## Three component families
+## Four component families
 
 1. **Reactive custom elements** — most components. Configure via JS properties;
    they re-render. Form inputs are **form-associated** (submit + validate natively).
 2. **Imperative overlays** — `dialog`/`drawer`/`alert`/`confirm`/`prompt`, `menu`,
    `toast`. Plain functions you *call and await*; they show in the top layer.
 3. **Pure-DOM** — `<puredashboard-markdown>` (XSS-safe, `textContent` only).
+4. **Child-adopting** — `<puredashboard-splitter>` (panels), `<puredashboard-toggle-group>`
+   (toggles), `<puredashboard-lazy>` (a `<template>` + a fallback). You give them real
+   light-DOM **children**; they wire behaviour around them instead of rendering content.
 
 ---
 
@@ -97,11 +100,47 @@ drawer({ position: "right", title: "Filters", content: (b) => {} }).show();
 ```js
 import { menu } from "LIB/menu.js";              // anchored dropdown
 const picked = await menu(anchorEl, [
-  { label: "Edit", value: "edit", icon: SVG_STRING },
+  { label: "Open", href: "#/nodes/web" },                       // a real <a> link
+  { label: "Edit", value: "edit", icon: SVG_STRING, shortcut: "F2" },
+  { group: "Columns", items: [                                  // labelled group …
+    { label: "Status", checked: true, onSelect: (it, on) => {} },  // … checkbox item
+  ] },
+  { group: "Sort by", radio: "name", onSelect: (v) => {}, items: [ // … radio group
+    { label: "Name", value: "name" }, { label: "Date", value: "date" } ] },
+  { label: "Share", items: [{ label: "Copy link", value: "copy" }] },  // submenu
   { separator: true },
   { label: "Delete", value: "delete", danger: true },
 ]);                                              // → chosen value | null
 ```
+- **Icons:** `icon` is an inline **SVG markup string or a DOM node** (trusted author
+  config, like `raw()`). A menu that has *any* icon reserves the icon gutter on **every**
+  item, and a menu with *any* checkable item reserves the indicator gutter — so labels
+  line up whether or not an item carries one. Checkbox/radio indicators sit in their own
+  slot, so an item can show both a checkmark and an icon.
+- Checkbox / radio items keep the menu **open** (toggle several); actions and links close
+  it. Override per item with `closeOnSelect`. Keyboard: arrows, Home/End, typeahead,
+  ArrowRight/ArrowLeft (or Enter/Esc) to enter/leave a submenu.
+- The returned promise also carries `.close(value?)` and `.el` so a caller (e.g. a
+  menubar) can drive the open menu.
+
+**Overflow menus (keep a busy UI tidy).** Show the one or two frequent actions and
+collapse the rest behind a single icon trigger — a **kebab `⋯`** for one row/card's own
+actions, a **hamburger `☰`** for a whole nav/command set on narrow screens:
+```js
+const more = Object.assign(document.createElement("puredashboard-button"),
+  { variant: "text", shape: "circle", size: "sm", icon: ICON_KEBAB });
+more.setAttribute("aria-label", "More actions for api-gateway");   // REQUIRED: no visible text
+more.addEventListener("click", (e) => {
+  const btn = e.currentTarget.querySelector(".js-puredashboard-button__el");  // the real <button>
+  menu(btn, rareActions, { placement: "bottom-end" }).then(run);              // hugs the right edge
+});
+```
+- An **icon-only button MUST carry `aria-label`** — it's mirrored onto the inner
+  `<button>`, which is what screen readers announce.
+- Anchor the menu on that inner `.js-puredashboard-button__el`: it's the element that
+  takes focus and receives `aria-haspopup`/`aria-expanded`.
+- A whole `<puredashboard-menubar>` collapses the same way — map `menus` to items with
+  nested `items`, and each title becomes a submenu inside one `☰`.
 ```js
 import { toast } from "LIB/toast.js";
 toast.success("Saved"); toast.error("Failed", { duration: 0 /* sticky */ });
@@ -134,6 +173,23 @@ const md = document.createElement("puredashboard-markdown");
 md.value = someUntrustedMarkdown;   // rendered with textContent only; href-whitelisted
 ```
 
+### Naming a component for screen readers
+Put **`aria-label` (or `aria-labelledby`) on the element itself** — every component
+routes it to whatever actually carries the semantics:
+```js
+input.setAttribute("aria-label", "Email address");          // → the inner <input>
+tabs.setAttribute("aria-label", "Service views");           // → the role="tablist"
+iconBtn.setAttribute("aria-label", "More actions");         // → the inner <button>
+```
+- Form controls mirror it onto the **inner native control** (as they do for a `<label>`
+  that wraps or points at the host) — that's the element AT announces.
+- Widgets apply it to their **role-bearing root**, overriding the built-in `LABELS`
+  name; `spinner`/`skeleton`/`avatar`/`divider`/`card` carry their role on the host, so
+  the name simply stays there.
+- A component's default name **never overwrites** one you set.
+- **Icon-only controls MUST have one** (a `<puredashboard-button>` with `icon` and no
+  children has no other name).
+
 ### Rich content in a component (embed a child element)
 Most **content-bearing props** are interpolated at a **child position** by the reactive
 engine, so a prop documented as "text" is not text-only — each accepts **either** a
@@ -162,6 +218,35 @@ Two caveats:
 - A few labels double as an **accessible name**: `steps` step `label` and `nav` **group**
   `label` also feed an `aria-label`. A node there renders visually but corrupts the a11y
   name (`[object Object]`) — keep those a plain string.
+
+### Many heavy items on one page → lazy-render them
+A page with dozens of `<puredashboard-json-view>` / `<puredashboard-markdown>` / tables
+pays for all of them up front. Wrap each in `<puredashboard-lazy>` and the work happens
+when the item scrolls into view (`<img loading="lazy">`, for components):
+```html
+<puredashboard-lazy height="180px">
+  <template>                                   <!-- inert: not parsed, not upgraded -->
+    <puredashboard-json-view></puredashboard-json-view>
+  </template>
+  <puredashboard-skeleton data-lazy-fallback lines="3"></puredashboard-skeleton>
+</puredashboard-lazy>
+```
+```js
+const lz = document.createElement("puredashboard-lazy");
+lz.height = "240px";                                  // reserve the space → no jump
+lz.render = (host) => Object.assign(document.createElement("puredashboard-json-view"), { data: row });
+lz.addEventListener("render", () => {/* it's live now */});
+// or defer the MODULE too — same contract as a router page:
+lz.load = () => import("./heavy-chart.js");
+```
+- `trigger`: `visible` (default, IntersectionObserver + `rootMargin`), `idle`, `eager`, `manual`.
+- No fallback given? A built-in shimmer of `height` is shown. `data-state` (`pending` →
+  `rendering` → `rendered` | `error`) is on the host for CSS/tests.
+- `unrender` also tears content down when it scrolls far away (very long lists).
+- Printing renders everything pending first; note that un-rendered content is NOT
+  findable with Ctrl+F, so don't hide content the user must be able to search.
+- This is *not* CSS `content-visibility: auto` — that skips layout/paint but still builds
+  every node. Use `lazy` when BUILDING is the cost; they compose.
 
 ### Preview your own components (the gallery is reusable)
 ```js
@@ -211,6 +296,8 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-splitter` | `vertical`, `minSize`, `gutterSize` | `resize`{sizes} | adopts direct children as panels; drag gutters between them |
 | `puredashboard-titlebar` | `platform`(mac/windows/linux), `title`, `controls`, `maximized` | `minimize`, `maximizetoggle`, `close` (bubble+composed) | custom titlebar for frameless Tauri/Wails/Electron; whole bar is an OS drag region; slot children via `data-titlebar-leading`/`-center`/`-trailing` |
 | `puredashboard-segmented` | `options`, `value`, `size`, `block`, `disabled` | `change`{value} | single-select button group |
+| `puredashboard-toggle` | `pressed`, `disabled`, `value`, `label`, `icon`, `size`, `variant`(default/text) | `change`{pressed,value} | two-state BUTTON (`aria-pressed`) that applies immediately — not a form field (use `switch`/`checkbox` for that); icon-only needs `aria-label` |
+| `puredashboard-toggle-group` | `value`(string \| string[]), `multiple`, `disabled`, `orientation`, `loop`, `deselectable`, `attached` | `change`{value} | wraps `<puredashboard-toggle>` CHILDREN (light DOM) and owns their selection; one tab stop + arrow keys; children's own `change` is swallowed |
 
 ### Form (all form-associated: submit + validity via `name`)
 | Tag | Key props | Events | Notes |
@@ -238,6 +325,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount` | `pagechange`{page} | windowed + ellipsis |
 | `puredashboard-steps` | `steps`, `current`(0-based), `vertical`, `clickable` | `stepchange`{index} | |
 | `puredashboard-nav` | `items`(tree {label,href,icon,children}), `current` | `toggle` | sidebar; real `<a>`, collapsible groups |
+| `puredashboard-menubar` | `menus`([{label,items,icon,disabled}]), `orientation`, `disabled`, `openIndex`; methods `open(i)`/`close()` | `select`{value,menu,index}, `openchange`{open,index} | desktop app menu bar (File · Edit · View); each dropdown is a full `menu()` (icons, shortcuts, groups, checkbox/radio, submenus); APG menubar keyboard + hover-to-switch |
 
 ### Data display
 | Tag | Key props | Events | Notes |
@@ -257,6 +345,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
 | `puredashboard-markdown` | `value` | — | XSS-safe (textContent only) |
 | `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
+| `puredashboard-lazy` | `trigger`(visible/idle/eager/manual), `rootMargin`, `height`, `unrender`; props `render(host)` / `load()`; methods `renderNow()`/`reset()` | `render`{reason}, `loaderror`{error}, `unrender` | defers building expensive content (json-view, markdown, tables) until it scrolls into view; `<template>` child = zero-JS, `[data-lazy-fallback]` child = your own placeholder |
 
 ### Overlay (wrap a trigger child)
 | Tag | Key props | Events | Notes |
@@ -270,6 +359,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 |---|---|---|---|
 | `puredashboard-alert` | `type`, `title`, `message`, `showIcon`, `closable` | `close`(cancelable) | inline banner |
 | `puredashboard-progress` | `value`, `max`, `variant`(line/circle), `status`, `showInfo`, `indeterminate` | — | |
+| `puredashboard-meter` | `value`, `min`, `max`, `low`/`high`/`optimum`, `label`, `showValue`, `format`(Intl opts), `locale`, `size` | — | `role=meter` gauge for a READING in a range (disk/quota/score) — not a task's progress; low/high/optimum give the native `<meter>` green/amber/red zones |
 | `puredashboard-spinner` | `size`, `label`, `labelVisible`, `inline` | — | role=status |
 | `puredashboard-skeleton` | `variant`(text/rect/circle), `lines`, `width`, `height`, `animated` | — | loading placeholder |
 

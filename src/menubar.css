@@ -1,0 +1,57 @@
+/* puredashboard-menubar — styles for <puredashboard-menubar> (menubar.js).
+ * BEM, block = .puredashboard-menubar (the component tag).
+ *
+ * The bar is a row of menu titles; the dropdowns themselves are built by menu() and
+ * styled by menu.css (they live in the top layer, outside this element). Tokens follow
+ * the --pd-* ← app token ← system-colour chain, so the bar looks right with no theme
+ * linked, adapts to light/dark, and re-themes when the app defines its tokens.
+ */
+puredashboard-menubar { display: block; }
+
+.puredashboard-menubar__bar {
+  /* component-tier knobs */
+  --pd-menubar-text:    var(--text,    CanvasText);
+  --pd-menubar-muted:   var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-menubar-panel:   var(--panel,   Canvas);
+  --pd-menubar-panel-2: var(--panel-2, color-mix(in srgb, CanvasText 6%, Canvas));
+  --pd-menubar-border:  var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-menubar-radius:  var(--radius,  10px);
+  --pd-menubar-gap:     2px;
+  --pd-menubar-height:  var(--control-height-sm, 28px);
+
+  box-sizing: border-box;
+  display: flex; align-items: center; gap: var(--pd-menubar-gap);
+  padding: var(--sp-1, 4px);
+  background: var(--pd-menubar-panel); color: var(--pd-menubar-text);
+  border: 1px solid var(--pd-menubar-border);
+  border-radius: var(--pd-menubar-radius);
+}
+.puredashboard-menubar__bar--vertical { flex-direction: column; align-items: stretch; width: fit-content; min-width: 160px; }
+.puredashboard-menubar__bar--disabled { opacity: var(--disabled-opacity, .5); }
+
+.puredashboard-menubar__trigger {
+  all: unset; box-sizing: border-box;
+  display: inline-flex; align-items: center; gap: var(--sp-2, 8px);
+  min-height: var(--pd-menubar-height);
+  padding: 0 var(--sp-3, 10px);
+  border-radius: calc(var(--pd-menubar-radius) - 4px);
+  font: inherit; color: inherit; cursor: pointer; white-space: nowrap;
+  transition: background var(--duration-fast, 120ms) var(--ease-standard, ease);
+}
+.puredashboard-menubar__bar--vertical .puredashboard-menubar__trigger { justify-content: flex-start; }
+.puredashboard-menubar__trigger:hover,
+.puredashboard-menubar__trigger--open { background: var(--pd-menubar-panel-2); }
+.puredashboard-menubar__trigger:focus-visible { outline: var(--focus-ring, 2px solid Highlight); outline-offset: -2px; }
+.puredashboard-menubar__trigger--disabled { opacity: var(--disabled-opacity, .45); cursor: default; }
+.puredashboard-menubar__trigger--disabled:hover { background: none; }
+
+/* Optional trigger icon — same reserved-slot idea as the menu items, sized so a title
+ * with an icon lines up with one without. */
+.puredashboard-menubar__icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; color: var(--pd-menubar-muted); }
+.puredashboard-menubar__icon > svg { width: 100%; height: 100%; }
+.puredashboard-menubar__trigger--open .puredashboard-menubar__icon { color: inherit; }
+.puredashboard-menubar__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* The dropdowns menu() opens from this bar (menu.css styles the rest). Squared-off top
+ * corners would fight the bar, so just widen them a touch to fit menu titles. */
+.puredashboard-menubar__menu { min-width: 200px; }

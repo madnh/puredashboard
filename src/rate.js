@@ -62,6 +62,7 @@ const starGlyph = raw(
  * @prop {boolean} readonly  - Display-only: keyboard / pointer input is ignored. Default `false`.
  * @prop {Object}  labels    - Override UI strings. Keys: `ariaLabel`, `valueText`, `star`. Unset keys keep the English default.
  * @attr {string}  name      - Field name for native `<form>` submission.
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @fires change - Bubbling `CustomEvent` with `detail: { value }` whenever the rating changes.
  *
@@ -233,7 +234,7 @@ class PuredashboardRate extends Reactive {
       ><span class="puredashboard-rate__empty">${starGlyph}</span><span class="puredashboard-rate__filled">${starGlyph}</span></span>`);
     }
     return html`
-      <div class="puredashboard-rate__slider js-puredashboard-rate__slider" role="slider" tabindex="${disabled ? "-1" : "0"}" aria-label="${this._label("ariaLabel")}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${value}" aria-valuetext="${this._label("valueText", value, count)}" aria-disabled="${disabled ? "true" : "false"}" aria-readonly="${this.readonly ? "true" : "false"}" @keydown="${(e) => this._onKey(e)}" @mouseleave="${() => this._onLeave()}">${stars}</div>`;
+      <div class="puredashboard-rate__slider js-puredashboard-rate__slider" role="slider" tabindex="${disabled ? "-1" : "0"}" aria-label="${this.getAttribute("aria-label") ?? this._label("ariaLabel")}" aria-valuemin="0" aria-valuemax="${count}" aria-valuenow="${value}" aria-valuetext="${this._label("valueText", value, count)}" aria-disabled="${disabled ? "true" : "false"}" aria-readonly="${this.readonly ? "true" : "false"}" @keydown="${(e) => this._onKey(e)}" @mouseleave="${() => this._onLeave()}">${stars}</div>`;
   }
 }
 PuredashboardRate.define("puredashboard-rate");

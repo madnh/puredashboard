@@ -83,6 +83,7 @@ function colorIndex(name) {
  * @prop {boolean} decorative - Mark purely decorative (e.g. beside a visible name): renders `aria-hidden`, no `role`/label. Default `false`.
  * @prop {Object}  labels     - Override UI strings. Keys: `placeholder`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-avatar-size] - Diameter/side of the avatar (defaults to the `md` size; a numeric `size` sets this).
  *
  * @example
@@ -119,14 +120,18 @@ class PuredashboardAvatar extends Reactive {
     // Host-level a11y attributes live on the element itself (not a child), so AT
     // treats the whole avatar as the image/decoration. Applied imperatively
     // because the host isn't part of the html`` template.
+    // An author-supplied aria-label always wins: we only ever replace or remove the
+    // value WE wrote (tracked in _ariaOwn), never one set on the element by its user.
+    const mine = this.getAttribute("aria-label") === this._ariaOwn;
+    const unnamed = !this.hasAttribute("aria-label") || mine;
     if (this.decorative) {
       this.setAttribute("aria-hidden", "true");
       this.removeAttribute("role");
-      this.removeAttribute("aria-label");
+      if (mine) { this.removeAttribute("aria-label"); this._ariaOwn = null; }
     } else {
       this.removeAttribute("aria-hidden");
       this.setAttribute("role", "img");
-      this.setAttribute("aria-label", this.name || this._label("placeholder"));
+      if (unnamed) { this._ariaOwn = this.name || this._label("placeholder"); this.setAttribute("aria-label", this._ariaOwn); }
     }
   }
 

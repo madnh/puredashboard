@@ -86,6 +86,8 @@ const SHAPES = new Set(["default", "round", "circle"]);
  * @attr {string}  href       - Declarative form of `href`.
  * @attr {string}  icon       - Declarative form of `icon`.
  * @attr {boolean} icon-right  - Declarative form of `iconRight`.
+ * @attr {string}  aria-label - Accessible name, mirrored onto the inner `<button>`/`<a>`. REQUIRED for an icon-only button (`icon` + no children — e.g. a kebab `⋯` / hamburger `☰` menu trigger); an author name is never overwritten by the `loading` fallback.
+ * @attr {string}  aria-labelledby - IDs naming the button; mirrored onto the inner element like `aria-label`.
  *
  * @fires click - Native, bubbling `click` from the inner `<button>`/`<a>` (suppressed while disabled/loading).
  *
@@ -104,7 +106,7 @@ const SHAPES = new Set(["default", "round", "circle"]);
  */
 class PuredashboardButton extends HTMLElement {
   static get observedAttributes() {
-    return ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right"];
+    return ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right", "aria-label", "aria-labelledby"];
   }
 
   constructor() {
@@ -284,13 +286,32 @@ class PuredashboardButton extends HTMLElement {
       el.removeAttribute("href");
     }
 
-    // aria-busy + accessible name while loading (announced on the host).
+    // Accessible name. An `aria-label` / `aria-labelledby` set on the HOST is mirrored
+    // onto the inner element — the host carries no role, so a name there is ignored by
+    // assistive tech while the focusable <button>/<a> would stay nameless. This is what
+    // makes an ICON-ONLY button (kebab ⋯ / hamburger ☰ menu triggers) announce itself.
+    const raw = this.getAttribute("aria-label");
+    const name = raw === this._ariaOwn ? null : raw;      // ignore the fallback WE wrote
+    const namedBy = this.getAttribute("aria-labelledby");
+    if (name) el.setAttribute("aria-label", name);
+    else if (this.loading) el.setAttribute("aria-label", this._label("loading"));
+    else el.removeAttribute("aria-label");
+    if (namedBy) el.setAttribute("aria-labelledby", namedBy); else el.removeAttribute("aria-labelledby");
+
+    // aria-busy while loading (announced on the host). The loading fallback name is
+    // only OURS to manage — an author-supplied aria-label is never clobbered.
     if (this.loading) {
       this.setAttribute("aria-busy", "true");
-      this.setAttribute("aria-label", this._label("loading"));
+      // Writing an OBSERVED attribute re-enters attributeChangedCallback even when the
+      // value is unchanged — so only write when it actually differs, or this recurses.
+      if (!name) {
+        this._ariaOwn = this._label("loading");
+        if (raw !== this._ariaOwn) this.setAttribute("aria-label", this._ariaOwn);
+      }
     } else {
       this.removeAttribute("aria-busy");
-      this.removeAttribute("aria-label");
+      // Only OUR fallback is removed — an author name set meanwhile stays put.
+      if (raw != null && raw === this._ariaOwn) { this.removeAttribute("aria-label"); this._ariaOwn = null; }
     }
 
     this._syncGlyphs();

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PureDashboard — accessible-name harness</title>
+    <link rel="stylesheet" href="../src/theme/tokens.css" />
+    <link rel="stylesheet" href="../src/theme/base.css" />
+    <link rel="stylesheet" href="../src/components.css" />
+    <style>
+      body { margin: 0; padding: 24px; font: 14px/1.5 system-ui, sans-serif; }
+      h2 { margin: 24px 0 8px; font-size: 15px; }
+      .grid { display: grid; gap: 12px; max-width: 560px; }
+      .row { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; }
+      .tag { font-size: 12px; color: var(--muted); }
+      #report { margin-top: 24px; white-space: pre; font-family: ui-monospace, monospace; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Real-browser check for the ONE rule jsdom can't verify: the computed ACCESSIBLE
+      NAME. A custom-element host has no role, so a name put on it is dropped unless the
+      component mirrors it onto the element it owns (or takes a role itself). jsdom only
+      shows which element carries aria-label — test/a11y-names.test.mjs asserts that;
+      here you check what a screen reader would actually announce.
+
+      How to use: serve the repo (`python3 -m http.server`), open this page, then inspect
+      the accessibility tree (DevTools → Elements → Accessibility) for each row. Every
+      control below must announce the name printed next to it.
+    -->
+    <h1 style="font-size:17px">Accessible names</h1>
+
+    <h2>1. Author name on the host → must reach the inner control</h2>
+    <div class="grid" id="authored"></div>
+
+    <h2>2. No author name → the component's own default (or a native label) must still win</h2>
+    <div class="grid" id="defaults"></div>
+
+    <div id="report"></div>
+
+    <script type="module">
+      const MODS = ["input","textarea","number","select","combobox","checkbox","switch","slider","date","time","color","upload",
+        "rate","progress","tabs","breadcrumb","pagination","nav","splitter","steps","timeline","list","alert","table","collapse",
+        "badge","tree","segmented","radio-group","menubar","spinner","skeleton","avatar","divider","button","card"];
+      for (const m of MODS) await import(`../src/${m}.js`);
+
+      const PROPS = {
+        select: { options: ["a", "b"] }, combobox: { options: ["a", "b"] }, "radio-group": { options: ["a", "b"] },
+        segmented: { options: ["a", "b"] }, tabs: { tabs: [{ id: "t1", label: "One" }] },
+        breadcrumb: { items: [{ label: "Home", href: "#/" }, { label: "Now" }] },
+        pagination: { page: 1, total: 50, pageSize: 10 }, steps: { steps: [{ label: "A" }, { label: "B" }] },
+        nav: { items: [{ label: "Home", href: "#/" }] }, tree: { nodes: [{ key: "a", label: "A" }] },
+        collapse: { items: [{ key: "a", header: "H", content: "C" }] },
+        table: { columns: [{ key: "n", label: "N" }], rows: [{ n: 1 }] },
+        menubar: { menus: [{ label: "File", items: [{ label: "New", value: "n" }] }] },
+        list: { items: [{ title: "x" }] }, timeline: { items: [{ content: "x" }] },
+        progress: { value: 40 }, rate: { value: 3 }, avatar: { name: "Ann" }, badge: { count: 3 },
+      };
+      const row = (host, tag, note, node) => {
+        const box = document.createElement("div");
+        box.className = "row";
+        const t = document.createElement("div");
+        t.className = "tag";
+        t.textContent = `<${tag}> — expected name: ${note}`;
+        box.append(t, node);
+        host.append(box);
+      };
+
+      const authored = document.getElementById("authored");
+      for (const m of MODS) {
+        const tag = `puredashboard-${m}`;
+        const el = Object.assign(document.createElement(tag), PROPS[m] || {});
+        el.setAttribute("aria-label", `AUTHOR ${m}`);
+        if (["card","alert","tag","empty","result","button"].includes(m)) el.append(document.createTextNode("content"));
+        if (m === "splitter") el.append(document.createElement("div"), document.createElement("div"));
+        row(authored, tag, `"AUTHOR ${m}"`, el);
+      }
+
+      // Unnamed: component defaults, a wrapping <label>, and a <label for>.
+      const defaults = document.getElementById("defaults");
+      for (const [m, expected] of [["color", "Choose a colour"], ["upload", "Choose files"], ["rate", "Rating"],
+        ["tabs", "Tabs"], ["progress", "40%"], ["spinner", "Loading"], ["skeleton", "Loading…"], ["divider", "Separator"]]) {
+        const el = Object.assign(document.createElement(`puredashboard-${m}`), PROPS[m] || {});
+        row(defaults, `puredashboard-${m}`, `"${expected}"`, el);
+      }
+      {
+        const cb = Object.assign(document.createElement("puredashboard-checkbox"), { label: "Remember me" });
+        row(defaults, "puredashboard-checkbox", '"Remember me" (its own visible label)', cb);
+        const wrap = document.createElement("label");
+        wrap.append(document.createTextNode("Wrapped name "), document.createElement("puredashboard-input"));
+        row(defaults, "label > puredashboard-input", '"Wrapped name" (label wraps the field)', wrap);
+        const lab = document.createElement("label");
+        lab.htmlFor = "harness-email";
+        lab.textContent = "Email address ";
+        const inp = document.createElement("puredashboard-input");
+        inp.id = "harness-email";
+        const holder = document.createElement("div");
+        holder.append(lab, inp);
+        row(defaults, "label[for] + puredashboard-input", '"Email address" (label points at the host)', holder);
+      }
+
+      // A quick self-report: which element ended up carrying the name.
+      await new Promise((r) => setTimeout(r, 300));
+      const lines = [...document.querySelectorAll("#authored .row")].map((box) => {
+        const el = box.lastElementChild;
+        const want = el.getAttribute("aria-label");
+        const named = [...el.querySelectorAll("*")].find((n) => n.getAttribute("aria-label") === want);
+        const where = el.hasAttribute("role") ? `host[role=${el.getAttribute("role")}]`
+          : named ? `${named.tagName.toLowerCase()}${named.getAttribute("role") ? `[role=${named.getAttribute("role")}]` : ""}` : "NOWHERE ✗";
+        return `${el.tagName.toLowerCase().padEnd(28)} name lands on: ${where}`;
+      });
+      document.getElementById("report").textContent = lines.join("\n");
+    </script>
+  </body>
+</html>

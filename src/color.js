@@ -19,6 +19,9 @@ const LABELS = {
   choose: "Choose a colour",
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 /**
  * A form-associated colour picker. Wraps a native `<input type="color">` (so the
  * OS colour picker, keyboard and a11y are inherited) and participates in a
@@ -36,6 +39,7 @@ const LABELS = {
  * @prop {Object}  labels    - Override UI strings. Keys: `choose`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission.
  * @attr {boolean} show-value  - Attribute form of `showValue`.
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires input  - Native, bubbling `input` from the inner field (live drag). Read `.value` / `event.target.value`.
  * @fires change - Native, bubbling `change` from the inner field (commit). Read `.value` / `event.target.value`.
@@ -65,8 +69,9 @@ class PuredashboardColor extends Reactive {
   // Reflect declarative HTML attributes into reactive properties, so the control
   // can be configured the natural way inside a form — <puredashboard-color
   // value="#4f9cf9" show-value> — not only via JS. Boolean attrs map by presence.
-  static observedAttributes = ["value", "disabled", "name", "show-value"];
+  static observedAttributes = ["value", "disabled", "name", "show-value", "aria-label", "aria-labelledby"];
   attributeChangedCallback(name, _old, val) {
+    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     if (name === "disabled") this.disabled = val !== null;
     else if (name === "show-value") this.showValue = val !== null;
     else if (name === "value") this.value = val;
@@ -108,11 +113,31 @@ class PuredashboardColor extends Reactive {
     else this._internals.setValidity({});
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? this._label("choose"); }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const val = this.value ?? "#000000";
     const sizeCls = this.size === "sm" ? " puredashboard-color__swatch--sm" : this.size === "lg" ? " puredashboard-color__swatch--lg" : "";
     return html`
-      <input class="puredashboard-color__swatch js-puredashboard-color__input${sizeCls}" type="color" .value="${val}" ?disabled="${!!this.disabled}" aria-label="${this._label("choose")}">
+      <input class="puredashboard-color__swatch js-puredashboard-color__input${sizeCls}" type="color" .value="${val}" ?disabled="${!!this.disabled}" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}">
       ${this.showValue ? html`<span class="puredashboard-color__value">${val}</span>` : ""}`;
   }
 }

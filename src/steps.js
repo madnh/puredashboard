@@ -59,6 +59,7 @@ const LABELS = {
  * @prop {boolean} clickable - Render each step as a `<button>` that emits `stepchange`. Default `false`.
  * @prop {Object}  labels    - Override UI strings. Keys: `stepLabel(n)`, `complete`, `current`, `upcoming`. Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires stepchange - Bubbling `CustomEvent` when a clickable step is chosen. `detail`: `{ index }` (0-based).
  *
  * @cssprop [--pd-steps-bubble]     - Bubble diameter (defaults to `28px`).
@@ -111,7 +112,7 @@ class PuredashboardSteps extends Reactive {
     const clickable = !!this.clickable;
     const listCls = "puredashboard-steps__list" + (this.vertical ? " puredashboard-steps__list--vertical" : " puredashboard-steps__list--horizontal");
 
-    return html`<ol class="${listCls}" role="list">${repeat(steps, (s, i) => i, (s, i) => {
+    return html`<ol class="${listCls}" role="list" aria-label="${this.getAttribute("aria-label") ?? ""}">${repeat(steps, (s, i) => i, (s, i) => {
       const status = this._status(i);
       const isCurrent = status === "current";
       const complete = status === "complete";

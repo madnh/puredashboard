@@ -63,6 +63,7 @@ const LABELS = {
  * @attr {number}  page-size    - Declarative items per page.
  * @attr {number}  sibling-count - Declarative sibling count.
  * @attr {boolean} disabled     - Declarative disabled state.
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @fires puredashboard-pagination#pagechange - Bubbling `CustomEvent`; `detail`: `{ page }` (clamped to `[1, pageCount]`).
  *
@@ -151,13 +152,13 @@ class PuredashboardPagination extends Reactive {
   render() {
     const count = this._count();
     // pageCount <= 1 → nothing to page through; render a minimal empty (but valid) nav.
-    if (count <= 1) return html`<nav class="puredashboard-pagination" aria-label="${this._label("ariaLabel")}"></nav>`;
+    if (count <= 1) return html`<nav class="puredashboard-pagination" aria-label="${this.getAttribute("aria-label") ?? this._label("ariaLabel")}"></nav>`;
 
     const cur = this._current(count);
     const disabled = !!this.disabled;
     const items = this._window(cur, count);
 
-    return html`<nav class="puredashboard-pagination" aria-label="${this._label("ariaLabel")}">
+    return html`<nav class="puredashboard-pagination" aria-label="${this.getAttribute("aria-label") ?? this._label("ariaLabel")}">
       <button type="button" class="puredashboard-pagination__btn puredashboard-pagination__btn--prev" data-nav="prev" aria-label="${this._label("prev")}" ?disabled="${disabled || cur <= 1}">${chevronLeft}</button>
       <ul class="puredashboard-pagination__list">${items.map((it) => it === GAP
         ? html`<li class="puredashboard-pagination__item"><span class="puredashboard-pagination__ellipsis" aria-hidden="true">${GAP}</span></li>`

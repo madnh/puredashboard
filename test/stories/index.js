@@ -3,6 +3,8 @@
 // General
 import button from "./button.stories.js";
 import segmented from "./segmented.stories.js";
+import toggle from "./toggle.stories.js";
+import toggleGroup from "./toggle-group.stories.js";
 // Layout
 import divider from "./divider.stories.js";
 import space from "./space.stories.js";
@@ -32,6 +34,7 @@ import breadcrumb from "./breadcrumb.stories.js";
 import pagination from "./pagination.stories.js";
 import steps from "./steps.stories.js";
 import nav from "./nav.stories.js";
+import menubar from "./menubar.stories.js";
 // Data display
 import table from "./table.stories.js";
 import card from "./card.stories.js";
@@ -44,28 +47,31 @@ import list from "./list.stories.js";
 import tree from "./tree.stories.js";
 import collapse from "./collapse.stories.js";
 import jsonView from "./json-view.stories.js";
+import lazy from "./lazy.stories.js";
 import timeline from "./timeline.stories.js";
 import empty from "./empty.stories.js";
 import md from "./md.stories.js";
 import upload from "./upload.stories.js";
 // Overlay
 import dialogStory from "./dialog.stories.js";
+import menuStory from "./menu.stories.js";
 import tooltip from "./tooltip.stories.js";
 import popover from "./popover.stories.js";
 import popconfirm from "./popconfirm.stories.js";
 // Feedback
 import alert from "./alert.stories.js";
 import progress from "./progress.stories.js";
+import meter from "./meter.stories.js";
 import spinner from "./spinner.stories.js";
 import skeleton from "./skeleton.stories.js";
 import result from "./result.stories.js";
 
 export const STORIES = [
-  button, segmented,
+  button, segmented, toggle, toggleGroup,
   divider, space, flex, grid, layout, splitter, titlebar,
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
-  tabs, breadcrumb, pagination, steps, nav,
-  table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, timeline, empty, md, upload,
-  dialogStory, tooltip, popover, popconfirm,
-  alert, progress, spinner, skeleton, result,
+  tabs, breadcrumb, pagination, steps, nav, menubar,
+  table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, lazy, timeline, empty, md, upload,
+  dialogStory, menuStory, tooltip, popover, popconfirm,
+  alert, progress, meter, spinner, skeleton, result,
 ];

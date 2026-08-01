@@ -33,6 +33,8 @@
 @import "switch.css";
 @import "radio-group.css";
 @import "segmented.css";
+@import "toggle.css";
+@import "toggle-group.css";
 @import "slider.css";
 @import "color.css";
 @import "combobox.css";
@@ -54,6 +56,7 @@
 @import "steps.css";
 @import "timeline.css";
 @import "nav.css";
+@import "menubar.css";
 /* data display */
 @import "table.css";
 @import "card.css";
@@ -80,5 +83,7 @@
 /* feedback */
 @import "alert.css";
 @import "progress.css";
+@import "meter.css";
 @import "spinner.css";
 @import "skeleton.css";
+@import "lazy.css";

@@ -54,6 +54,7 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
  * @attr {string}        min-size   - Declarative form of `minSize`.
  * @attr {number}        gutter-size - Declarative form of `gutterSize`.
  * @attr {number}        data-size  - Per-PANEL (on each child): initial size weight; panels without it share the remainder equally.
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
  * @fires resize - `CustomEvent` (bubbles) on every size change (drag or keyboard). `detail = { sizes: number[] }` (percentages).
  *
@@ -166,7 +167,7 @@ class PuredashboardSplitter extends HTMLElement {
     g.setAttribute("role", "separator");
     g.setAttribute("tabindex", "0");
     g.setAttribute("aria-orientation", this.vertical ? "horizontal" : "vertical");
-    g.setAttribute("aria-label", this._label("resize"));
+    g.setAttribute("aria-label", this.getAttribute("aria-label") ?? this._label("resize"));
     g.style.flex = `0 0 ${this._gutterSize}px`;
     const grip = document.createElement("span");
     grip.className = "puredashboard-splitter__grip";

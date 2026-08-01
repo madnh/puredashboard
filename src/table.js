@@ -76,6 +76,7 @@ const LABELS = {
  * @prop {Array}    selected   - (read-only getter) selected row objects.
  * @prop {Array}    selectedKeys - (read-only getter) selected row keys.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires puredashboard-table#sortchange      - `detail`: `{ key, dir: "asc"|"desc" }`.
  * @fires puredashboard-table#filterchange    - `detail`: `{ q: string }`.
  * @fires puredashboard-table#pagechange      - `detail`: `{ page, pageSize }`.
@@ -240,7 +241,7 @@ class PuredashboardTable extends Reactive {
           ${bulk.map((a) => html`<button type="button" class="puredashboard-table__bulk-btn ${a.danger ? "puredashboard-table__bulk-btn--danger" : ""}" data-bulk="${a.name}">${a.label}</button>`)}
         </span>` : ""}
       </div>`}
-      <div class="puredashboard-table__scroll"><table class="puredashboard-table__table">${head}${body}</table></div>
+      <div class="puredashboard-table__scroll"><table class="puredashboard-table__table" aria-label="${this.getAttribute("aria-label") ?? ""}">${head}${body}</table></div>
       ${pageSize > 0 && total > 0 ? html`<div class="puredashboard-table__pager">
         <span class="puredashboard-table__range">${this._label("range", start + 1, Math.min(start + pageSize, total), total)}</span>
         <span class="puredashboard-table__pages">

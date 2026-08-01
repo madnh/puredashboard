@@ -7,6 +7,10 @@
     <!-- component CSS -->
     <link rel="stylesheet" href="../src/table.css" />
     <link rel="stylesheet" href="../src/menu.css" />
+    <link rel="stylesheet" href="../src/menubar.css" />
+    <link rel="stylesheet" href="../src/meter.css" />
+    <link rel="stylesheet" href="../src/toggle.css" />
+    <link rel="stylesheet" href="../src/toggle-group.css" />
     <link rel="stylesheet" href="../src/upload.css" />
     <link rel="stylesheet" href="../src/input.css" />
     <link rel="stylesheet" href="../src/textarea.css" />
@@ -82,6 +86,8 @@
       import "../src/divider.js";   // <puredashboard-divider>
       import "../src/space.js";     // <puredashboard-space>
       import "../src/segmented.js"; // <puredashboard-segmented>
+      import "../src/toggle.js";    // <puredashboard-toggle>
+      import "../src/toggle-group.js"; // <puredashboard-toggle-group>
       import "../src/statistic.js"; // <puredashboard-statistic>
       import "../src/combobox.js";  // <puredashboard-combobox>
       import "../src/date.js";      // <puredashboard-date>
@@ -97,6 +103,7 @@
       import "../src/pagination.js"; // <puredashboard-pagination>
       import "../src/steps.js";     // <puredashboard-steps>
       import "../src/nav.js";       // <puredashboard-nav>
+      import "../src/menubar.js";   // <puredashboard-menubar>
       import "../src/card.js";      // <puredashboard-card>
       import "../src/descriptions.js"; // <puredashboard-descriptions>
       import "../src/tag.js";       // <puredashboard-tag>
@@ -110,6 +117,7 @@
       import "../src/tooltip.js";   // <puredashboard-tooltip>
       import "../src/alert.js";     // <puredashboard-alert>
       import "../src/progress.js";  // <puredashboard-progress>
+      import "../src/meter.js";     // <puredashboard-meter>
       import "../src/spinner.js";   // <puredashboard-spinner>
       import "../src/skeleton.js";  // <puredashboard-skeleton>
       import "../src/md.js";   // defines <puredashboard-markdown>
@@ -356,7 +364,22 @@
           { label: vi ? "Triển khai" : "Deploy" },
         ]});
         const pager = el("puredashboard-pagination", { page: 5, total: 200, pageSize: 10 });
-        wrap.append(crumb, tabs, steps, pager);
+        const bar = el("puredashboard-menubar", { menus: [
+          { label: vi ? "Tệp" : "File", items: [
+            { label: vi ? "Tệp mới" : "New file", value: "new", shortcut: "⌘N" },
+            { separator: true },
+            { label: vi ? "Xuất ra" : "Export as", items: [{ label: "JSON", value: "json" }, { label: "CSV", value: "csv" }] },
+          ] },
+          { label: vi ? "Sửa" : "Edit", items: [
+            { label: vi ? "Hoàn tác" : "Undo", value: "undo", shortcut: "⌘Z" },
+            { label: vi ? "Làm lại" : "Redo", value: "redo", shortcut: "⇧⌘Z", disabled: true },
+          ] },
+          { label: vi ? "Xem" : "View", items: [
+            { label: vi ? "Thanh bên" : "Sidebar", checked: true },
+            { label: vi ? "Thanh trạng thái" : "Status bar", checked: false },
+          ] },
+        ]});
+        wrap.append(crumb, bar, tabs, steps, pager);
         gallery([wrap], { wide: true });
       } else if (shot === "data") {
         const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };
@@ -430,6 +453,8 @@
           el("puredashboard-progress", { value: 66, showInfo: true }),
           el("puredashboard-progress", { value: 100, status: "success" }),
           el("puredashboard-progress", { variant: "circle", value: 42 }),
+          el("puredashboard-meter", { label: vi ? "Đĩa đã dùng" : "Disk used", value: 88, low: 60, high: 80, optimum: 0 }),
+          el("puredashboard-meter", { label: vi ? "Bộ nhớ" : "Memory", value: 6.4, max: 16, format: { style: "unit", unit: "gigabyte", maximumFractionDigits: 1 }, locale: vi ? "vi-VN" : "en-US" }),
           (() => { const r = el("div", {}); r.style.cssText = "display:flex;gap:16px;align-items:center"; r.append(el("puredashboard-spinner", { labelVisible: true }), el("puredashboard-progress", { indeterminate: true })); return r; })(),
           el("puredashboard-skeleton", { variant: "text", lines: 3 }),
         );
@@ -476,7 +501,23 @@
           stat(vi ? "Thời gian hoạt động" : "Uptime", 99.98, { suffix: "%", precision: 2, trend: "up" }),
           stat(vi ? "Lỗi" : "Errors", 12, { trend: "down" }),
         );
-        wrap.append(btns, el("puredashboard-divider", { text: vi ? "Bộ lọc" : "Filters" }), seg, el("puredashboard-divider", {}), row);
+        // toggles — two-state buttons (aria-pressed), sitting next to the segmented control
+        const tog = el("puredashboard-space", { size: "sm" });
+        const iconTog = (icon, label, props) => { const t = el("puredashboard-toggle", Object.assign({ icon, variant: "text" }, props || {})); t.setAttribute("aria-label", label); return t; };
+        // …and a toggle GROUP sharing one selection (a view switcher)
+        const tgroup = el("puredashboard-toggle-group", { value: "list", deselectable: false });
+        tgroup.setAttribute("aria-label", vi ? "Chế độ xem" : "View mode");
+        tgroup.append(
+          el("puredashboard-toggle", { value: "list", label: vi ? "Danh sách" : "List" }),
+          el("puredashboard-toggle", { value: "grid", label: vi ? "Lưới" : "Grid" }),
+        );
+        tog.append(
+          tgroup,
+          el("puredashboard-toggle", { label: vi ? "Hiện đã lưu trữ" : "Show archived", pressed: true }),
+          iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h4a2.75 2.75 0 0 1 0 5.5h-4z"/><path d="M4.5 8h4.6a2.75 2.75 0 0 1 0 5.5H4.5z"/></svg>', vi ? "Đậm" : "Bold", { pressed: true }),
+          iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h-4M9.5 13.5h-4M9.5 2.5 6.5 13.5"/></svg>', vi ? "Nghiêng" : "Italic"),
+        );
+        wrap.append(btns, el("puredashboard-divider", { text: vi ? "Bộ lọc" : "Filters" }), seg, tog, el("puredashboard-divider", {}), row);
         gallery([wrap], { wide: true });
       } else if (shot === "misc") {
         const el = (tag, props, kids) => { const n = Object.assign(document.createElement(tag), props || {}); if (kids) n.append(...kids); return n; };

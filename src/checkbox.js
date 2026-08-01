@@ -24,6 +24,9 @@ const LABELS = {
   required: "This field is required.",
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 let uid = 0;
 
 /**
@@ -45,6 +48,7 @@ let uid = 0;
  * @prop {string}  error         - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels        - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name          - Field name for native `<form>` submission.
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires change - Native, bubbling `change` from the inner checkbox (toggle). Read `.checked` / `event.target.checked`.
  * @fires input  - Native, bubbling `input` from the inner checkbox. Read `.checked` / `event.target.checked`.
@@ -78,8 +82,9 @@ class PuredashboardCheckbox extends Reactive {
   // can be configured the natural way inside a form — <puredashboard-checkbox
   // required checked value="yes" label="Agree"> — not only via JS. Boolean attrs
   // map by presence. (indeterminate has no attribute — set the property.)
-  static observedAttributes = ["value", "label", "checked", "disabled", "required"];
+  static observedAttributes = ["value", "label", "checked", "disabled", "required", "aria-label", "aria-labelledby"];
   attributeChangedCallback(name, _old, val) {
+    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     const bool = name === "checked" || name === "disabled" || name === "required";
     this[name] = bool ? val !== null : val;
   }
@@ -124,11 +129,31 @@ class PuredashboardCheckbox extends Reactive {
     else this._internals.setValidity({});
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? ""; }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const invalid = !!this.error;
     return html`
       <label class="puredashboard-checkbox__label">
-        <input class="puredashboard-checkbox__box js-puredashboard-checkbox__box" type="checkbox" .checked="${!!this.checked}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" value="${this.value ?? "on"}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}">
+        <input class="puredashboard-checkbox__box js-puredashboard-checkbox__box" type="checkbox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" .checked="${!!this.checked}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" value="${this.value ?? "on"}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}">
         ${this.label ? html`<span class="puredashboard-checkbox__text">${this.label}</span>` : ""}
       </label>
       ${this.error ? html`<div class="puredashboard-checkbox__error" id="${this._errId}" role="alert">${this.error}</div>` : ""}`;

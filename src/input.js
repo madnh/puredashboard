@@ -24,6 +24,9 @@ const LABELS = {
   required: "This field is required.",
 };
 
+// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
+let labelId = 0;
+
 let uid = 0;
 
 /**
@@ -45,6 +48,7 @@ let uid = 0;
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels      - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission.
+ * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires input  - Native, bubbling `input` from the inner field (per keystroke). Read `.value` / `event.target.value`.
  * @fires change - Native, bubbling `change` from the inner field (blur/enter). Read `.value` / `event.target.value`.
@@ -77,8 +81,9 @@ class PuredashboardInput extends Reactive {
   // Reflect declarative HTML attributes into reactive properties, so the control
   // can be configured the natural way inside a form — <puredashboard-input
   // type="email" required> — not only via JS. Boolean attrs map by presence.
-  static observedAttributes = ["value", "type", "placeholder", "size", "disabled", "required", "readonly"];
+  static observedAttributes = ["value", "type", "placeholder", "size", "disabled", "required", "readonly", "aria-label", "aria-labelledby"];
   attributeChangedCallback(name, _old, val) {
+    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     const bool = name === "disabled" || name === "required" || name === "readonly";
     this[name] = bool ? val !== null : val;
   }
@@ -119,11 +124,31 @@ class PuredashboardInput extends Reactive {
     else this._internals.setValidity({});
   }
 
+  // Accessible name: the author names this control by putting aria-label /
+  // aria-labelledby on the HOST, but the host carries no role — so the name must be
+  // mirrored onto the inner native control, which is what assistive tech announces.
+  // (Same rule as button.js; unset → empty, which the browser ignores, so a wrapping
+  // <label> or the visible label keeps naming the control.)
+  _ariaName() { return this.getAttribute("aria-label") ?? ""; }
+  // …and a <label> that names the HOST (wrapping it, or label[for=hostId]) is associated
+  // with the form-associated element, NOT with the inner control — so mirror it down as
+  // aria-labelledby, giving each such <label> an id if it hasn't got one.
+  _ariaNamedBy() {
+    const explicit = this.getAttribute("aria-labelledby");
+    if (explicit) return explicit;
+    let labels = null;
+    try { labels = this._internals && this._internals.labels; } catch { labels = null; }
+    if (!labels || !labels.length) return "";
+    const ids = [];
+    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    return ids.join(" ");
+  }
+
   render() {
     const invalid = !!(this.invalid || this.error);
     const sizeCls = this.size === "sm" ? " puredashboard-input__field--sm" : this.size === "lg" ? " puredashboard-input__field--lg" : "";
     return html`
-      <input class="puredashboard-input__field js-puredashboard-input__field${sizeCls}" type="${this.type || "text"}" .value="${this.value ?? ""}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" ?readonly="${!!this.readonly}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}">
+      <input class="puredashboard-input__field js-puredashboard-input__field${sizeCls}" type="${this.type || "text"}" .value="${this.value ?? ""}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" ?readonly="${!!this.readonly}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}">
       ${this.error ? html`<div class="puredashboard-input__error" id="${this._errId}" role="alert">${this.error}</div>` : ""}`;
   }
 }

@@ -57,6 +57,7 @@ const normType = (t) => (ALIAS[t] || (TYPES[t] ? t : "info"));
  * @prop {boolean} showIcon - Show the per-type leading glyph. Default `true`.
  * @prop {Object}  labels   - Override UI strings. Keys: `close` (the close button's aria-label). Unset keys keep the English default.
  *
+ * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires close - Bubbling, cancelable `CustomEvent` fired when the close button is pressed. Call `event.preventDefault()` to keep the element mounted; otherwise it removes itself.
  *
  * @cssprop [--pd-alert-bg]     - Soft tinted background (defaults per type to `--info-bg`/`--success-bg`/`--warning-bg`/`--danger-bg`).
@@ -105,7 +106,7 @@ class PuredashboardAlert extends Reactive {
     const cfg = TYPES[type];
     const showIcon = this.showIcon !== false;
     return html`
-      <div class="puredashboard-alert__box puredashboard-alert__box--${type}" role="${cfg.role}">
+      <div class="puredashboard-alert__box puredashboard-alert__box--${type}" role="${cfg.role}" aria-label="${this.getAttribute("aria-label") ?? ""}">
         ${showIcon ? html`<span class="puredashboard-alert__icon">${cfg.icon}</span>` : ""}
         <div class="puredashboard-alert__body">
           ${this.title ? html`<div class="puredashboard-alert__title">${this.title}</div>` : ""}
