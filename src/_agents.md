@@ -97,11 +97,28 @@ drawer({ position: "right", title: "Filters", content: (b) => {} }).show();
 ```js
 import { menu } from "LIB/menu.js";              // anchored dropdown
 const picked = await menu(anchorEl, [
-  { label: "Edit", value: "edit", icon: SVG_STRING },
+  { label: "Open", href: "#/nodes/web" },                       // a real <a> link
+  { label: "Edit", value: "edit", icon: SVG_STRING, shortcut: "F2" },
+  { group: "Columns", items: [                                  // labelled group …
+    { label: "Status", checked: true, onSelect: (it, on) => {} },  // … checkbox item
+  ] },
+  { group: "Sort by", radio: "name", onSelect: (v) => {}, items: [ // … radio group
+    { label: "Name", value: "name" }, { label: "Date", value: "date" } ] },
+  { label: "Share", items: [{ label: "Copy link", value: "copy" }] },  // submenu
   { separator: true },
   { label: "Delete", value: "delete", danger: true },
 ]);                                              // → chosen value | null
 ```
+- **Icons:** `icon` is an inline **SVG markup string or a DOM node** (trusted author
+  config, like `raw()`). A menu that has *any* icon reserves the icon gutter on **every**
+  item, and a menu with *any* checkable item reserves the indicator gutter — so labels
+  line up whether or not an item carries one. Checkbox/radio indicators sit in their own
+  slot, so an item can show both a checkmark and an icon.
+- Checkbox / radio items keep the menu **open** (toggle several); actions and links close
+  it. Override per item with `closeOnSelect`. Keyboard: arrows, Home/End, typeahead,
+  ArrowRight/ArrowLeft (or Enter/Esc) to enter/leave a submenu.
+- The returned promise also carries `.close(value?)` and `.el` so a caller (e.g. a
+  menubar) can drive the open menu.
 ```js
 import { toast } from "LIB/toast.js";
 toast.success("Saved"); toast.error("Failed", { duration: 0 /* sticky */ });

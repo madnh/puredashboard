@@ -10,6 +10,19 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`menu()`** (`menu.js`) grew the parts a real application menu needs, matching the
+  Base UI Menu surface: **labelled groups** (`{ group, items }`), **checkbox items**
+  (`{ checked }` → `role=menuitemcheckbox`), **radio groups**
+  (`{ group, radio: value, onSelect }` → `role=menuitemradio`), **nested submenus**
+  (`{ label, items }`, hover- or keyboard-opened), **keyboard-shortcut hints**
+  (`shortcut`), and `closeOnSelect` per item (checkable items keep the menu open).
+  Icons now sit in a **reserved gutter**: a menu with any icon (or any checkable item)
+  reserves that slot on every item, so labels line up whether or not an item has one.
+  Full APG keyboard map — arrows, Home/End, typeahead, ArrowRight/ArrowLeft, Enter/Esc
+  per level — plus `aria-haspopup`/`aria-expanded` on the trigger and focus restore on
+  close. Submenus are nested popovers (a submenu is a DOM child of its parent popup), so
+  light-dismiss peels one level at a time. The returned promise now also carries
+  `.close(value?)` and `.el` so a caller can drive the open menu.
 - **`<puredashboard-json-view>`** (`json-view.js`): a collapsible, syntax-highlighted JSON
   tree. Takes any JS value or a JSON string (invalid JSON falls back to raw text). Colour
   mode is light/dark aware — `theme="auto"` follows the OS live — with **10 built-in
