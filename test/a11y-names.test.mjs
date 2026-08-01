@@ -19,6 +19,11 @@ const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http:
 const w = dom.window;
 for (const k of ["window", "document", "HTMLElement", "customElements", "NodeFilter", "CustomEvent", "Node", "Event", "MouseEvent", "KeyboardEvent", "requestAnimationFrame", "cancelAnimationFrame"]) global[k] = w[k];
 
+// Safety net: an element that writes an attribute it observes can loop forever (writing
+// an observed attribute re-enters attributeChangedCallback even with an unchanged value).
+// jsdom reports the resulting error on window — fail the suite instead of scrolling past.
+w.addEventListener("error", (e) => { fail++; console.log("FAIL: uncaught error —", (e.error && e.error.message) || e.message); });
+
 const MODULES = ["input", "textarea", "number", "select", "combobox", "checkbox", "switch", "slider", "date", "time", "color", "upload",
   "rate", "progress", "tabs", "breadcrumb", "pagination", "nav", "splitter", "steps", "timeline", "list", "alert", "table", "collapse",
   "badge", "tree", "segmented", "radio-group", "menubar", "spinner", "skeleton", "avatar", "divider", "button", "card"];

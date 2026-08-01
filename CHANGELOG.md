@@ -10,6 +10,18 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-toggle-group>`** (`toggle-group.js`): a set of `<puredashboard-toggle>`
+  buttons sharing one selection — text alignment, a view mode, a formatting set. The
+  toggles are the host's real light-DOM children (adopted like `splitter.js`'s panels,
+  and re-synced live by a `MutationObserver` when they are added or removed), so any
+  toggle feature — icons, labels, sizes, `variant` — works inside a group. Single-select
+  by default (`value` is a string, `null` when empty); `multiple` makes it an array.
+  `deselectable=false` keeps one always selected, `attached` (default) joins the buttons
+  into one control, `orientation="vertical"` stacks them, `disabled` disables the set
+  (and restores only what it disabled). Renders `role="group"` with a **roving tabindex**
+  — the whole group is ONE tab stop and Arrow/Home/End move between the toggles
+  (`loop` wraps). The children's own `change` events are swallowed; the group emits a
+  single `change` `{value}`, so a caller listens in one place.
 - **`<puredashboard-toggle>`** (`toggle.js`): a two-state button — it stays visibly
   pressed until pressed again — for a setting that applies IMMEDIATELY (bold/italic in a
   toolbar, mute, pin, "show archived"). Renders a native `<button>` with `aria-pressed`,

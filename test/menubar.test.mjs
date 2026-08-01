@@ -17,6 +17,11 @@ function install() {
 }
 
 const w = install();
+// Safety net: an element that writes an attribute it observes can loop forever (writing
+// an observed attribute re-enters attributeChangedCallback even with an unchanged value).
+// jsdom reports the resulting error on window — fail the suite instead of scrolling past.
+w.addEventListener("error", (e) => { fail++; console.log("FAIL: uncaught error —", (e.error && e.error.message) || e.message); });
+
 await import("../src/menubar.js");
 
 const MB = "puredashboard-menubar";

@@ -1,0 +1,51 @@
+/* puredashboard-toggle-group — styles for <puredashboard-toggle-group> (toggle-group.js).
+ * BEM, block = the component tag.
+ *
+ * The group is a thin layout + seam layer over the author's <puredashboard-toggle>
+ * children: toggle.css still owns how a single control looks (idle / hover / pressed /
+ * disabled), and this file only joins them into one visual control when `attached`
+ * (shared borders, rounded outer ends). That is why it reaches for the toggle's BEM
+ * class — a component's BEM classes are its public styling surface.
+ */
+puredashboard-toggle-group {
+  display: inline-flex;
+  align-items: stretch;
+  --pd-border: var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-toggle-group-gap: var(--sp-2, 8px);
+}
+/* Vertical: the toggles read as a list, so they share the widest one's width — stretching
+ * the host's flex item isn't enough, the inner button has to fill it too. Labelled ones
+ * left-align (a list), icon-only ones stay centred (a toolbar). */
+puredashboard-toggle-group[orientation="vertical"] { flex-direction: column; }
+puredashboard-toggle-group[orientation="vertical"] > puredashboard-toggle { display: flex; }
+puredashboard-toggle-group[orientation="vertical"] > puredashboard-toggle .puredashboard-toggle__btn { width: 100%; }
+puredashboard-toggle-group[orientation="vertical"] > puredashboard-toggle .puredashboard-toggle__btn:not(.puredashboard-toggle__btn--icon-only) { justify-content: flex-start; }
+puredashboard-toggle-group[disabled] { cursor: default; }
+
+/* Detached: plain buttons with a gap — each keeps its own border and radius. */
+puredashboard-toggle-group[detached] { gap: var(--pd-toggle-group-gap); }
+
+/* Attached (default): one connected control. Overlap the 1px borders so the seam is a
+ * single hairline, and square the inner corners so only the outer ends stay rounded. */
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle + puredashboard-toggle { margin-left: -1px; }
+puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle + puredashboard-toggle { margin-left: 0; margin-top: -1px; }
+
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle:not(:first-child) .puredashboard-toggle__btn {
+  border-top-left-radius: 0; border-bottom-left-radius: 0;
+}
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle:not(:last-child) .puredashboard-toggle__btn {
+  border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle:not(:first-child) .puredashboard-toggle__btn {
+  border-radius: 0; border-top-left-radius: 0; border-top-right-radius: 0;
+}
+puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle:not(:last-child) .puredashboard-toggle__btn {
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+}
+
+/* A pressed toggle must paint its (accent) border over the neighbour's, and a focus ring
+ * must not be clipped by the next button — lift both above the seam. */
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle { position: relative; }
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle:hover,
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle[pressed],
+puredashboard-toggle-group:not([detached]) > puredashboard-toggle:focus-within { z-index: 1; }

@@ -12,7 +12,7 @@
 
 ## What this is
 
-A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~47 custom
+A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~48 custom
 elements + a few imperative helpers. Files in `src/` are shipped to the browser
 **as-is** — no npm, no bundler, no transpile. It runs under `script-src 'self'`.
 
@@ -265,6 +265,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-titlebar` | `platform`(mac/windows/linux), `title`, `controls`, `maximized` | `minimize`, `maximizetoggle`, `close` (bubble+composed) | custom titlebar for frameless Tauri/Wails/Electron; whole bar is an OS drag region; slot children via `data-titlebar-leading`/`-center`/`-trailing` |
 | `puredashboard-segmented` | `options`, `value`, `size`, `block`, `disabled` | `change`{value} | single-select button group |
 | `puredashboard-toggle` | `pressed`, `disabled`, `value`, `label`, `icon`, `size`, `variant`(default/text) | `change`{pressed,value} | two-state BUTTON (`aria-pressed`) that applies immediately — not a form field (use `switch`/`checkbox` for that); icon-only needs `aria-label` |
+| `puredashboard-toggle-group` | `value`(string \| string[]), `multiple`, `disabled`, `orientation`, `loop`, `deselectable`, `attached` | `change`{value} | wraps `<puredashboard-toggle>` CHILDREN (light DOM) and owns their selection; one tab stop + arrow keys; children's own `change` is swallowed |
 
 ### Form (all form-associated: submit + validity via `name`)
 | Tag | Key props | Events | Notes |
