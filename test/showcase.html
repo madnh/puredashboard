@@ -7,6 +7,10 @@
     <!-- component CSS -->
     <link rel="stylesheet" href="../src/table.css" />
     <link rel="stylesheet" href="../src/menu.css" />
+    <link rel="stylesheet" href="../src/menubar.css" />
+    <link rel="stylesheet" href="../src/meter.css" />
+    <link rel="stylesheet" href="../src/toggle.css" />
+    <link rel="stylesheet" href="../src/toggle-group.css" />
     <link rel="stylesheet" href="../src/upload.css" />
     <link rel="stylesheet" href="../src/input.css" />
     <link rel="stylesheet" href="../src/textarea.css" />
@@ -83,6 +87,7 @@
       import "../src/space.js";     // <puredashboard-space>
       import "../src/segmented.js"; // <puredashboard-segmented>
       import "../src/toggle.js";    // <puredashboard-toggle>
+      import "../src/toggle-group.js"; // <puredashboard-toggle-group>
       import "../src/statistic.js"; // <puredashboard-statistic>
       import "../src/combobox.js";  // <puredashboard-combobox>
       import "../src/date.js";      // <puredashboard-date>
@@ -499,7 +504,15 @@
         // toggles — two-state buttons (aria-pressed), sitting next to the segmented control
         const tog = el("puredashboard-space", { size: "sm" });
         const iconTog = (icon, label, props) => { const t = el("puredashboard-toggle", Object.assign({ icon, variant: "text" }, props || {})); t.setAttribute("aria-label", label); return t; };
+        // …and a toggle GROUP sharing one selection (a view switcher)
+        const tgroup = el("puredashboard-toggle-group", { value: "list", deselectable: false });
+        tgroup.setAttribute("aria-label", vi ? "Chế độ xem" : "View mode");
+        tgroup.append(
+          el("puredashboard-toggle", { value: "list", label: vi ? "Danh sách" : "List" }),
+          el("puredashboard-toggle", { value: "grid", label: vi ? "Lưới" : "Grid" }),
+        );
         tog.append(
+          tgroup,
           el("puredashboard-toggle", { label: vi ? "Hiện đã lưu trữ" : "Show archived", pressed: true }),
           iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h4a2.75 2.75 0 0 1 0 5.5h-4z"/><path d="M4.5 8h4.6a2.75 2.75 0 0 1 0 5.5H4.5z"/></svg>', vi ? "Đậm" : "Bold", { pressed: true }),
           iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h-4M9.5 13.5h-4M9.5 2.5 6.5 13.5"/></svg>', vi ? "Nghiêng" : "Italic"),

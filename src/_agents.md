@@ -57,13 +57,16 @@ properties. If you author a component: `reactive.js` `html` (diffs the DOM in pl
 for input-bearing elements) vs `html.js` `html` (one-shot string→innerHTML, escaped).
 See `docs/DEVELOPMENT.md`.
 
-## Three component families
+## Four component families
 
 1. **Reactive custom elements** — most components. Configure via JS properties;
    they re-render. Form inputs are **form-associated** (submit + validate natively).
 2. **Imperative overlays** — `dialog`/`drawer`/`alert`/`confirm`/`prompt`, `menu`,
    `toast`. Plain functions you *call and await*; they show in the top layer.
 3. **Pure-DOM** — `<puredashboard-markdown>` (XSS-safe, `textContent` only).
+4. **Child-adopting** — `<puredashboard-splitter>` (panels), `<puredashboard-toggle-group>`
+   (toggles), `<puredashboard-lazy>` (a `<template>` + a fallback). You give them real
+   light-DOM **children**; they wire behaviour around them instead of rendering content.
 
 ---
 
