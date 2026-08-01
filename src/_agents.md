@@ -12,7 +12,7 @@
 
 ## What this is
 
-A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~48 custom
+A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~49 custom
 elements + a few imperative helpers. Files in `src/` are shipped to the browser
 **as-is** — no npm, no bundler, no transpile. It runs under `script-src 'self'`.
 
@@ -216,6 +216,35 @@ Two caveats:
   `label` also feed an `aria-label`. A node there renders visually but corrupts the a11y
   name (`[object Object]`) — keep those a plain string.
 
+### Many heavy items on one page → lazy-render them
+A page with dozens of `<puredashboard-json-view>` / `<puredashboard-markdown>` / tables
+pays for all of them up front. Wrap each in `<puredashboard-lazy>` and the work happens
+when the item scrolls into view (`<img loading="lazy">`, for components):
+```html
+<puredashboard-lazy height="180px">
+  <template>                                   <!-- inert: not parsed, not upgraded -->
+    <puredashboard-json-view></puredashboard-json-view>
+  </template>
+  <puredashboard-skeleton data-lazy-fallback lines="3"></puredashboard-skeleton>
+</puredashboard-lazy>
+```
+```js
+const lz = document.createElement("puredashboard-lazy");
+lz.height = "240px";                                  // reserve the space → no jump
+lz.render = (host) => Object.assign(document.createElement("puredashboard-json-view"), { data: row });
+lz.addEventListener("render", () => {/* it's live now */});
+// or defer the MODULE too — same contract as a router page:
+lz.load = () => import("./heavy-chart.js");
+```
+- `trigger`: `visible` (default, IntersectionObserver + `rootMargin`), `idle`, `eager`, `manual`.
+- No fallback given? A built-in shimmer of `height` is shown. `data-state` (`pending` →
+  `rendering` → `rendered` | `error`) is on the host for CSS/tests.
+- `unrender` also tears content down when it scrolls far away (very long lists).
+- Printing renders everything pending first; note that un-rendered content is NOT
+  findable with Ctrl+F, so don't hide content the user must be able to search.
+- This is *not* CSS `content-visibility: auto` — that skips layout/paint but still builds
+  every node. Use `lazy` when BUILDING is the cost; they compose.
+
 ### Preview your own components (the gallery is reusable)
 ```js
 import "LIB/gallery.js";
@@ -313,6 +342,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
 | `puredashboard-markdown` | `value` | — | XSS-safe (textContent only) |
 | `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
+| `puredashboard-lazy` | `trigger`(visible/idle/eager/manual), `rootMargin`, `height`, `unrender`; props `render(host)` / `load()`; methods `renderNow()`/`reset()` | `render`{reason}, `loaderror`{error}, `unrender` | defers building expensive content (json-view, markdown, tables) until it scrolls into view; `<template>` child = zero-JS, `[data-lazy-fallback]` child = your own placeholder |
 
 ### Overlay (wrap a trigger child)
 | Tag | Key props | Events | Notes |

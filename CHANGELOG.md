@@ -10,6 +10,23 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-lazy>`** (`lazy.js`): defers building expensive content until it is
+  needed — `<img loading="lazy">`, but for components. A page holding dozens of
+  `<puredashboard-json-view>` / `<puredashboard-markdown>` / tables pays for all of them
+  up front; wrapping each one defers the work until it scrolls into view. Measured in
+  Chromium with 200 `<puredashboard-json-view>`s: **1005 ms → 53 ms** to build,
+  **13 000 → 656** DOM nodes, **200 → 4** components upgraded.
+  Three content sources: a **`<template>` child** (zero JS — a template's content is
+  inert, so the elements inside are never even upgraded), a `render(host)` function, or
+  `load: () => import(…)` whose default export is a tag name or a mount function (the
+  same contract as a `router.js` page). Triggers: `visible` (default,
+  `IntersectionObserver` + `rootMargin`), `idle`, `eager`, `manual` + `renderNow()`.
+  While pending it shows the author's `[data-lazy-fallback]` child or a built-in shimmer
+  of the reserved `height`, so nothing jumps on swap; `unrender` also tears content down
+  when it scrolls far away (long lists). State is reflected as `data-state`
+  (`pending`/`rendering`/`rendered`/`error`), it emits `render` / `unrender` /
+  `loaderror`, materialises everything pending on `beforeprint`, and renders immediately
+  where `IntersectionObserver` is unavailable so content is never lost.
 - **`<puredashboard-toggle-group>`** (`toggle-group.js`): a set of `<puredashboard-toggle>`
   buttons sharing one selection — text alignment, a view mode, a formatting set. The
   toggles are the host's real light-DOM children (adopted like `splitter.js`'s panels,
