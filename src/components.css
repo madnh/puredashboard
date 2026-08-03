@@ -23,6 +23,7 @@
  */
 /* general */
 @import "button.css";
+@import "copy.css";
 /* form family */
 @import "form.css";
 @import "input.css";

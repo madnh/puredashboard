@@ -26,7 +26,7 @@ w.addEventListener("error", (e) => { fail++; console.log("FAIL: uncaught error â
 
 const MODULES = ["input", "textarea", "number", "select", "combobox", "checkbox", "switch", "slider", "date", "time", "color", "upload",
   "rate", "progress", "tabs", "breadcrumb", "pagination", "nav", "splitter", "steps", "timeline", "list", "alert", "table", "collapse",
-  "badge", "tree", "segmented", "radio-group", "menubar", "spinner", "skeleton", "avatar", "divider", "button", "card"];
+  "badge", "tree", "segmented", "radio-group", "menubar", "copy", "spinner", "skeleton", "avatar", "divider", "button", "card"];
 for (const m of MODULES) await import(`../src/${m}.js`);
 
 const PROPS = {
@@ -68,6 +68,7 @@ const FORWARDS = [
   // these already did the right thing â€” pinned so they stay that way
   ["tree", '[role="tree"]'], ["segmented", '[role="radiogroup"]'], ["radio-group", '[role="radiogroup"]'],
   ["menubar", '[role="menubar"]'],
+  ["copy", "button"],
 ];
 for (const [mod, sel, opts] of FORWARDS) {
   const el = await mount(mod, { name: "AUTHOR NAME", ...(opts || {}) });
@@ -95,6 +96,8 @@ const DEFAULTS = [
   ["rate", '[role="slider"]', "Rating"], ["tabs", '[role="tablist"]', "Tabs"],
   ["progress", '[role="progressbar"]', "40%"], ["collapse", '[role="presentation"]', "Sections"],
   ["badge", ".js-puredashboard-badge__indicator", "3 notifications"],
+  // a copy button is icon-only by default, so unlike a bare icon button it names itself
+  ["copy", "button", "Copy"],
 ];
 for (const [mod, sel, expected] of DEFAULTS) {
   const el = await mount(mod);

@@ -2,6 +2,7 @@
 // gallery groups entries by the `title` prefix, so array order = display order.
 // General
 import button from "./button.stories.js";
+import copy from "./copy.stories.js";
 import segmented from "./segmented.stories.js";
 import toggle from "./toggle.stories.js";
 import toggleGroup from "./toggle-group.stories.js";
@@ -67,7 +68,7 @@ import skeleton from "./skeleton.stories.js";
 import result from "./result.stories.js";
 
 export const STORIES = [
-  button, segmented, toggle, toggleGroup,
+  button, copy, segmented, toggle, toggleGroup,
   divider, space, flex, grid, layout, splitter, titlebar,
   input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
   tabs, breadcrumb, pagination, steps, nav, menubar,
