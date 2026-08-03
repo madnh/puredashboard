@@ -12,7 +12,7 @@
 
 ## What this is
 
-A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~49 custom
+A vanilla, **zero-dependency, no-build, CSP-safe** UI component library: ~50 custom
 elements + a few imperative helpers. Files in `src/` are shipped to the browser
 **as-is** — no npm, no bundler, no transpile. It runs under `script-src 'self'`.
 
@@ -173,6 +173,34 @@ const md = document.createElement("puredashboard-markdown");
 md.value = someUntrustedMarkdown;   // rendered with textContent only; href-whitelisted
 ```
 
+### Copy to clipboard (text, HTML or an image)
+```js
+import "LIB/copy.js";
+const c = document.createElement("puredashboard-copy");
+c.value = "npm i";                       // string · Blob/File · <img> · <canvas> · (async) fn
+c.label = "Copy";                        // omit → an icon-only button, already named "Copy"
+c.addEventListener("copied", (e) => {}); // detail: { type, value, blob }
+c.addEventListener("copyerror", (e) => {});
+// or point it at what holds the value, instead of setting it:
+// <puredashboard-copy from="#token" variant="text"></puredashboard-copy>
+// <puredashboard-copy src="/chart.png" type="image" label="Copy chart"></puredashboard-copy>
+```
+- The event is **`copied`**, not `copy` — the platform's own `copy` (Ctrl+C) event also
+  bubbles, so listening for `copy` would mix the two.
+- **Tables paste into Excel / Google Sheets as real cells.** Point `from` at a `<table>`
+  (no `type` needed — an element that IS a table is inferred as `html`): the `text/html`
+  half carries its `outerHTML` and the `text/plain` half is **TSV** (tab per cell,
+  newline per row), so "Paste Special → Text" still fills a grid instead of one cell.
+  For a `<puredashboard-table>`, aim at the inner grid: `from="#svc table"`.
+  `type="html"` on any other element copies its `outerHTML` the same way, and block
+  elements / `<br>` become line breaks in the plain-text half.
+- Images are transcoded to **PNG** (the only format clipboards reliably take) and need a
+  **secure context** (https/localhost) + CORS for a cross-origin URL. Plain text also
+  works over insecure HTTP through the legacy `execCommand` path.
+- Failure is never silent: the button turns red, announces it, and emits `copyerror`.
+- The button feeds back on its own (check ✓ for `feedback` ms) — no toast needed, though
+  `copied` is there if you want one.
+
 ### Naming a component for screen readers
 Put **`aria-label` (or `aria-labelledby`) on the element itself** — every component
 routes it to whatever actually carries the semantics:
@@ -288,6 +316,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
 | `puredashboard-button` | `variant`(primary/default/dashed/text/link), `size`, `danger`, `loading`, `block`, `href`, `type`, `icon` | native `click` | label = children; renders `<a>` when `href` set |
+| `puredashboard-copy` | `value`(string \| Blob \| `<img>`/`<canvas>`/`<table>` \| fn), `src`(image URL), `from`(CSS selector), `type`(auto/text/html/image), `label`, `showValue`, `variant`(default/text), `size`, `feedback`(ms) | `copied`{type,value,blob}, `copyerror`{error} | copy-to-clipboard button; icon swaps to a check/cross for `feedback` ms + announces it. A `<table>` copies as HTML + TSV (pastes into Excel as cells); images are normalised to PNG and need a SECURE CONTEXT (text degrades to `execCommand`). Named "Copy" by default, so an icon-only one needs no `aria-label` |
 | `puredashboard-divider` | `orientation`, `dashed`, `textAlign`, `text` | — | text = children or `text` |
 | `puredashboard-space` | `direction`, `size`, `align`, `justify`, `wrap` | — | flex gap container; children stay flex items |
 | `puredashboard-flex` | `vertical`, `justify`, `align`, `wrap`, `gap` | — | thin flexbox wrapper; children stay flex items |

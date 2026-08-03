@@ -10,6 +10,30 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`<puredashboard-copy>`** (`copy.js`): a copy-to-clipboard button — one click writes a
+  value to the system clipboard and the button reports the result (the Lucide `copy`
+  icon swaps to a check, or a cross on failure, for `feedback` ms, while an off-screen
+  live region announces it). The value does not have to be text: a **string**, rich
+  **HTML** (`type="html"` writes `text/html` *and* a plain-text flattening), or an
+  **image** — a URL, a `Blob`/`File`, an `<img>` or a `<canvas>`, normalised to PNG
+  through a canvas because that is the one format clipboards reliably accept. The value
+  comes from `value` (also a possibly-async **function**, so it stays late-bound), `src`
+  (an image URL, fetched on click) or `from` (a CSS selector — an `<input>` contributes
+  its `.value`, anything else its `textContent`). Text degrades to the legacy
+  `<textarea>` + `execCommand` path when the async Clipboard API is unavailable; images
+  and HTML need a secure context, and a failure is never silent — it shows the error
+  state and emits `copyerror`. Renders a real `<button>` (platform keyboard, focus,
+  `disabled`) that is **named "Copy" by default**, so an icon-only one needs no
+  `aria-label`. `variant="text"`, three sizes and the `--pd-copy-*` knobs match
+  `<puredashboard-toggle>`, so they line up in one toolbar. The success event is
+  **`copied`**, not `copy`, so it can't be confused with the platform's own bubbling
+  Ctrl+C event.
+  **Tables paste into a spreadsheet as real cells:** an element source contributes its
+  `outerHTML` (so `from="#report table"` copies the grid, not a run-on string), a
+  `<table>` is inferred as `html` without setting `type`, and the `text/plain` half is a
+  structured flattening — **TSV** for tables (tab per cell, newline per row), line breaks
+  for block elements and `<br>` — so Excel's "Paste Special → Text" and any plain-text
+  field still get one cell per column instead of everything in one.
 - **`<puredashboard-lazy>`** (`lazy.js`): defers building expensive content until it is
   needed — `<img loading="lazy">`, but for components. A page holding dozens of
   `<puredashboard-json-view>` / `<puredashboard-markdown>` / tables pays for all of them

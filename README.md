@@ -43,7 +43,7 @@ nav, KPI cards, alerts, lists, a timeline and progress meters:
 
 **What you get — a complete component catalog (50+)**
 
-- 🧱 **General & layout** — `button`, `segmented`, a two-state `toggle` (+ `toggle-group`), `divider`, `space`, `flex`, 24-column `grid` (`row`/`col`), a page-scaffold `layout` (`header`/`sider`/`content`/`footer`), and a draggable `splitter`.
+- 🧱 **General & layout** — `button`, a `copy`-to-clipboard button (text, rich HTML **or images**), `segmented`, a two-state `toggle` (+ `toggle-group`), `divider`, `space`, `flex`, 24-column `grid` (`row`/`col`), a page-scaffold `layout` (`header`/`sider`/`content`/`footer`), and a draggable `splitter`.
 - 📝 **Forms** (all form-associated — real `submit` + validity via `ElementInternals`) — `input`, `textarea`, `number`, `select`, `combobox`, `checkbox`, `switch`, `radio-group`, `slider`, `date`, `time`, `color`, `rate`, and a `form` wrapper.
 - 🧭 **Navigation** — `tabs`, `breadcrumb`, `pagination`, `steps`, a collapsible sidebar `nav`, a desktop-style `menubar`, and a `router` (hash or History API, params, catch-all 404, lazy pages, layouts, guards).
 - 📊 **Data display** — `table` (sort · filter · paginate · row-select + bulk actions · per-row actions), `card`, `descriptions`, `statistic`, `tag`, `badge`, `avatar`, `list`, `tree`, `collapse`, a `json-view` (collapsible JSON tree — 10 built-in themes, `level` auto-collapse, per-value copy), `timeline`, `empty`, XSS-safe `markdown`, and a `lazy` wrapper that defers building expensive items until they scroll into view.

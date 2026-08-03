@@ -45,6 +45,7 @@
     <link rel="stylesheet" href="../src/toast.css" />
     <link rel="stylesheet" href="../src/md.css" />
     <link rel="stylesheet" href="../src/button.css" />
+    <link rel="stylesheet" href="../src/copy.css" />
     <link rel="stylesheet" href="../src/divider.css" />
     <link rel="stylesheet" href="../src/space.css" />
     <link rel="stylesheet" href="../src/grid.css" />
@@ -83,6 +84,7 @@
       import "../src/form.js";      // <puredashboard-form>
       import "../src/grid.js";      // <puredashboard-row> + <puredashboard-col>
       import "../src/button.js";    // <puredashboard-button>
+      import "../src/copy.js";      // <puredashboard-copy>
       import "../src/divider.js";   // <puredashboard-divider>
       import "../src/space.js";     // <puredashboard-space>
       import "../src/segmented.js"; // <puredashboard-segmented>
@@ -511,8 +513,12 @@
           el("puredashboard-toggle", { value: "list", label: vi ? "Danh sách" : "List" }),
           el("puredashboard-toggle", { value: "grid", label: vi ? "Lưới" : "Grid" }),
         );
+        // a copy button — click writes the value (text here; it also does images) to the clipboard
+        const cp = el("puredashboard-copy", { value: "svc_9xK2mQ7vR4tL8wN1pS6y", label: vi ? "Sao chép ID" : "Copy ID" });
+        if (vi) cp.labels = { copy: "Sao chép", copied: "Đã sao chép", failed: "Sao chép thất bại" };
         tog.append(
           tgroup,
+          cp,
           el("puredashboard-toggle", { label: vi ? "Hiện đã lưu trữ" : "Show archived", pressed: true }),
           iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h4a2.75 2.75 0 0 1 0 5.5h-4z"/><path d="M4.5 8h4.6a2.75 2.75 0 0 1 0 5.5H4.5z"/></svg>', vi ? "Đậm" : "Bold", { pressed: true }),
           iconTog('<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.5h-4M9.5 13.5h-4M9.5 2.5 6.5 13.5"/></svg>', vi ? "Nghiêng" : "Italic"),

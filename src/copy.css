@@ -1,0 +1,97 @@
+/* puredashboard-copy — styles for <puredashboard-copy> (copy.js). BEM, block = the tag.
+ *
+ * A small action button whose whole job is one moment of feedback: on success the icon
+ * and text turn green, on failure red, then it settles back. Both states are carried by
+ * a MODIFIER class (--copied / --error) so the colour is never the only signal — the
+ * icon itself swaps (check / cross) and an off-screen live region announces the result.
+ *
+ * Everything resolves through a --pd-* chain that falls back to the app tokens and
+ * finally to neutral system colours, so it looks right with NO theme linked and adapts
+ * to light/dark on its own. Sized and shaped like <puredashboard-toggle>, so a copy
+ * button sits flush next to one in a toolbar.
+ */
+puredashboard-copy {
+  display: inline-flex;
+  align-items: center;
+  --pd-accent:    var(--accent,   #3b82f6);
+  --pd-text:      var(--text,     CanvasText);
+  --pd-muted:     var(--muted,    color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-panel:     var(--panel,    Canvas);
+  --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
+  --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
+  --pd-radius:    var(--radius,   8px);
+  --pd-duration:  var(--duration-fast, 120ms);
+  --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
+
+  /* component knobs */
+  --pd-copy-h: var(--control-height-md, 34px);
+  --pd-copy-pad: var(--control-pad-x, 12px);
+  --pd-copy-ok: var(--green, #16a34a);
+  --pd-copy-err: var(--danger, #dc2626);
+}
+
+.puredashboard-copy__btn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2, 8px);
+  min-height: var(--pd-copy-h);
+  padding: 0 var(--pd-copy-pad);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  background: var(--pd-panel);
+  color: var(--pd-text);
+  font: inherit; cursor: pointer; user-select: none; white-space: nowrap;
+  transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease), border-color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-copy__btn:hover { background: var(--pd-panel-2); }
+.puredashboard-copy__btn:focus-visible { outline: none; box-shadow: var(--pd-focus-ring); }
+
+/* feedback states — the icon already swapped (check / cross); the colour reinforces it */
+.puredashboard-copy__btn--copied {
+  color: var(--pd-copy-ok);
+  border-color: color-mix(in srgb, var(--pd-copy-ok) 45%, var(--pd-border));
+  background: var(--success-bg, color-mix(in srgb, var(--pd-copy-ok) 12%, transparent));
+}
+.puredashboard-copy__btn--error {
+  color: var(--pd-copy-err);
+  border-color: var(--danger-border, color-mix(in srgb, var(--pd-copy-err) 40%, var(--pd-border)));
+  background: var(--danger-bg, color-mix(in srgb, var(--pd-copy-err) 12%, transparent));
+}
+.puredashboard-copy__btn--copied:hover { background: color-mix(in srgb, var(--pd-copy-ok) 18%, transparent); }
+.puredashboard-copy__btn--error:hover { background: color-mix(in srgb, var(--pd-copy-err) 18%, transparent); }
+
+/* borderless variant — for a table cell, a code block header, a dense toolbar */
+.puredashboard-copy__btn--text { border-color: transparent; background: transparent; color: var(--pd-muted); }
+.puredashboard-copy__btn--text:hover { background: var(--pd-panel-2); color: var(--pd-text); }
+.puredashboard-copy__btn--text.puredashboard-copy__btn--copied { border-color: transparent; background: transparent; color: var(--pd-copy-ok); }
+.puredashboard-copy__btn--text.puredashboard-copy__btn--error { border-color: transparent; background: transparent; color: var(--pd-copy-err); }
+
+.puredashboard-copy__btn:disabled { opacity: var(--disabled-opacity, .5); cursor: default; }
+.puredashboard-copy__btn:disabled:hover { background: var(--pd-panel); }
+.puredashboard-copy__btn--text:disabled:hover { background: transparent; }
+
+/* sizes */
+.puredashboard-copy__btn--sm { --pd-copy-h: var(--control-height-sm, 28px); --pd-copy-pad: var(--sp-2, 8px); font-size: var(--font-size-sm, 12px); }
+.puredashboard-copy__btn--lg { --pd-copy-h: var(--control-height-lg, 40px); --pd-copy-pad: var(--sp-4, 16px); }
+
+/* an icon-only copy button is square, so a column of them lines up on both axes */
+.puredashboard-copy__btn--icon-only { padding: 0; width: var(--pd-copy-h); }
+
+.puredashboard-copy__icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; height: 16px; }
+.puredashboard-copy__icon > svg { width: 100%; height: 100%; }
+.puredashboard-copy__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* sr-only — the result is announced but never painted (the icon carries it visually) */
+.puredashboard-copy__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

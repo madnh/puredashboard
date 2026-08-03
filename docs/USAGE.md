@@ -312,7 +312,7 @@ fully from scratch, just don't link the component's `.css` and style its plain e
 
 The **full per-component API** — properties, events, methods, CSS custom properties,
 examples — is documented as **JSDoc on each class / function**. Read the source:
-`table.js`, `upload.js`, `menu.js`, `menubar.js`, `dialog.js`, `toast.js`, `router.js`, `md.js`, `lazy.js`, `meter.js`, `toggle.js` / `toggle-group.js`. The
+`table.js`, `upload.js`, `menu.js`, `menubar.js`, `dialog.js`, `toast.js`, `router.js`, `md.js`, `lazy.js`, `meter.js`, `toggle.js` / `toggle-group.js`, `copy.js`. The
 JSDoc uses custom-elements-manifest tags (`@element`, `@prop`, `@fires`, `@method`,
 `@cssprop`, `@example`) so editors and AI tools parse it precisely.
 
