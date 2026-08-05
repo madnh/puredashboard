@@ -156,5 +156,85 @@ for (const [mod, sel] of [["input", "input"], ["select", "select"], ["checkbox",
   ok(el.getAttribute("aria-label") === "Saving the form", "button: a name set while loading survives loading ending");
 }
 
+// A WRAPPING <label> IS MIRRORED TO THE RIGHT CONTROL — across component types.
+//
+// Each form-associated component points its inner control at the wrapping <label> with
+// aria-labelledby, stamping that label with an id when it has none. Those ids have to be
+// unique across the PAGE, and each component is its own module scope: while every file
+// minted `pd-label-${++labelId}` from a counter of its own, the first <label> around a
+// select and the first around an input were both `pd-label-1`. getElementById returns
+// whichever comes first in the DOM, so the second control announced the first one's name
+// — and since aria-labelledby outranks aria-label, an author could not override it.
+//
+// Every pair matters, not just the first, so this mounts one of each on ONE page.
+{
+  const FORM_MODULES = ["input", "textarea", "number", "select", "combobox", "checkbox",
+    "switch", "slider", "date", "time", "color", "upload"];
+  document.body.innerHTML = "";
+  const mounted = [];
+  for (const mod of FORM_MODULES) {
+    const label = document.createElement("label");
+    label.append(document.createTextNode(`Name of ${mod}`));
+    const el = document.createElement(`puredashboard-${mod}`);
+    Object.assign(el, PROPS[mod] || {});
+    label.append(el);
+    document.body.append(label);
+    mounted.push([mod, el, label]);
+  }
+  await tick(); await tick();
+
+  const seen = new Map();   // id → the module that claimed it first
+  for (const [mod, el, label] of mounted) {
+    const inner = el.querySelector("input, select, textarea");
+    if (!inner) continue;                      // component names itself some other way
+    const ref = inner.getAttribute("aria-labelledby");
+    if (!ref) continue;                        // no wrapping label mirrored: nothing to clash
+    // The id must resolve to THIS component's own label, not to one further up the page.
+    ok(document.getElementById(ref) === label,
+      `${mod}: aria-labelledby resolves to its own wrapping <label>, not another component's`);
+    const clash = seen.get(ref);
+    ok(clash === undefined, `${mod}: label id ${ref} is not already used by ${clash}`);
+    seen.set(ref, mod);
+  }
+}
+
+// A MINTED LABEL ID NEVER LANDS ON AN ID THE AUTHOR'S PAGE ALREADY USES.
+//
+// One shared counter fixes the library clashing with itself, but the ids go into the
+// AUTHOR's document, where `pd-label-<n>` is not reserved for us. If they already have an
+// element on that id, getElementById hands the control THEIR element and it announces
+// their text — the same defect, sourced from outside. So mint past what is taken.
+//
+// The counter has already advanced by the time this runs, so read where it is (mount one
+// component, look at the id it minted) and plant the author's element on the id that comes
+// next. That keeps the test independent of how many labels the cases above consumed.
+{
+  document.body.innerHTML = "";
+  const first = document.createElement("label");
+  first.append(document.createTextNode("Project"));
+  first.append(document.createElement("puredashboard-input"));
+  document.body.append(first);
+  await tick(); await tick();
+
+  const next = Number(first.id.replace("pd-label-", "")) + 1;
+  const authorEl = document.createElement("h2");
+  authorEl.id = `pd-label-${next}`;              // the author got there first
+  authorEl.textContent = "Their own heading";
+  document.body.append(authorEl);
+
+  const second = document.createElement("label");
+  second.append(document.createTextNode("Agent"));
+  second.append(document.createElement("puredashboard-input"));
+  document.body.append(second);
+  await tick(); await tick();
+
+  ok(second.id !== authorEl.id, `label id skips pd-label-${next}, already taken by the author's page`);
+  ok(authorEl.id === `pd-label-${next}` && authorEl.textContent === "Their own heading",
+    "the author's element is left alone — we mint past it, we don't restamp it");
+  const ref = second.querySelector("input").getAttribute("aria-labelledby");
+  ok(document.getElementById(ref) === second,
+    "aria-labelledby resolves to the component's own <label>, not the author's element");
+}
+
 console.log(`\na11y-names.test.mjs: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

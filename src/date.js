@@ -14,7 +14,7 @@
 // (--control-height-*, --control-pad-x, --focus-ring, --radius, --border, --panel,
 // --text, --danger-bg, --disabled-opacity) via a --pd-* fallback chain so it looks
 // right with NO theme linked. See docs/DEVELOPMENT.md → "Definition of Done".
-import { Reactive, html } from "./reactive.js";
+import { Reactive, html, labelIdFor } from "./reactive.js";
 
 // All user-facing strings live here (English defaults). Override any subset via
 // the `labels` property to localise — e.g. d.labels = { required: "Bắt buộc" }.
@@ -22,9 +22,6 @@ import { Reactive, html } from "./reactive.js";
 const LABELS = {
   required: "This field is required.",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -151,7 +148,7 @@ class PuredashboardDate extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

@@ -59,6 +59,33 @@ export const isResult = (x) => !!(x && x[RESULT]);
 export function repeat(items, keyFn, tmplFn) { return { [REPEAT]: true, items, keyFn, tmplFn }; }
 const isRepeat = (x) => !!(x && x[REPEAT]);
 
+// labelIdFor(node) — the id a <label> must carry so an inner control can point at it
+// with aria-labelledby, minted on first use and remembered on the node itself.
+//
+// It lives HERE, in the one module every form-associated component already imports,
+// because the id has to be unique across the PAGE and each component file is its own
+// module scope. Twelve files each counting `pd-label-${++labelId}` from zero produced
+// the same id twelve times over: the first <label> wrapping a <puredashboard-select>
+// and the first wrapping a <puredashboard-input> were both `pd-label-1`,
+// getElementById returned whichever came first in the DOM, and the second control
+// announced the first one's name. aria-labelledby outranks aria-label, so the author
+// could not even override it from outside.
+//
+// One counter is still not enough on its own: the page we are minting into is the
+// AUTHOR's, so an element of theirs may already hold the id we are about to hand out.
+// Skip past anything already taken — same failure (the control announces someone else's
+// text), only the clash comes from outside the library. Limit: a <label> not yet in the
+// document has nothing to check against.
+let labelId = 0;
+export function labelIdFor(node) {
+  if (!node.id) {
+    let id;
+    do { id = `pd-label-${++labelId}`; } while (document.getElementById(id));
+    node.id = id;
+  }
+  return node.id;
+}
+
 function rawNodes(s) { const t = document.createElement("template"); t.innerHTML = s; return [...t.content.childNodes]; }
 
 // URL-bearing attributes whose value must never carry a script-executing scheme.

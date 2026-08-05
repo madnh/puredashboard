@@ -10,7 +10,7 @@
 // submits under its `name` and participates in constraint validation like a
 // built-in field. Follows the same pattern as input.js — see that file and
 // docs/DEVELOPMENT.md → "Definition of Done".
-import { Reactive, html } from "./reactive.js";
+import { Reactive, html, labelIdFor } from "./reactive.js";
 
 // All user-facing strings live here (English defaults). Override any subset via
 // the `labels` property to localise — e.g. col.labels = { choose: "Chọn màu" }.
@@ -18,9 +18,6 @@ import { Reactive, html } from "./reactive.js";
 const LABELS = {
   choose: "Choose a colour",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 /**
  * A form-associated colour picker. Wraps a native `<input type="color">` (so the
@@ -129,7 +126,7 @@ class PuredashboardColor extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

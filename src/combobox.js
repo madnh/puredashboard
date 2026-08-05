@@ -29,7 +29,7 @@
 // --radius, --control-height-*, --control-pad-x, --shadow-2, --danger-bg, --z-dropdown,
 // --disabled-opacity) via a --pd-* fallback chain, so it looks right with NO theme
 // linked. See docs/DEVELOPMENT.md → "Definition of Done".
-import { Reactive, html, repeat } from "./reactive.js";
+import { Reactive, html, repeat, labelIdFor } from "./reactive.js";
 
 // All FIXED user-facing strings live here (English defaults). Override any subset via
 // the `labels` property to localise — e.g. cb.labels = { noResults: "Không có" }.
@@ -39,9 +39,6 @@ const LABELS = {
   noResults: "No results",
   required: "This field is required.",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -313,7 +310,7 @@ class PuredashboardCombobox extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

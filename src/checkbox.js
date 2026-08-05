@@ -14,7 +14,7 @@
 // the indeterminate state) are inherited from the browser, and mirrors the inner
 // checkbox's `checked` onto the host so the property, the owning <form> value and
 // validity stay in sync. The Reactive parts engine diffs in place.
-import { Reactive, html } from "./reactive.js";
+import { Reactive, html, labelIdFor } from "./reactive.js";
 
 // All FIXED user-facing strings live here (English defaults). Override any subset
 // via the `labels` property to localise — e.g. cb.labels = { required: "Bắt buộc" }.
@@ -23,9 +23,6 @@ import { Reactive, html } from "./reactive.js";
 const LABELS = {
   required: "This field is required.",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -145,7 +142,7 @@ class PuredashboardCheckbox extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 
