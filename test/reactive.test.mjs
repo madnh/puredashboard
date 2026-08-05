@@ -294,6 +294,56 @@ const tick = () => new Promise((r) => queueMicrotask(r));
   );
 }
 
+// ============ the two halves of in-place diffing, as documented ==============
+// docs/ARCHITECTURE.md and src/_agents.md promise a consuming app two things about
+// keeping an <input> usable. Pin both, because the NEGATIVE one is what an app hits
+// and then works around by abandoning the engine for hand-built DOM.
+
+// (a) UNCHANGED ⇒ NO WRITE. A `.value` PROPERTY binding whose value has not changed
+// must not push over what the user typed, however often an unrelated binding
+// re-renders. This is why an app never has to drop the binding to stay usable.
+{
+  const host = document.createElement("div");
+  const view = (q, n) => html`<input id="f" .value="${q}" /><span id="c">${n}</span>`;
+  renderResult(view("ab", 1), host);
+  const input = host.querySelector("#f");
+  input.value = "abcdef"; // user keeps typing; the component's own `q` is still "ab"
+  for (const n of [2, 3, 4]) renderResult(view("ab", n), host); // churn from elsewhere
+  ok(host.querySelector("#f") === input, "prop binding: same <input> node across re-renders");
+  ok(input.value === "abcdef", "prop binding: unchanged .value does not clobber a user edit");
+  ok(host.querySelector("#c").textContent === "4", "prop binding: the sibling binding still updates");
+  renderResult(view("zz", 5), host); // a genuine change still writes
+  ok(input.value === "zz", "prop binding: a CHANGED .value is written through");
+}
+
+// (b) A DIFFERENT TEMPLATE ⇒ REBUILD. Two literals in one ${} child position are two
+// `strings` arrays, so switching between them replaces the DOM — focus and un-committed
+// text go with it. Documented as the failure mode; pinned here so it cannot drift into
+// looking safe. The one-literal form right after is the fix we tell people to use.
+{
+  const host = document.createElement("div");
+  const two = (on, q) => html`<div>${on
+    ? html`<span class="on"><input id="f" .value="${q}" /></span>`
+    : html`<span class="off"><input id="f" .value="${q}" /></span>`}</div>`;
+  renderResult(two(false, ""), host);
+  const before = host.querySelector("#f");
+  before.value = "half-typed";
+  renderResult(two(true, ""), host);
+  const after = host.querySelector("#f");
+  ok(after !== before, "template identity: switching literals REBUILDS the input (documented)");
+  ok(after.value === "", "template identity: the rebuild loses the un-committed text");
+
+  const one = (on, q) =>
+    html`<div><span class="${on ? "on" : "off"}"><input id="g" .value="${q}" /></span></div>`;
+  renderResult(one(false, ""), host);
+  const kept = host.querySelector("#g");
+  kept.value = "half-typed";
+  renderResult(one(true, ""), host);
+  ok(host.querySelector("#g") === kept, "one literal + a bound attribute: same node");
+  ok(kept.value === "half-typed", "one literal + a bound attribute: the edit survives");
+  ok(host.querySelector("span").className === "on", "one literal: the class still flipped");
+}
+
 // ============ raw-text guard (learned from lit) =============================
 // A child ${} inside <textarea> would silently drop + misalign; now it throws.
 {

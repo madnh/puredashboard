@@ -96,6 +96,16 @@ The pipeline, all in `reactive.js`:
    the child's `strings` array is identical to last time, the child instance is reused
    and only its parts update.
 
+   **Both halves of this are load-bearing, and the negative half is the one that bites.**
+   *Unchanged ⇒ no write* means a `.value` binding does NOT clobber half-typed text when
+   an unrelated property re-renders the element — you never have to drop the binding to
+   keep an input usable. *A different template ⇒ rebuild* means the thing that DOES
+   destroy focus and typed text is switching template identity, e.g. a
+   `${cond ? html\`…\` : html\`…\`}` wrapped around an input: each branch is its own
+   `strings` array, so flipping `cond` replaces the nodes. Bind the difference inside one
+   literal instead. The same applies per row in `repeat()` (one template per row, stable
+   key). `test/reactive.test.mjs` pins both directions.
+
 4. **`repeat(items, keyFn, tmplFn)`** — the keyed-list directive. `NodePart.commitRepeat`
    runs a **two-end reconciliation** (the Snabbdom/lit algorithm): it walks the old and
    new key lists from both ends, reusing rows by key — updating in place and *moving*

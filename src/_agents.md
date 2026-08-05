@@ -9,6 +9,11 @@
 > This file ships inside `src/` (as `_agents.md`), so it travels when someone copies
 > the folder. It is skipped by the `//go:embed` walker (leading `_`), so it never
 > bloats a backend binary.
+>
+> **`docs/…` paths below are in the source repo, NOT in this copy.** Only `src/`
+> ships, so a vendored copy has this file and `_components.jsonl` and nothing else.
+> They're at <https://github.com/madnh/puredashboard> — worth fetching if you're
+> extending the library rather than only consuming it.
 
 ## What this is
 
@@ -50,12 +55,14 @@ document.body.append(t);
   (vibrancy, hairlines, macOS controls). Pair with `puredashboard-titlebar` for a
   frameless window — recipe in `docs/DESKTOP.md`.
 
-## Which `html` tag? (only relevant if you EXTEND the library)
+## Which `html` tag? (only relevant if you BUILD views, not just use components)
 
-Two tagged templates exist. As a **consumer you rarely need either** — you set
-properties. If you author a component: `reactive.js` `html` (diffs the DOM in place,
-for input-bearing elements) vs `html.js` `html` (one-shot string→innerHTML, escaped).
-See `docs/DEVELOPMENT.md`.
+Two tagged templates exist. If you only place components and set properties, you need
+neither. If you render your own markup — your own custom element, or a routed page —
+pick: `reactive.js` `html` (diffs the DOM in place, for anything holding input, focus
+or scroll) vs `html.js` `html` (one-shot string→innerHTML, escaped; static fragments
+and inline SVG). Recipe below: *Your app renders its own views*. Full design rules in
+`docs/DEVELOPMENT.md` (source repo).
 
 ## Four component families
 
@@ -275,6 +282,38 @@ lz.load = () => import("./heavy-chart.js");
   findable with Ctrl+F, so don't hide content the user must be able to search.
 - This is *not* CSS `content-visibility: auto` — that skips layout/paint but still builds
   every node. Use `lazy` when BUILDING is the cost; they compose.
+
+### Your app renders its own views (the parts engine, no subclassing needed)
+`repeat()` and `renderResult()` are exported from `reactive.js` and take **any**
+container. You do NOT have to extend `Reactive` to use them — a routed page built by
+hand can adopt them for one list and leave the rest imperative:
+```js
+import { html, repeat, renderResult } from "LIB/reactive.js";
+const draw = () => renderResult(html`
+  <input class="q" .value="${query}">
+  ${repeat(sections, (s) => s.n, (s) => html`<p class="row">§${s.n} ${s.text}</p>`)}`, outlet);
+```
+- **Rows whose key persists keep their existing DOM nodes.** Only new keys build DOM,
+  only dropped keys remove it. So scroll position, focus inside a row, and anything you
+  hung on the node (`dataset`, listeners, an "already seen" mark) survive an append —
+  which is what makes an append-only feed cheap. Use it instead of `replaceChildren()`
+  + rebuild; the bookkeeping you'd write by hand is what keyed reuse gives you.
+- **A binding whose value is unchanged writes nothing.** `.value="${query}"` will not
+  overwrite half-typed text when some *other* property re-renders the view. You don't
+  have to drop the binding to keep an input usable.
+
+**The one thing that DOES destroy an input: changing template identity.** A `${}` child
+position reuses its DOM only while it holds the **same** template literal — a different
+literal replaces the nodes, so focus, caret and un-committed text go with them:
+```js
+// ✗ two literals: switching branch rebuilds the <input>, typed text is gone
+${on ? html`<span class="on"><input .value="${q}"></span>`
+     : html`<span class="off"><input .value="${q}"></span>`}
+// ✓ one literal, the difference is a binding
+html`<span class="${on ? "on" : "off"}"><input .value="${q}"></span>`
+```
+Same rule inside `repeat()` — one template per row, and a key that doesn't change for
+that row. If a row varies a lot by type, bind the differences rather than branching.
 
 ### Preview your own components (the gallery is reusable)
 ```js
