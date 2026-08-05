@@ -10,7 +10,7 @@
 // place and image thumbnails are NOT recreated each tick (no flicker). Icons are
 // inline self-contained SVG, sized via inline style so the component needs no shared
 // icon class.
-import { Reactive, html, repeat } from "./reactive.js";
+import { Reactive, html, repeat, labelIdFor } from "./reactive.js";
 import { raw } from "./html.js";
 
 const svg = (b) => raw(`<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.14em;overflow:visible;flex:none" aria-hidden="true">${b}</svg>`);
@@ -43,9 +43,6 @@ const LABELS = {
   notAllowed: "type not allowed",
   remove: (name) => `Remove ${name}`,
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -216,7 +213,7 @@ class PuredashboardUpload extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

@@ -16,7 +16,7 @@
 // technique, never display:none which would remove it from the tab order). The
 // element mirrors the inner checkbox's native validity onto the host's
 // ElementInternals so the surrounding <form> validates it like a built-in field.
-import { Reactive, html } from "./reactive.js";
+import { Reactive, html, labelIdFor } from "./reactive.js";
 
 // All user-facing strings live here (English defaults). Override any subset via
 // the `labels` property to localise — e.g. sw.labels = { required: "Bắt buộc" }.
@@ -24,9 +24,6 @@ import { Reactive, html } from "./reactive.js";
 const LABELS = {
   required: "This field is required.",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -135,7 +132,7 @@ class PuredashboardSwitch extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

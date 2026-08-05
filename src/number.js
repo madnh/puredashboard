@@ -16,7 +16,7 @@
 // via a --pd-* fallback chain so it looks right with NO theme linked. Icons are
 // inline self-contained SVG, sized via inline style — no shared icon module.
 // See docs/DEVELOPMENT.md → "Definition of Done".
-import { Reactive, html } from "./reactive.js";
+import { Reactive, html, labelIdFor } from "./reactive.js";
 import { raw } from "./html.js";
 
 // Inline, self-contained icons — a tiny svg() wrapping raw() from html.js (same
@@ -33,9 +33,6 @@ const LABELS = {
   increment: "Increment",
   decrement: "Decrement",
 };
-
-// Unique ids for <label>s we have to reference from the inner control's aria-labelledby.
-let labelId = 0;
 
 let uid = 0;
 
@@ -199,7 +196,7 @@ class PuredashboardNumber extends Reactive {
     try { labels = this._internals && this._internals.labels; } catch { labels = null; }
     if (!labels || !labels.length) return "";
     const ids = [];
-    for (const l of labels) { if (!l.id) l.id = `pd-label-${++labelId}`; ids.push(l.id); }
+    for (const l of labels) ids.push(labelIdFor(l));
     return ids.join(" ");
   }
 

@@ -158,7 +158,15 @@ component** — they're what keep the library coherent, safe, and dependency-fre
    `--duration-*`, `--danger-bg`, …) rather than new literals; declare any per-component
    knobs as `--pd-<name>-*` on the component root.
 6. If it's a form input, make it **form-associated** (`static formAssociated = true` +
-   `attachInternals()`, see rule 10) so it submits and validates natively.
+   `attachInternals()`, see rule 10) so it submits and validates natively. A wrapping
+   `<label>` names the HOST, not the inner control, so mirror it down as
+   `aria-labelledby` — taking the label's id from **`labelIdFor()` in `reactive.js`**,
+   never from a counter of your own. The id has to be unique across the PAGE and a
+   per-module counter is not: twelve files each minting `pd-label-1` left every control
+   but the first announcing another component's name, and `aria-labelledby` outranks
+   `aria-label`, so the author could not override it. `labelIdFor()` also mints past ids
+   the embedding page already holds — the document it writes into is the author's, not
+   ours.
 7. Document the public API as **JSDoc** above the class (`@element @prop @fires @method
    @cssprop @example`).
 8. **Register the stylesheet** in `src/components.css` (`@import "<name>.css";`) so the

@@ -134,6 +134,24 @@ the API may still change between minor versions.
   so a field named `__proto__`/`constructor` can't corrupt it.
 
 ### Fixed
+- **A wrapping `<label>` no longer names the WRONG control.** Every form-associated
+  component mirrors a wrapping `<label>` onto its inner control as `aria-labelledby`,
+  stamping that label with an id when it has none. The id came from a `let labelId = 0`
+  **in each component file** — twelve separate module scopes sharing one `pd-label-`
+  prefix — so the first `<label>` around a `<puredashboard-select>` and the first around
+  a `<puredashboard-input>` were both `pd-label-1`. `getElementById` returns whichever
+  comes first in the DOM, so on a form holding two different components the second one
+  announced the first one's name; and since `aria-labelledby` outranks `aria-label`, the
+  author could not override it from outside. Found in a search form whose "Agent" field
+  called itself "Project". The counter now lives once, in `reactive.js`, as the exported
+  `labelIdFor(node)` — the module every one of these components already imports. Affects
+  `input`, `textarea`, `number`, `select`, `combobox`, `checkbox`, `switch`, `slider`,
+  `date`, `time`, `color`, `upload`. `test/a11y-names.test.mjs` now mounts one of each on
+  ONE page and asserts every label id resolves to its own component (22 failures before
+  the fix — the bug is invisible to any test that mounts a single component).
+  `labelIdFor` also skips ids the **embedding page** already holds: `pd-label-<n>` is not
+  reserved for us, and an author element sitting on one produced the same wrong name from
+  outside the library.
 - **Accessible names now reach the right element (library-wide).** A custom-element host
   carries no role, so an `aria-label` put on it was silently dropped — and several
   components additionally **deleted** the author's value on every render, overwriting it
