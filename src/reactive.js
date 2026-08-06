@@ -70,9 +70,17 @@ export const isResult = (x) => !!(x && x[RESULT]);
 // focus is lost; rotating it to [2,3,1] relocates a different one and focus survives; a
 // removal leaving the survivors non-adjacent ([1,2,3,4,5] → [1,3,5]) relocates rows just
 // as a reorder does, while an append, a prepend, and a head/tail/contiguous removal
-// relocate nothing. So "reorders are lossy, edits are free" is the wrong summary. The
-// right one: node identity is NOT a proxy for state surviving an update — if a row holds
-// focus or scroll you care about, check that, not the node.
+// relocate nothing.
+//
+// THAT MIDDLE CASE IS WHAT A FILTER DOES, and it is the one that catches people, because
+// nobody expects narrowing a list to move the rows that survive it. Reported from a real
+// app: filtering a 20-row list down to 5 kept every surviving row as the same node and
+// still dropped focus to <body>. Three people there had read "node identity kept: 20/20"
+// as "reader state preserved" before anyone asked what that number does not cover.
+//
+// So "reorders are lossy, edits are free" is the wrong summary. The right one: node
+// identity is NOT a proxy for state surviving an update — if a row holds focus or scroll
+// you care about, check that, not the node.
 export function repeat(items, keyFn, tmplFn) { return { [REPEAT]: true, items, keyFn, tmplFn }; }
 const isRepeat = (x) => !!(x && x[REPEAT]);
 
