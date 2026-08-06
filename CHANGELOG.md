@@ -133,6 +133,44 @@ the API may still change between minor versions.
 - **Prototype-safety** (`form.js`): collected submit values use a null-prototype object,
   so a field named `__proto__`/`constructor` can't corrupt it.
 
+### Changed
+- **`repeat()` relocates rows with the native `Element.moveBefore()` where it exists**, so a
+  keyed reorder no longer costs the user their place. That API is a state-preserving atomic
+  move; `insertBefore`, which the DOM defines as a remove plus an insert, destroys focus, an
+  inner scroll position and an `<iframe>`'s loaded document. Measured through the engine,
+  same list, before and after:
+
+  | | focus | caret | inner scroll | iframe |
+  |---|---|---|---|---|
+  | reversal, before | `false` | 3 | 0 | reloaded |
+  | reversal, after | **`true`** | 3 | **60** | **kept** |
+  | 20→5 filter, before | `false` | 3 | 0 | reloaded |
+  | 20→5 filter, after | **`true`** | 3 | **60** | **kept** |
+
+  The filter row is the one that matters most: a consuming app reported losing focus when a
+  reader had tabbed into a row and then narrowed the list, with node identity reporting clean
+  the whole time. Appends and prepends were already free and are unchanged.
+
+  **This is a progressive enhancement, not a guarantee.** Chrome/Edge 133+ and Firefox 144+
+  have `moveBefore`; **Safari does not**, and there the fallback is exactly what this library
+  always did. So a UI that comes to depend on focus surviving a reorder will differ between
+  browsers — stated in `reactive.js` and `_agents.md` rather than left to be discovered.
+  Detection is on the parent (`typeof parent.moveBefore === "function"`), at call time: the
+  parent may be a `DocumentFragment`, and call-time detection is what lets the test shim the
+  dispatch. The catch is narrowed to `HierarchyRequestError` — reachable when a row's node
+  was removed from the document before the reorder — and redoing the whole row with
+  `insertBefore` heals the half-relocated state; any other error is rethrown.
+
+  A custom element inside a relocated row still gets `disconnectedCallback` /
+  `connectedCallback` on both paths, since skipping those is opt-in via
+  `connectedMoveCallback()` and none of ours define it. Focus inside such a component
+  survives anyway, because `renderResult` rebinds in place rather than replacing children.
+
+  `test/reactive.test.mjs` shims `Element.prototype.moveBefore` to pin the dispatch, the
+  mid-row-throw recovery and that a non-`HierarchyRequestError` propagates — reverting the
+  change fails 3 assertions, where before jsdom could not see the path at all. What the shim
+  cannot pin is the benefit itself; that is browser-only and stated in the test.
+
 ### Fixed
 - **Moving a `<puredashboard-markdown>` no longer re-parses it or rebuilds its DOM.**
   `connectedCallback` painted unconditionally, and re-parenting a node runs it again, so

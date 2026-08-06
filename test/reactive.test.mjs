@@ -354,17 +354,75 @@ customElements.define("reactive-move-probe", MoveProbe);
     );
   }
 
-  // Tripwire. Today relocation tears the row out, so a reversal DOES reconnect a row —
-  // which is what makes the coupling above observable at all. If repeat() ever adopts the
-  // native state-preserving Element.moveBefore(), this is the assertion that must fail.
-  // When it does, update it together with the repeat() and Row comments in src/reactive.js
-  // and the relocation bullets in src/_agents.md, which all describe today's behaviour.
+  // Everything above describes the FALLBACK path, which is what jsdom runs: it has no
+  // Element.moveBefore, so `typeof parent.moveBefore === "function"` is false and Row falls
+  // through to insertBefore. That is not a gap in the test, it is the path most browsers
+  // still take (no Safari support), and it is worth pinning on its own. The native path is
+  // covered by the shim block below.
   ok(
     round([1, 2, 3], [3, 2, 1], 2).relocated,
-    "a reversal still relocates via insertBefore — if THIS fails, repeat() adopted an atomic " +
-      "move: update the repeat()/Row comments in src/reactive.js and the relocation bullets " +
-      "in src/_agents.md, then rewrite this case",
+    "with no native moveBefore, a reversal relocates through insertBefore (the fallback path)",
   );
+}
+
+// ============ the native atomic-move path, exercised through a shim ==================
+// Row.moveBefore prefers the native Element.moveBefore() when the PARENT has it. jsdom has
+// no such method, so without a shim this branch would ship with nothing in the runner
+// touching it — someone could revert it to insertBefore and every suite would stay green.
+//
+// The shim records the dispatch and delegates to insertBefore, so what these pin is that the
+// engine CALLS the native path when it is available, with the right nodes and the right
+// reference, and that order and node identity come out the same as the fallback's. They do
+// NOT pin the benefit — a shim cannot emulate a state-preserving move, and jsdom has no
+// focus-through-relocation, no scroll and no iframes to preserve. That half is browser-only
+// (measured in Chrome: focus true, caret 3, scrollTop 60, iframe not reloaded, against
+// focus false, scrollTop 0, iframe reloaded on the fallback).
+//
+// The detect is read at CALL time precisely so this is possible; caching it at module load
+// would make the shim useless.
+{
+  const host = document.createElement("div");
+  document.body.append(host);
+  const view = (items) =>
+    html`<div>${repeat(items, (n) => n, (n) => html`<p><input id="s${n}" /></p>`)}</div>`;
+  const order = () => [...host.querySelectorAll("input")].map((i) => i.id).join(",");
+
+  const proto = w.Element.prototype;
+  const had = Object.prototype.hasOwnProperty.call(proto, "moveBefore");
+  let calls = 0;
+  proto.moveBefore = function (node, ref) { calls++; return this.insertBefore(node, ref); };
+  try {
+    renderResult(view([1, 2, 3, 4, 5]), host);
+    const kept = host.querySelector("#s2");
+    calls = 0;
+    renderResult(view([5, 4, 3, 2, 1]), host);
+    ok(calls > 0, `native path: relocations dispatch through moveBefore — got ${calls} calls`);
+    ok(order() === "s5,s4,s3,s2,s1", `native path: the list reordered — got ${order()}`);
+    ok(host.querySelector("#s2") === kept, "native path: node identity is preserved");
+
+    // A HierarchyRequestError mid-row must be recovered by redoing the whole row, leaving
+    // the DOM where the fallback would have left it.
+    let n = 0;
+    proto.moveBefore = function (node, ref) {
+      calls++;
+      if (++n === 2) { const e = new Error("nope"); e.name = "HierarchyRequestError"; throw e; }
+      return this.insertBefore(node, ref);
+    };
+    calls = 0;
+    renderResult(view([1, 2, 3, 4, 5]), host);
+    ok(calls > 0, "native path: a throwing move was still attempted");
+    ok(order() === "s1,s2,s3,s4,s5", `native path: a mid-row throw still lands correctly — got ${order()}`);
+
+    // …but any OTHER error is a bug in our loop and must not be swallowed.
+    proto.moveBefore = function () { const e = new TypeError("boom"); throw e; };
+    let threw = null;
+    try { renderResult(view([3, 1, 2, 5, 4]), host); } catch (e) { threw = e && e.name; }
+    ok(threw === "TypeError", `native path: a non-HierarchyRequestError propagates — got ${threw}`);
+  } finally {
+    if (had) delete proto.moveBefore;
+    else delete proto.moveBefore;
+  }
+  ok(typeof w.Element.prototype.moveBefore === "undefined", "native path: the shim is cleaned up");
 }
 
 // ============ the two halves of in-place diffing, as documented ==============

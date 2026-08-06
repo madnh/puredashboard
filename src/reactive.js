@@ -57,20 +57,22 @@ export const isResult = (x) => !!(x && x[RESULT]);
 // whose key persists keep their existing DOM node and are MOVED, not rebuilt; only
 // added/removed/changed rows touch the DOM.
 //
-// What "keeps its node" does and does NOT buy you. A row left where it is keeps
-// everything: focus, scroll, and any state you hung on the node. A row the reconciler
-// RELOCATES keeps only the node — relocation goes through insertBefore, which the DOM
-// defines as a remove plus an insert, so focus is lost, an inner scroll container resets
-// to 0, and a custom element inside the row is disconnected and reconnected (its
-// connectedCallback runs again). Selection offsets do survive: after the move
-// selectionStart still reads what it did, it is the focus that is gone.
+// What "keeps its node" does and does NOT buy you, and it now depends on the browser. A row
+// left where it is keeps everything. A row the reconciler RELOCATES keeps everything too —
+// focus, an inner scroll position, an <iframe>'s loaded document — WHERE Element.moveBefore
+// exists (Chrome/Edge 133+, Firefox 144+; see Row.moveBefore). Where it does not (Safari) the
+// fallback is insertBefore, which the DOM defines as a remove plus an insert: focus is lost
+// and an inner scroll container resets to 0. Selection offsets survive either way — after the
+// move selectionStart still reads what it did; on the fallback it is the focus that is gone.
+// A custom element inside a relocated row is disconnected and reconnected on BOTH paths,
+// because skipping that is opt-in via connectedMoveCallback() and none of ours define it.
 //
-// WHICH rows get relocated is a property of the diff, not of what you called the update.
-// Measured (Chrome and jsdom agree): reversing [1,2,3] relocates the focused row and
-// focus is lost; rotating it to [2,3,1] relocates a different one and focus survives; a
-// removal leaving the survivors non-adjacent ([1,2,3,4,5] → [1,3,5]) relocates rows just
-// as a reorder does, while an append, a prepend, and a head/tail/contiguous removal
-// relocate nothing.
+// WHICH rows get relocated is a property of the diff, not of what you called the update,
+// and it still decides everything ON THE FALLBACK PATH. Measured: reversing [1,2,3]
+// relocates the focused row; rotating it to [2,3,1] relocates a different one; a removal
+// leaving the survivors non-adjacent ([1,2,3,4,5] → [1,3,5]) relocates rows just as a
+// reorder does, while an append, a prepend, and a head/tail/contiguous removal relocate
+// nothing.
 //
 // THAT MIDDLE CASE IS WHAT A FILTER DOES, and it is the one that catches people, because
 // nobody expects narrowing a list to move the rows that survive it. Reported from a real
@@ -78,9 +80,13 @@ export const isResult = (x) => !!(x && x[RESULT]);
 // still dropped focus to <body>. Three people there had read "node identity kept: 20/20"
 // as "reader state preserved" before anyone asked what that number does not cover.
 //
-// So "reorders are lossy, edits are free" is the wrong summary. The right one: node
-// identity is NOT a proxy for state surviving an update — if a row holds focus or scroll
-// you care about, check that, not the node.
+// So "reorders are lossy, edits are free" is the wrong summary. The right one: node identity
+// is NOT a proxy for state surviving an update — if a row holds focus or scroll you care
+// about, check that, not the node. Where Element.moveBefore exists that check now comes back
+// clean (measured through this engine, both the reversal and the 20→5 filter:
+// focus=true caret=3 scroll=60, iframe not reloaded). Where it does not, it comes back
+// exactly as it always did (focus=false scroll=0, iframe reloaded), so the reasoning above
+// is what you still need on Safari.
 export function repeat(items, keyFn, tmplFn) { return { [REPEAT]: true, items, keyFn, tmplFn }; }
 const isRepeat = (x) => !!(x && x[REPEAT]);
 
@@ -136,45 +142,39 @@ function safeUrlAttr(name, val) {
 // it. update() re-binds in place when the template matches (keeping the live nodes, so
 // focus survives); moveBefore() relocates the whole row in one shot.
 //
-// NOTE the method below is ours and is built on insertBefore — it is not the native
-// moveBefore(), whose name it shares. That one performs a state-preserving atomic move:
-// focus, an inner scroll position and an <iframe>'s loaded document all survive it
-// (measured in Chrome), where insertBefore destroys all three. Chrome/Edge 133+ and
-// Firefox 144+, no Safari, so adopting it would be a feature-detected enhancement rather
-// than a swap.
+// RELOCATION USES THE NATIVE Element.moveBefore() WHERE IT EXISTS. That performs a
+// state-preserving atomic move — focus, an inner scroll position and an <iframe>'s loaded
+// document all survive it; insertBefore, which the DOM defines as a remove plus an insert,
+// destroys all three. Measured in Chrome: focus true/caret 3/scrollTop 60 and an iframe load
+// counter unchanged, against focus false/scrollTop 0/iframe reloaded on the fallback.
+// Chrome/Edge 133+ and Firefox 144+ only, no Safari, so this is an enhancement and not a
+// swap: where it is missing the fallback below is exactly what this library always did.
 //
-// Detect it on the PARENT, at call time — `typeof parent.moveBefore === "function"`. Not
-// on `Element.prototype`: `parent` here is `this.anchor.parentNode`, which may be a
-// DocumentFragment, and `test/reactive.test.mjs` copies only six jsdom globals with
-// `Element` not among them, so a detect written that way throws ReferenceError in the only
-// runner this repo has. Detecting at call time is also what lets a test shim the dispatch;
-// caching the answer at module load pins nothing.
+// Detected on the PARENT, at call time — `typeof parent.moveBefore === "function"`. Not on
+// `Element.prototype`: `parent` here is `this.anchor.parentNode`, which may be a
+// DocumentFragment, and `test/reactive.test.mjs` copies only six jsdom globals with `Element`
+// not among them, so a detect written that way throws ReferenceError in the only runner this
+// repo has. Call-time detection is also what lets a test shim the dispatch; caching the
+// answer at module load would pin nothing.
 //
-// It is NOT a free swap, and the reason is inside this library rather than outside it.
-// popover.js positions its panel ONCE, from getBoundingClientRect on open, with no
-// reposition listener (see `_reposition`). Today a relocated row tears the panel out of the
-// document and the browser drops it — self-correcting by accident. Under an atomic move the
-// panel survives at its open-time coordinates while the trigger travels: measured in
-// Chrome, a row sent to the end of a five-row list left the panel 331px from its trigger,
-// still open. popconfirm.js measures the same, 331px. Those two are the prerequisite: they
-// lean on the browser dropping a panel that left the document, and an atomic move takes
-// that away.
+// The catch is narrowed to HierarchyRequestError ON PURPOSE. moveBefore throws that when the
+// node and the destination disagree about being connected — reachable if something removed
+// one of a row's nodes from the document before the reorder. A row is several nodes, so a
+// throw on the second leaves it half-relocated; redoing the WHOLE row with insertBefore
+// heals that, and the final DOM is byte-identical to the fallback's, including the node that
+// was removed. Any OTHER error is a bug in this loop and is rethrown rather than hidden.
 //
-// The other two overlays are NOT prerequisites, for opposite reasons. menubar.js closes
-// ITSELF in disconnectedCallback, and that callback still fires under an atomic move, so it
-// self-corrects (measured: openIndex 0 → -1). tooltip.js is already broken WITHOUT this
-// change: its tip is position:fixed and nothing hides it on disconnect, so a relocation
-// strands it either way (measured, a shown tip left 331px behind under insertBefore and
-// 329px under moveBefore). That is a standing defect to fix on its own account, not a
-// reason to hold this one. Limit on that last figure: the tip was put in the shown state
-// through the public show(), not through hover or focus, so whether a real interaction
-// leaves one shown across a relocation is unmeasured.
+// What this does NOT buy: a custom element inside a relocated row still gets
+// disconnectedCallback/connectedCallback, because skipping them is opt-in via
+// connectedMoveCallback() and none of ours define it. Focus inside such a component still
+// survives, since renderResult rebinds in place instead of replacing children.
 //
-// It also only skips disconnected/connectedCallback for custom elements that OPT IN by
-// defining connectedMoveCallback(); one that does not still gets the old pair, so it would
-// not on its own spare a component inside a row from re-running its connect logic. Focus
-// inside such a component does still survive, because renderResult rebinds in place rather
-// than replacing children.
+// This needed popover.js and popconfirm.js fixed FIRST, and they were (a41ec77). Both
+// anchored their panel once on open with no reposition listener, and leaned on the browser
+// dropping a panel that left the document. An atomic move takes that accident away; they now
+// re-anchor on reconnect instead. menubar.js never needed it (it closes itself in
+// disconnectedCallback, which still fires here). tooltip.js strands its tip under BOTH paths
+// and is a standing defect on its own account.
 class Row {
   constructor(key) { this.key = key; this.anchor = document.createComment("row"); this.nodes = []; this.inst = null; }
   firstNode() { return this.nodes.length ? this.nodes[0] : this.anchor; }
@@ -188,7 +188,21 @@ class Row {
     for (const n of next) p.insertBefore(n, this.anchor);
     this.nodes = next; this.inst = inst;
   }
-  moveBefore(parent, ref) { for (const n of this.nodes) parent.insertBefore(n, ref); parent.insertBefore(this.anchor, ref); }
+  moveBefore(parent, ref) {
+    if (typeof parent.moveBefore === "function") {
+      try {
+        for (const n of this.nodes) parent.moveBefore(n, ref);
+        parent.moveBefore(this.anchor, ref);
+        return;
+      } catch (e) {
+        // Only the connectedness disagreement is recoverable — redo the row below. Anything
+        // else is ours to fix, not to swallow.
+        if (!e || e.name !== "HierarchyRequestError") throw e;
+      }
+    }
+    for (const n of this.nodes) parent.insertBefore(n, ref);
+    parent.insertBefore(this.anchor, ref);
+  }
   remove() { for (const n of this.nodes) n.remove(); this.anchor.remove(); }
 }
 

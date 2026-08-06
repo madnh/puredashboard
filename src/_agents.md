@@ -298,11 +298,16 @@ const draw = () => renderResult(html`
   anything you hung on the node (`dataset`, listeners, an "already seen" mark) — which is
   what makes an append-only feed cheap. Use it instead of `replaceChildren()` + rebuild;
   the bookkeeping you'd write by hand is what keyed reuse gives you.
-- **A row the diff RELOCATES keeps only the node, and node identity won't tell you.**
-  Relocation goes through `insertBefore`, which the DOM defines as a remove plus an
-  insert: the node is the same node afterwards, and focus is gone, an inner scroll
-  container is back at 0, and any custom element in that row has had `connectedCallback`
-  run again. (Selection offsets do survive — it's the focus that's lost.)
+- **A row the diff RELOCATES keeps everything too — on browsers that can move it atomically.**
+  `repeat()` uses the native `Element.moveBefore()` where the parent has it (Chrome/Edge
+  133+, Firefox 144+): focus, an inner scroll position and an `<iframe>`'s loaded document
+  all survive. Measured, a keyed reversal and a 20→5 filter both come back
+  `focus=true caret=3 scroll=60 iframe=SET`. **Safari has no `moveBefore`**, so it falls back
+  to `insertBefore` — a remove plus an insert — and there the same reversal gives
+  `focus=false scroll=0` with the iframe reloaded. Selection offsets survive either way; a
+  custom element in the row is disconnected and reconnected on both paths. So this is a
+  progressive enhancement, not a guarantee: if your UI depends on focus surviving a reorder,
+  it will differ between browsers, and Safari is the one that behaves as before.
 - **Which rows get relocated is a property of the diff, not of what you called it.**
   Measured: reversing `[1,2,3]` relocates the focused row; rotating it to `[2,3,1]`
   relocates a different one and focus survives; a removal leaving survivors non-adjacent
