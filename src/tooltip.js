@@ -123,10 +123,13 @@ class PuredashboardTooltip extends HTMLElement {
     this._wrap();
     this._bind();
     // A tip that was SHOWING when the row moved is anchored to a trigger that has travelled
-    // (position:fixed, placed once from getBoundingClientRect). If the reason it was showing
-    // survived the move — the trigger still holds focus, which it does where the engine can
-    // move a row atomically — re-anchor it. If it did not, the tip is showing for a reason
-    // that no longer exists, so hide it rather than strand it.
+    // (position:fixed, placed once from getBoundingClientRect). This tests FOCUS only, so a
+    // hover-shown tip always takes the hide branch — and that is the right outcome, not a gap.
+    // Measured with a real pointer: reversing a five-row list moved the trigger from y=10 to
+    // y=410, `:hover` on it went true → false, and the row that landed under the stationary
+    // cursor showed ITS own tooltip. The pointer does not follow a row, so a hover-shown tip
+    // has genuinely lost its reason. Focus does follow where the engine can move a row
+    // atomically, which is why that case re-anchors instead.
     if (this._shown) {
       if (this.contains(document.activeElement)) this._position();
       else this.hide();
