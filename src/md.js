@@ -252,6 +252,13 @@ export function renderMarkdown(src) {
  * rendered again, and re-parenting the element is not that: only a source change repaints,
  * so moving it costs no re-parse and its rendered nodes keep their identity.
  *
+ * CLONING a rendered one is NOT supported. `cloneNode()` copies the DOM, not the instance, so
+ * the copy starts with no source and adopts the children it was handed — which are the
+ * original's rendered OUTPUT. Measured: an inline-sourced and a `.value`-sourced element both
+ * clone to `<p>HeadingParagraph.</p>` from `<h1>Heading</h1><p>Paragraph.</p>`. Cloning
+ * DECLARATIVE markup works, because there the source is in the `value` attribute and
+ * attributes are copied. To duplicate a rendered one, build a new element and set `.value`.
+ *
  * @prop {string} value - The Markdown source. Set via the property (safe for
  *   untrusted text) or the `value` attribute. Default `""`. Setting it always wins over
  *   inline content and is the only way to change the source after mount.

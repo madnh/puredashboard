@@ -422,5 +422,50 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
   );
 }
 
+// ============ cloning a RENDERED element is not supported, and this pins why ============
+// cloneNode() copies the DOM, not the instance: the copy starts with no source and takes the
+// children it was handed, which are the original's rendered OUTPUT. The latch cannot help — a
+// clone is a fresh instance. Declarative markup clones correctly because there the source
+// lives in the `value` attribute and attributes are copied.
+{
+  const host = document.createElement("div");
+  document.body.append(host);
+  const SRC = "# Heading\n\nParagraph.";
+
+  for (const how of ["inline", "property"]) {
+    const el = document.createElement("puredashboard-markdown");
+    if (how === "inline") el.textContent = SRC;
+    else el.value = SRC;
+    host.append(el);
+    await tick();
+    const clone = el.cloneNode(true);
+    host.append(clone);
+    await tick();
+    ok(
+      clone.innerHTML !== el.innerHTML,
+      `clone: a rendered ${how}-sourced element does NOT clone faithfully (documented) — got ${clone.innerHTML}`,
+    );
+  }
+
+  const decl = document.createElement("puredashboard-markdown");
+  decl.setAttribute("value", SRC);
+  host.append(decl);
+  await tick();
+  const declClone = decl.cloneNode(true);
+  host.append(declClone);
+  await tick();
+  ok(
+    declClone.innerHTML === decl.innerHTML,
+    `clone: DECLARATIVE markup does clone faithfully — got ${declClone.innerHTML}`,
+  );
+
+  // the supported way to duplicate one
+  const built = document.createElement("puredashboard-markdown");
+  built.value = decl.value;
+  host.append(built);
+  await tick();
+  ok(built.innerHTML === decl.innerHTML, "clone: building a new element and setting .value works");
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
