@@ -322,6 +322,13 @@ the API may still change between minor versions.
   capture.
 
 ### Docs
+- **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`
+  scans `src/`, `test/` and `tools/` for a NUL in the first 8000 bytes — git's own rule for
+  classifying a blob as binary, after which `git log -p` and `git blame` show nobody its
+  diffs. Two such files shipped here and nothing in this repo could have said so; the
+  consuming app that found the first suggested making the check a test rather than a memory,
+  and it is worth more here than there because they vendor the output. Verified against the
+  tree before the fix: it names both offenders with their byte offsets.
 - **Corrected what a keyed `repeat()` row keeps.** `repeat()`'s own comment claimed rows
   whose key persists keep "any focus/scroll inside". True of a row left where it is, false
   of one the reconciler RELOCATES: relocation runs through `insertBefore`, a remove plus an
