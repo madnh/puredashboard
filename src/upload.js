@@ -127,7 +127,21 @@ class PuredashboardUpload extends Reactive {
     this._internals.setFormValue(fd);
   }
 
-  disconnectedCallback() { this._revokeAll(); }
+  // Revoking on disconnect is right — an element that leaves for good must not leak its
+  // object URLs. But a RELOCATION is a disconnect plus a reconnect (re-parenting a node is
+  // defined as a remove plus an insert, so a keyed repeat() reorder or a filter that leaves
+  // survivors non-adjacent runs both), and after it every `it.thumb` pointed at a blob that
+  // had been revoked. Measured before this: a row holding one image, relocated once, left the
+  // thumbnail permanently broken with the URL string unchanged — revoked, not replaced, and
+  // nothing rebuilt it. We still hold `it.file`, so mint them again on the way back in.
+  connectedCallback() {
+    if (this._revoked) {
+      this._revoked = false;
+      for (const it of this.items || []) if (it.thumb) it.thumb = this._mintThumb(it.file);
+    }
+    super.connectedCallback();
+  }
+  disconnectedCallback() { this._revokeAll(); this._revoked = true; }
   get files() { return (this.items || []).map((it) => it.file); }
   clear() { this._revokeAll(); this.items = []; this._syncForm(); this._emit("files", this.files); }
   remove(id) {
@@ -143,10 +157,13 @@ class PuredashboardUpload extends Reactive {
     this.emit(name, detail);
   }
 
+  _mintThumb(f) {
+    if (typeof URL === "undefined" || !URL.createObjectURL) return null;
+    try { return URL.createObjectURL(f); } catch { return null; }
+  }
   _wrap(f) {
     const isImage = (f.type || "").startsWith("image/");
-    let thumb = null;
-    if (isImage && typeof URL !== "undefined" && URL.createObjectURL) { try { thumb = URL.createObjectURL(f); } catch { /* */ } }
+    const thumb = isImage ? this._mintThumb(f) : null;
     return { id: ++uid, file: f, status: "ready", progress: 0, error: null, thumb, isImage, ext: extOf(f.name) };
   }
 

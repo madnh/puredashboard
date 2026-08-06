@@ -395,6 +395,64 @@ void uploadFile;
   );
 }
 
+// ============ upload: a relocation must not leave dead thumbnail URLs ============
+// disconnectedCallback revokes every object URL, which is right for an element that is
+// leaving. But a RELOCATION is a disconnect plus a reconnect — re-parenting a node is
+// defined as a remove plus an insert, so a keyed repeat() reorder or a filter runs both —
+// and after it every `it.thumb` still pointed at a blob that had been revoked. Measured in
+// Chrome before the fix: one image, one reorder, thumbnail permanently broken with the URL
+// string unchanged (revoked, not replaced). The File is still ours, so the URLs are
+// re-minted on the way back in.
+//
+// The blob API is STUBBED here on purpose. Node's URL.createObjectURL does not accept a
+// jsdom File, so unstubbed every thumb is null and none of this would be exercised — the
+// behaviour under test is "re-mint on reconnect", not the browser's blob implementation.
+{
+  const realCreate = URL.createObjectURL, realRevoke = URL.revokeObjectURL;
+  let n = 0;
+  const revoked = [];
+  URL.createObjectURL = () => `blob:stub/${++n}`;
+  URL.revokeObjectURL = (url) => { revoked.push(url); };
+  try {
+    const u = mount("puredashboard-upload");
+    u._add([new w.File([new Uint8Array(10)], "a.png", { type: "image/png" })]);
+    await tick();
+    const first = u.items[0].thumb;
+    ok(first === "blob:stub/1", `upload relocate: a thumbnail URL was minted — got ${first}`);
+
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    host.appendChild(u);            // MOVE — disconnect + reconnect
+    await tick();
+
+    ok(revoked.includes(first), "upload relocate: the old URL was revoked on disconnect");
+    const now = u.items[0].thumb;
+    ok(now === "blob:stub/2", `upload relocate: a FRESH url replaced it — got ${now}`);
+    ok(revoked.indexOf(now) === -1, "upload relocate: …and the fresh one has not been revoked");
+    ok(u.items[0].file instanceof w.File, "upload relocate: the File is still held, which is what makes re-minting possible");
+
+    // a second move keeps working — the flag is not one-shot
+    host.remove();
+    document.body.appendChild(u);
+    await tick();
+    ok(u.items[0].thumb === "blob:stub/3", `upload relocate: a second move re-mints again — got ${u.items[0].thumb}`);
+
+    // a non-image has no thumbnail and must not acquire one
+    const u2 = mount("puredashboard-upload");
+    u2._add([new w.File([new Uint8Array(4)], "notes.txt", { type: "text/plain" })]);
+    await tick();
+    ok(u2.items[0].thumb === null, "upload relocate: a non-image starts with no thumbnail");
+    const host2 = document.createElement("div");
+    document.body.appendChild(host2);
+    host2.appendChild(u2);
+    await tick();
+    ok(u2.items[0].thumb === null, "upload relocate: …and does not get one from a move");
+  } finally {
+    URL.createObjectURL = realCreate;
+    URL.revokeObjectURL = realRevoke;
+  }
+}
+
 // ============================ upload: managed upload (transport + status/events) ============================
 {
   const u = mount("puredashboard-upload");

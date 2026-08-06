@@ -172,6 +172,26 @@ the API may still change between minor versions.
   cannot pin is the benefit itself; that is browser-only and stated in the test.
 
 ### Fixed
+- **Moving a `<puredashboard-upload>` no longer kills its thumbnails.** `disconnectedCallback`
+  revokes every object URL, which is right for an element that is leaving — but a relocation
+  is a disconnect plus a reconnect, so a keyed `repeat()` reorder (or a filter leaving
+  survivors non-adjacent) ran both, and afterwards every `it.thumb` still pointed at a blob
+  that had been revoked. Measured in Chrome, one image, one reorder:
+
+      before   thumbnail OK -> BROKEN, url string unchanged (revoked, not replaced)
+      after    thumbnail OK -> OK,     url replaced with a fresh one
+
+  Nothing rebuilt them, and nothing reported it — the element re-rendered happily with an
+  `<img src>` pointing at a dead URL. The `File` was never lost, so the URLs are now re-minted
+  on reconnect. Identical on the version before the `moveBefore` work, so this was not caused
+  by it: a custom element gets `disconnectedCallback` on both relocation paths. Found by an
+  independent review as a code-reading hunch and confirmed by measurement here.
+
+  This is the third component in the same shape — after `popover`/`popconfirm`, which leaned
+  on the browser dropping a panel that left the document. The pattern worth naming: **a
+  component that frees a resource in `disconnectedCallback` and does not restore it in
+  `connectedCallback` is broken by relocation, not just by removal.** `tooltip` is the one
+  still open.
 - **Moving a `<puredashboard-markdown>` no longer re-parses it or rebuilds its DOM.**
   `connectedCallback` painted unconditionally, and re-parenting a node runs it again, so
   every move re-parsed the source and replaced the whole rendered subtree — for output that
