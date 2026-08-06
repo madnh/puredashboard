@@ -224,5 +224,55 @@ const OPTS = [
   ok(el._label("noResults") === "No results", "default noResults label kept when not overridden");
 }
 
+// ============ the light-dismiss listener must not outlive the element ============
+// _open_() registers a pointerdown handler on DOCUMENT, so it survives the element unless it
+// is taken back. Removing an open combobox left it registered for the page's lifetime,
+// holding a reference to the element and re-running _close() on every pointerdown.
+//
+// Tearing it down on disconnect must NOT close the popup, because a relocation is a
+// disconnect plus a reconnect and the user's open state has to survive that.
+{
+  const el = document.createElement("puredashboard-combobox");
+  el.options = ["a", "b"];
+  document.body.appendChild(el);
+  await tick();
+  await tick();
+
+  let hits = 0;
+  const inner = el._onOutside;
+  el._onOutside = (...a) => { hits++; return inner.apply(el, a); };
+
+  el._open_();
+  await tick();
+  ok(el._open === true, "dismiss listener: the popup is open");
+  document.dispatchEvent(new w.Event("pointerdown", { bubbles: true }));
+  await tick();
+  ok(hits > 0, "dismiss listener: it fires while the element is in the document");
+
+  // a RELOCATION keeps the open state and keeps working
+  el._open_();
+  await tick();
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  host.appendChild(el);
+  await tick();
+  await tick();
+  ok(el._open === true, "dismiss listener: a move does not close the popup");
+  hits = 0;
+  document.dispatchEvent(new w.Event("pointerdown", { bubbles: true }));
+  await tick();
+  ok(hits > 0, "dismiss listener: …and it still fires after the move");
+
+  // REMOVAL takes it back
+  el._open_();
+  await tick();
+  el.remove();
+  await tick();
+  hits = 0;
+  document.dispatchEvent(new w.Event("pointerdown", { bubbles: true }));
+  await tick();
+  ok(hits === 0, `dismiss listener: removing the element unregisters it — fired ${hits} time(s)`);
+}
+
 console.log(`combobox.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

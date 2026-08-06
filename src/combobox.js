@@ -192,6 +192,23 @@ class PuredashboardCombobox extends Reactive {
   }
   _onOutside = (e) => { if (!this.contains(e.target)) { this._close(); this.requestUpdate(); } };
 
+  // The light-dismiss listener lives on DOCUMENT, so it outlives this element unless we take
+  // it back. Removing the element while the popup is open left it registered for the page's
+  // lifetime — measured: it still fired after remove() — holding a reference to the element
+  // and re-running _close() on every pointerdown forever.
+  //
+  // Tear it down on disconnect WITHOUT touching `_open`: a RELOCATION is a disconnect plus a
+  // reconnect (re-parenting a node is a remove plus an insert), and closing here would drop a
+  // popup the user still has open. The state stays, the listener comes back on connect, and
+  // _syncPopup() — which already runs on every render — re-anchors the popup itself.
+  connectedCallback() {
+    super.connectedCallback();
+    if (this._open) document.addEventListener("pointerdown", this._onOutside, true);
+  }
+  disconnectedCallback() {
+    document.removeEventListener("pointerdown", this._onOutside, true);
+  }
+
   // ---- selection / commit --------------------------------------------------
   // Commit an option: set the value, fill the input with its label, close, and emit
   // `change` when the value actually changed.

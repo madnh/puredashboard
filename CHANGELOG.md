@@ -172,6 +172,19 @@ the API may still change between minor versions.
   cannot pin is the benefit itself; that is browser-only and stated in the test.
 
 ### Fixed
+- **`<puredashboard-combobox>` no longer leaves a listener on `document` after it is removed.**
+  Opening the popup registers a `pointerdown` handler on `document` for light-dismiss, and
+  nothing took it back — removing an open combobox left it registered for the page's lifetime,
+  holding a reference to the element and re-running `_close()` on every pointerdown. Measured:
+  it still fired after `remove()`.
+
+  This is the MIRROR of the relocation defects above rather than another instance of them:
+  those tore something down and never restored it; this sets something up and never tears it
+  down. It was found by sweeping the axis the relocation sweep does not cover — components with
+  no `disconnectedCallback` at all. The teardown deliberately does not touch `_open`, because a
+  relocation is a disconnect plus a reconnect and closing there would drop a popup the user
+  still has open; the listener is re-registered on connect, and `_syncPopup()` already
+  re-anchors the popup on every render.
 - **Moving a `<puredashboard-tooltip>` no longer kills it outright.** Its listeners are removed
   in `disconnectedCallback`, and the method that wired them was guarded to run "exactly once
   across reconnects" — so after a relocation the tooltip was permanently dead. Measured: focus
