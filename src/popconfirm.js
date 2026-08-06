@@ -179,6 +179,13 @@ class PuredashboardPopconfirm extends HTMLElement {
     this._wire();
     // Honour a declarative open="" once wired.
     if (this.hasAttribute("open")) this._setOpen(true);
+    // Re-anchor an already-open panel after a RELOCATION — see the same block in popover.js
+    // for the full reasoning. Short version: re-parenting is a remove plus an insert, so a
+    // keyed list moving this row re-runs connectedCallback; the line above short-circuits in
+    // _setOpen because the state already says open; and closing instead would run
+    // _returnFocus() (here also _focusPanel() on the way back in), taking focus off whatever
+    // the user was using and emitting a "close" nobody asked for.
+    if (this._open) { this._showPanel(); this._reposition(); }
   }
 
   disconnectedCallback() {

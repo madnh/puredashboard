@@ -137,6 +137,21 @@ class PuredashboardPopover extends HTMLElement {
     this._wire();
     // Honour a declarative open="" once wired.
     if (this.hasAttribute("open")) this._setOpen(true);
+    // A RELOCATION looks like a reconnect: re-parenting a node is a remove plus an insert,
+    // so any keyed list that moves this row (a repeat() reorder, and a filter that leaves
+    // survivors non-adjacent) runs this again. The panel is positioned once from
+    // getBoundingClientRect on open and has no reposition listener, so it needs re-anchoring
+    // to a trigger that has travelled. The line above cannot do it: _setOpen returns early
+    // when the state is already open. Re-assert the PANEL itself instead — deliberately not
+    // _setOpen, which would re-fire "open" and re-run the focus move. Closing here instead
+    // would be worse than doing nothing: _setOpen(false) runs _returnFocus(), which takes
+    // focus off whatever the user was actually using and puts it on our trigger, and emits a
+    // "close" nobody asked for. Same shape combobox.js already uses (_syncPopup on every
+    // render). Measured in Chrome, row sent to the end of a five-row list: without this the
+    // panel is left 331px from its trigger under an atomic move, or hidden while `open` and
+    // aria-expanded still say true under insertBefore; with it the gap after equals the gap
+    // at open, on both.
+    if (this._open) { this._showPanel(); this._reposition(); }
   }
 
   disconnectedCallback() {

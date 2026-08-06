@@ -179,5 +179,68 @@ void PuredashboardPopover;
   ok(el._label("dialog") === "Bảng", "labels override the default string");
 }
 
+// ============ a relocation must not lose the panel, and must not steal focus ========
+// Re-parenting a node is a remove plus an insert, so a keyed list that moves this row runs
+// connectedCallback again. The panel is anchored once, on open, from getBoundingClientRect,
+// and nothing repositions it afterwards — so an open popover has to re-assert itself here.
+// The obvious alternative, closing in disconnectedCallback, is what this pins AGAINST: it
+// would emit a close nobody asked for and _returnFocus() would pull focus onto our trigger,
+// off whatever the user was actually using.
+//
+// WHAT THIS DOES NOT COVER, stated so nobody reads it as more than it is: not the
+// re-anchoring. These assertions pass against the UNFIXED source too, because jsdom has no
+// layout — _reposition() bails on an all-zero rect — and the fallback path's `data-open`
+// marker is just an attribute that travels with the node. So the panel being in the RIGHT
+// PLACE afterwards is browser-only, measured in Chrome (row sent to the end of a five-row
+// list: without the fix the panel is left 331px from its trigger under an atomic move, or
+// hidden while `open` and aria-expanded still read true under insertBefore; with it the gap
+// after equals the gap at open). What these DO pin is the design: swap the fix for
+// close-on-disconnect and five of them go red.
+{
+  const { el, trigger, content } = mountPopover();
+  const outside = document.createElement("input");
+  document.body.appendChild(outside);
+
+  let closes = 0, opens = 0;
+  el.addEventListener("close", () => closes++);
+  el.addEventListener("open", () => opens++);
+
+  el.open = true;
+  await tick();
+  ok(el.open === true, "relocation: starts open");
+  ok(content.hasAttribute("data-open"), "relocation: panel starts shown");
+  outside.focus();
+  ok(document.activeElement === outside, "relocation: focus starts outside the popover");
+
+  closes = 0; opens = 0;
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  host.appendChild(el); // MOVE — remove + insert, connectedCallback runs again
+  await tick();
+
+  ok(el.open === true, "relocation: still open afterwards");
+  ok(content.hasAttribute("data-open"), "relocation: the panel is still shown, not orphaned");
+  ok(
+    trigger.getAttribute("aria-expanded") === "true",
+    "relocation: aria-expanded still agrees with the state",
+  );
+  ok(closes === 0, `relocation: no close event on a pure re-parent — got ${closes}`);
+  ok(opens === 0, `relocation: no open event either — got ${opens}`);
+  ok(
+    document.activeElement === outside,
+    "relocation: focus is left where it was, not pulled onto the trigger",
+  );
+
+  // and a CLOSED popover must not be woken up by the same path
+  el.open = false;
+  await tick();
+  closes = 0;
+  document.body.appendChild(el);
+  await tick();
+  ok(el.open === false, "relocation: a closed popover stays closed");
+  ok(!content.hasAttribute("data-open"), "relocation: …and its panel stays hidden");
+  ok(closes === 0, "relocation: …with no event");
+}
+
 console.log(`popover.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
