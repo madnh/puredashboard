@@ -144,5 +144,62 @@ void PuredashboardTooltip;
   ok(el2._label("tooltip") === "Tooltip", "default label kept when not overridden");
 }
 
+// ============ a relocation must not kill the tooltip ============================
+// disconnectedCallback removes every listener, and _wrap() is guarded to run once across
+// reconnects — so with the wiring inside that guard, a moved tooltip came back permanently
+// dead. Re-parenting a node is a remove plus an insert, so a keyed repeat() reorder or a
+// filter runs both; nothing about this needs a reorder to reach it.
+{
+  const el = document.createElement("puredashboard-tooltip");
+  const btn = document.createElement("button");
+  btn.textContent = "T";
+  el.appendChild(btn);
+  document.body.appendChild(el);
+  await tick();
+  el.text = "Tip";
+  el.delay = 0;
+  await tick();
+
+  btn.dispatchEvent(new w.Event("focusin", { bubbles: true }));
+  await tick();
+  ok(el._shown === true, "relocation: focus shows the tooltip before the move");
+  el.hide();
+  await tick();
+
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  host.appendChild(el);                     // MOVE — disconnect + reconnect
+  await tick();
+
+  btn.dispatchEvent(new w.Event("focusin", { bubbles: true }));
+  await tick();
+  ok(el._shown === true, "relocation: focus still shows it AFTER the move");
+  btn.dispatchEvent(new w.Event("focusout", { bubbles: true }));
+  await tick();
+  ok(el._shown === false, "relocation: focusout still hides it after the move");
+
+  // a second move keeps working — the rebind is not one-shot
+  document.body.appendChild(el);
+  await tick();
+  btn.dispatchEvent(new w.Event("focusin", { bubbles: true }));
+  await tick();
+  ok(el._shown === true, "relocation: a second move re-binds again");
+  el.hide();
+  await tick();
+
+  // a tip that was SHOWING when the row moved, with nothing focused, must not be stranded
+  btn.dispatchEvent(new w.Event("focusin", { bubbles: true }));
+  await tick();
+  ok(el._shown === true, "relocation: showing before the move");
+  const host2 = document.createElement("div");
+  document.body.appendChild(host2);
+  host2.appendChild(el);
+  await tick();
+  ok(
+    el._shown === false,
+    "relocation: a tip whose trigger no longer holds focus is hidden, not left floating",
+  );
+}
+
 console.log(`tooltip.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

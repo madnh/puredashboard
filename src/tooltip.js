@@ -113,8 +113,34 @@ class PuredashboardTooltip extends HTMLElement {
   // _label(key, …args) → localised string: this.labels override, else the default.
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
 
+  // _wrap() BUILDS the tip and must run once. Wiring is different: disconnectedCallback
+  // removes the listeners, and a RELOCATION is a disconnect plus a reconnect — re-parenting
+  // a node is defined as a remove plus an insert, so a keyed repeat() reorder or a filter
+  // runs both. With the wiring inside the once-only guard, a moved tooltip came back
+  // permanently dead: measured, focusin showed it before a move and did nothing after.
+  // Build once, wire on every connect.
   connectedCallback() {
     this._wrap();
+    this._bind();
+    // A tip that was SHOWING when the row moved is anchored to a trigger that has travelled
+    // (position:fixed, placed once from getBoundingClientRect). If the reason it was showing
+    // survived the move — the trigger still holds focus, which it does where the engine can
+    // move a row atomically — re-anchor it. If it did not, the tip is showing for a reason
+    // that no longer exists, so hide it rather than strand it.
+    if (this._shown) {
+      if (this.contains(document.activeElement)) this._position();
+      else this.hide();
+    }
+  }
+
+  _bind() {
+    // addEventListener de-dupes an identical (type, handler, capture) triple, so calling
+    // this on a connect that did not follow a disconnect is a no-op.
+    this.addEventListener("mouseenter", this._onEnter);
+    this.addEventListener("mouseleave", this._onLeave);
+    this.addEventListener("focusin", this._onEnter);
+    this.addEventListener("focusout", this._onLeave);
+    this.addEventListener("keydown", this._onKey);
   }
 
   // Adopt the author's single trigger child, create the tooltip node, and wire
@@ -147,12 +173,8 @@ class PuredashboardTooltip extends HTMLElement {
       if (!this.hasAttribute("aria-label")) this.setAttribute("aria-label", this._label("tooltip"));
     }
 
-    // Show on hover AND focus (keyboard parity); hide on the mirror events + Esc.
-    this.addEventListener("mouseenter", this._onEnter);
-    this.addEventListener("mouseleave", this._onLeave);
-    this.addEventListener("focusin", this._onEnter);
-    this.addEventListener("focusout", this._onLeave);
-    this.addEventListener("keydown", this._onKey);
+    // Listeners are wired by _bind() from connectedCallback, not here — see the comment
+    // there. Show on hover AND focus (keyboard parity); hide on the mirror events + Esc.
   }
 
   disconnectedCallback() {

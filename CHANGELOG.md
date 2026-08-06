@@ -172,6 +172,20 @@ the API may still change between minor versions.
   cannot pin is the benefit itself; that is browser-only and stated in the test.
 
 ### Fixed
+- **Moving a `<puredashboard-tooltip>` no longer kills it outright.** Its listeners are removed
+  in `disconnectedCallback`, and the method that wired them was guarded to run "exactly once
+  across reconnects" — so after a relocation the tooltip was permanently dead. Measured: focus
+  showed it before a move and did nothing after. Building the tip stays once-only; the wiring
+  now runs on every connect (`addEventListener` de-dupes an identical triple, so a connect that
+  did not follow a disconnect is a no-op). Nothing about this needs a reorder to reach it —
+  wrapping the element in a new parent is enough.
+
+  Its second half is the stranded tip: the panel is `position: fixed`, anchored once from
+  `getBoundingClientRect`, and nothing hid it on disconnect, so a relocation left it at the old
+  coordinates — measured at 331px away under `insertBefore` and 329px under an atomic move, so
+  this predates the `moveBefore` work rather than being caused by it. On reconnect a showing tip
+  is now re-anchored if its trigger still holds focus, and hidden if it does not: a tip showing
+  for a reason that no longer exists should go, not follow.
 - **Moving a `<puredashboard-upload>` no longer kills its thumbnails.** `disconnectedCallback`
   revokes every object URL, which is right for an element that is leaving — but a relocation
   is a disconnect plus a reconnect, so a keyed `repeat()` reorder (or a filter leaving
