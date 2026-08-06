@@ -245,10 +245,14 @@ export function renderMarkdown(src) {
  * Extends plain `HTMLElement` (not `Reactive`): it emits a prebuilt safe fragment,
  * not a reactive template. Setting `.value` coalesces the re-render to the next
  * animation frame, so a caller streaming tokens can set it per-token without an
- * O(n²) re-parse. With no `.value`, inline text content is used as the source.
+ * O(n²) re-parse. With no `.value`, inline text content is taken as the source — ONCE, on
+ * first connect. After that the children are the rendered output, not the source, so they
+ * are never re-read: to change the content later, set `.value`. Replacing the children by
+ * hand has no effect and is reverted on the next render.
  *
  * @prop {string} value - The Markdown source. Set via the property (safe for
- *   untrusted text) or the `value` attribute. Default `""`.
+ *   untrusted text) or the `value` attribute. Default `""`. Setting it always wins over
+ *   inline content and is the only way to change the source after mount.
  * @attr {string} value - Declarative form of `value`.
  *
  * @example

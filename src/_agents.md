@@ -294,19 +294,21 @@ const draw = () => renderResult(html`
   ${repeat(sections, (s) => s.n, (s) => html`<p class="row">§${s.n} ${s.text}</p>`)}`, outlet);
 ```
 - **Rows whose key persists keep their existing DOM nodes.** Only new keys build DOM,
-  only dropped keys remove it. On an **append or a removal**, surviving rows are not
-  touched at all: scroll, focus, and anything you hung on the node (`dataset`, listeners,
-  an "already seen" mark) all survive — which is what makes an append-only feed cheap.
-  Use it instead of `replaceChildren()` + rebuild; the bookkeeping you'd write by hand is
-  what keyed reuse gives you.
-- **A REORDER is different, and node identity will not tell you.** Moving a row goes
-  through `insertBefore`, which the DOM defines as a remove plus an insert. The node is
-  the same node afterwards — and focus and caret are gone, an inner scroll container is
-  back at 0, and any custom element in that row has had `connectedCallback` run again.
-  (Measured in Chrome: after reversing a keyed list the identity check passes while
-  `document.activeElement` is `<body>`.) So don't take "same node" as proof state
-  survived a reorder; check the state itself. Reordering rarely and appending often is
-  the shape this is cheapest for.
+  only dropped keys remove it. A row left where it is keeps everything: scroll, focus, and
+  anything you hung on the node (`dataset`, listeners, an "already seen" mark) — which is
+  what makes an append-only feed cheap. Use it instead of `replaceChildren()` + rebuild;
+  the bookkeeping you'd write by hand is what keyed reuse gives you.
+- **A row the diff RELOCATES keeps only the node, and node identity won't tell you.**
+  Relocation goes through `insertBefore`, which the DOM defines as a remove plus an
+  insert: the node is the same node afterwards, and focus is gone, an inner scroll
+  container is back at 0, and any custom element in that row has had `connectedCallback`
+  run again. (Selection offsets do survive — it's the focus that's lost.)
+- **Which rows get relocated is a property of the diff, not of what you called it.**
+  Measured: reversing `[1,2,3]` relocates the focused row; rotating it to `[2,3,1]`
+  relocates a different one and focus survives; a removal leaving survivors non-adjacent
+  (`[1,2,3,4,5] → [1,3,5]`) relocates rows just like a reorder; appends, prepends and
+  head/tail/contiguous removals relocate nothing. So don't reason from "this is only a
+  removal" — if a row holds focus or scroll you care about, check that, not the node.
 - **A binding whose value is unchanged writes nothing.** `.value="${query}"` will not
   overwrite half-typed text when some *other* property re-renders the view. You don't
   have to drop the binding to keep an input usable.

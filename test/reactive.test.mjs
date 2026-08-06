@@ -295,37 +295,75 @@ const tick = () => new Promise((r) => queueMicrotask(r));
 }
 
 // ============ what a keyed row keeps, and what it does NOT keep ==============
-// repeat() promises the NODE survives a reorder, and it does. State inside the node is a
-// separate question with a separate answer, and conflating the two is how a consuming app
-// concludes a reorder is free: the identity check passes while focus is already gone.
-// Relocation runs through insertBefore, which the DOM defines as a remove plus an insert.
+// repeat() promises the NODE survives, and it does. State INSIDE the node is a separate
+// question with a separate answer, and conflating the two is how a consuming app concludes
+// an update is free: the identity check passes while focus is already gone.
 //
-// The second assertion pins a LIMITATION, deliberately. If repeat() ever adopts the
-// native state-preserving Node.moveBefore(), this is the case that must fail — update it
-// together with the comments on repeat() and Row in src/reactive.js and the reorder bullet
-// in src/_agents.md, which all state the current behaviour.
+// The rule is not "reorders are lossy, edits are free". The reconciler RELOCATES some rows
+// and leaves others alone, relocation runs through insertBefore (a remove plus an insert),
+// and which rows it picks is a property of the diff — a reversal relocates the focused row,
+// a rotation relocates a different one, a removal leaving survivors non-adjacent relocates
+// rows just like a reorder. So pin the COUPLING (a row that was relocated is a row that
+// lost focus) rather than any one permutation, which would go red the moment a tie-break
+// in the two-end walk changed with no bug present.
+//
+// A custom element in each row is how the test OBSERVES relocation: its connectedCallback
+// runs again exactly when its row was torn out and re-inserted.
+class MoveProbe extends HTMLElement {
+  connectedCallback() { this.connects = (this.connects || 0) + 1; }
+}
+customElements.define("reactive-move-probe", MoveProbe);
 {
   const host = document.createElement("div");
   document.body.append(host);
   const view = (items) =>
-    html`<div>${repeat(items, (n) => n, (n) => html`<p><input id="i${n}" /></p>`)}</div>`;
-  renderResult(view([1, 2, 3]), host);
-  const target = host.querySelector("#i2");
-  target.focus();
-  ok(document.activeElement === target, "reorder: the input starts focused");
+    html`<div>${repeat(items, (n) => n, (n) =>
+      html`<p><reactive-move-probe id="p${n}"><input id="i${n}" /></reactive-move-probe></p>`)}</div>`;
 
-  renderResult(view([1, 2, 3]), host); // same order → in-place update, nothing moves
-  ok(document.activeElement === target, "in-place update keeps focus (the engine's promise)");
+  const round = (from, to, id) => {
+    host.replaceChildren();
+    host.__lit = null;
+    renderResult(view(from), host);
+    const probe = host.querySelector(`#p${id}`), input = host.querySelector(`#i${id}`);
+    const connectsBefore = probe.connects;
+    input.focus();
+    renderResult(view(to), host);
+    return {
+      sameNode: host.querySelector(`#i${id}`) === input,
+      relocated: probe.connects > connectsBefore,
+      focused: document.activeElement === input,
+      order: [...host.querySelectorAll("input")].map((i) => i.id).join(","),
+    };
+  };
 
-  renderResult(view([3, 2, 1]), host); // reversed → rows MOVE
-  ok(host.querySelector("#i2") === target, "reorder: the node itself survives, as documented");
+  const CASES = [
+    [[1, 2, 3], [3, 2, 1], 2, "i3,i2,i1", "reversal"],
+    [[1, 2, 3], [2, 3, 1], 2, "i2,i3,i1", "rotation"],
+    [[1, 2, 3, 4, 5], [1, 3, 5], 3, "i1,i3,i5", "non-contiguous removal"],
+    [[1, 2, 3], [1, 2, 3, 4], 2, "i1,i2,i3,i4", "append"],
+    [[1, 2, 3], [1, 2, 3], 2, "i1,i2,i3", "no-op update"],
+  ];
+  for (const [from, to, id, order, label] of CASES) {
+    const r = round(from, to, id);
+    ok(r.order === order, `${label}: the list really did end up [${order}] — got [${r.order}]`);
+    ok(r.sameNode, `${label}: the keyed row's own node survives`);
+    ok(
+      r.relocated !== r.focused,
+      `${label}: focus survives exactly when the row was NOT relocated ` +
+        `(relocated=${r.relocated}, focused=${r.focused})`,
+    );
+  }
+
+  // Tripwire. Today relocation tears the row out, so a reversal DOES reconnect a row —
+  // which is what makes the coupling above observable at all. If repeat() ever adopts the
+  // native state-preserving Element.moveBefore(), this is the assertion that must fail.
+  // When it does, update it together with the repeat() and Row comments in src/reactive.js
+  // and the relocation bullets in src/_agents.md, which all describe today's behaviour.
   ok(
-    document.activeElement !== target,
-    "reorder: focus does NOT survive — insertBefore is a remove + insert (documented limitation)",
-  );
-  ok(
-    [...host.querySelectorAll("input")].map((i) => i.id).join(",") === "i3,i2,i1",
-    "reorder: the rows really did reorder",
+    round([1, 2, 3], [3, 2, 1], 2).relocated,
+    "a reversal still relocates via insertBefore — if THIS fails, repeat() adopted an atomic " +
+      "move: update the repeat()/Row comments in src/reactive.js and the relocation bullets " +
+      "in src/_agents.md, then rewrite this case",
   );
 }
 

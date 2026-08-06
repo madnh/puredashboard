@@ -247,6 +247,80 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
     late.querySelector("h1")?.textContent === "Later",
     "connecting empty does not latch: children given later are still adopted",
   );
+
+  // The other side of adopting once, and the behaviour change worth knowing about:
+  // hand-replacing the children after the source has been adopted does NOT change the
+  // content. It cannot — after the first render the children are the output, so honouring
+  // them is exactly the bug above. `.value` is the way to change the source after mount.
+  const after = document.createElement("puredashboard-markdown");
+  after.textContent = "# One";
+  a.append(after);
+  await tick();
+  after.textContent = "# Two"; // author overwrites the rendered output by hand
+  b.append(after); // …and a move gives connectedCallback its chance to re-read
+  await tick();
+  ok(
+    after.value === "# One",
+    "children replaced after adoption are not re-read as the source — got " + after.value,
+  );
+  ok(
+    after.querySelector("h1")?.textContent === "One",
+    "…and the render still reflects the adopted source",
+  );
+  after.value = "# Two"; // the documented way to change it
+  await tick();
+  ok(
+    after.querySelector("h1")?.textContent === "Two",
+    "setting .value after adoption does change the content",
+  );
+}
+
+// ============ the `value` ATTRIBUTE path ==========================================
+// Declarative form from the JSDoc example. It had no coverage at all: deleting
+// attributeChangedCallback left every suite green, and it now interacts with the
+// adopt-once latch, so pin it here.
+{
+  const host = document.createElement("div");
+  document.body.append(host);
+
+  const attr = document.createElement("puredashboard-markdown");
+  attr.setAttribute("value", "# From attribute");
+  host.append(attr);
+  await tick();
+  ok(
+    attr.querySelector("h1")?.textContent === "From attribute",
+    "value attribute renders on connect",
+  );
+  attr.setAttribute("value", "## Changed by attribute");
+  await tick();
+  ok(
+    attr.querySelector("h2")?.textContent === "Changed by attribute" &&
+      !attr.querySelector("h1"),
+    "changing the value attribute re-renders",
+  );
+
+  // the attribute establishes a source, so inline children must never be adopted over it
+  const both = document.createElement("puredashboard-markdown");
+  both.setAttribute("value", "# Attribute wins");
+  both.append(document.createTextNode("# Inline loses"));
+  host.append(both);
+  await tick();
+  ok(
+    both.querySelector("h1")?.textContent === "Attribute wins",
+    "an element carrying a value attribute does not adopt its children",
+  );
+
+  // and the attribute still works as the escape hatch after inline adoption
+  const late = document.createElement("puredashboard-markdown");
+  late.textContent = "# Inline";
+  host.append(late);
+  await tick();
+  late.setAttribute("value", "# Via attribute");
+  await tick();
+  ok(
+    late.querySelector("h1")?.textContent === "Via attribute",
+    "the value attribute overrides an already-adopted inline source",
+  );
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

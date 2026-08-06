@@ -188,19 +188,23 @@ the API may still change between minor versions.
   capture.
 
 ### Docs
-- **Corrected what a keyed `repeat()` row keeps across a REORDER.** `repeat()`'s own
-  comment claimed rows whose key persists keep "any focus/scroll inside". True of an
-  in-place update, false of a move: relocation runs through `insertBefore`, a remove plus
-  an insert, so focus and caret are lost, an inner scroll container resets to 0, and a
-  custom element in the row is disconnected and reconnected. Measured in Chrome — after
-  reversing a keyed list the node-identity check passes while `document.activeElement` is
-  `<body>`. That is the trap: identity is the metric anyone checks first and it comes back
-  clean. Restated in `reactive.js` and `_agents.md`, and pinned in
-  `test/reactive.test.mjs` (in-place keeps focus, reorder does not).
-- `Row.moveBefore` is ours and built on `insertBefore`; it is not the native
-  `Node.moveBefore()` whose name it shares. Noted in place, with what adopting the native
-  one would and would not buy: it preserves focus, caret and inner scroll, but it is
-  Chrome/Edge 133+ and Firefox 144+ with no Safari, and it only skips
+- **Corrected what a keyed `repeat()` row keeps.** `repeat()`'s own comment claimed rows
+  whose key persists keep "any focus/scroll inside". True of a row left where it is, false
+  of one the reconciler RELOCATES: relocation runs through `insertBefore`, a remove plus an
+  insert, so focus is lost, an inner scroll container resets to 0, and a custom element in
+  the row is disconnected and reconnected. (Selection offsets survive — it is the focus
+  that goes.) And which rows get relocated is a property of the diff, not of what you
+  called the update: reversing `[1,2,3]` relocates the focused row, rotating it to
+  `[2,3,1]` does not, and a removal leaving survivors non-adjacent (`[1,2,3,4,5]` →
+  `[1,3,5]`) relocates rows just as a reorder does. That is the trap: node identity is the
+  metric anyone checks first and it comes back clean either way. Restated in `reactive.js`
+  and `_agents.md`; `test/reactive.test.mjs` pins the coupling — a row that was relocated
+  is a row that lost focus — across five diff shapes, rather than any one permutation.
+- `Row.moveBefore` is ours and built on `insertBefore`; it is not the native `moveBefore()`
+  whose name it shares. That one is on **`Element`**, not `Node` — called as
+  `parent.moveBefore(node, ref)`, detected as `"moveBefore" in Element.prototype`. Noted in
+  place, with what adopting it would and would not buy: it preserves focus and inner
+  scroll, but it is Chrome/Edge 133+ and Firefox 144+ with no Safari, and it only skips
   disconnected/connectedCallback for custom elements that opt in via
   `connectedMoveCallback()`.
 - **The parts engine is now documented in the file that SHIPS.** `repeat()` and
