@@ -152,8 +152,11 @@ the API may still change between minor versions.
   the whole time. Appends and prepends were already free and are unchanged.
 
   **This is a progressive enhancement, not a guarantee.** Chrome/Edge 133+ and Firefox 144+
-  have `moveBefore`; **Safari does not**, and there the fallback is exactly what this library
-  always did. So a UI that comes to depend on focus surviving a reorder will differ between
+  have `moveBefore`; **Safari does not**, and there RELOCATION is exactly what this library
+  always did — executed on Safari 26.5.2, not inferred: `moveBefore` absent, every relocation
+  through the fallback, focus lost, selection offsets kept, inner scroll to 0. Overlays are a
+  separate claim and DID change on Safari; see the popover entry. Firefox has the API and has
+  not been run. So a UI that comes to depend on focus surviving a reorder will differ between
   browsers — stated in `reactive.js` and `_agents.md` rather than left to be discovered.
   Detection is on the parent (`typeof parent.moveBefore === "function"`), at call time: the
   parent may be a `DocumentFragment`, and call-time detection is what lets the test shim the

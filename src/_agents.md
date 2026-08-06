@@ -307,9 +307,14 @@ const draw = () => renderResult(html`
   `focus=false scroll=0` with the iframe reloaded. Selection offsets survive either way; a
   custom element in the row is disconnected and reconnected on both paths. So this is a
   progressive enhancement, not a guarantee: if your UI depends on focus surviving a reorder,
-  it will differ between browsers, and Safari is the one that behaves as before. The version
-  numbers are compat data; only Chrome has actually been run, so Firefox is expected rather
-  than confirmed.
+  it will differ between browsers, and on Safari **relocation behaves exactly as it always
+  did** — measured, not inferred: `moveBefore` absent, 19 relocations all through the
+  fallback, focus lost, selection offsets kept, inner scroll back to 0, iframe reloaded.
+  That sentence is about RELOCATION only. Overlays did change on Safari: an open
+  `<puredashboard-popover>` used to vanish when its row moved (the browser dropped the panel
+  while `open` and `aria-expanded` stayed true) and now stays, re-anchored, with the same gap
+  it had at open — the same on both browsers. Executed: Chrome 149 and Safari 26.5.2. Firefox
+  has the API per compat data and has NOT been run, so it is expected rather than confirmed.
 - **If you cannot accept that difference**, capture `document.activeElement` and its
   `selectionStart`/`selectionEnd` before the update and restore them after — that part an app
   can do for itself. What it cannot do is restore an inner scroll position it never read, or

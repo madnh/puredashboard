@@ -148,12 +148,14 @@ function safeUrlAttr(name, val) {
 // destroys all three. Measured in Chrome: focus true/caret 3/scrollTop 60 and an iframe load
 // counter unchanged, against focus false/scrollTop 0/iframe reloaded on the fallback.
 //
-// Availability is Chrome/Edge 133+ and Firefox 144+, no Safari — that is COMPAT DATA, not
-// something run here. Only Chrome has been executed, on both paths. Firefox has the API and
-// nobody has confirmed it behaves as this comment says; Safari's fallback path is the one this
-// library always took, so it is not new, but it has not been executed either. Either way this
-// is an enhancement and not a swap: where the method is missing, the fallback below is exactly
-// what this library always did.
+// Availability is Chrome/Edge 133+ and Firefox 144+, no Safari — that is COMPAT DATA. What has
+// been EXECUTED is Chrome 149 (both paths) and Safari 26.5.2 (the fallback): `moveBefore`
+// absent, 19 relocations all through insertBefore, focus lost, selection offsets kept, inner
+// scroll to 0, iframe reloaded — what this comment promises, confirmed rather than assumed.
+// Firefox has the API and has NOT been run. Either way this is an enhancement and not a swap:
+// where the method is missing, the fallback below is exactly what this library always did, and
+// the eight diff shapes, the MutationObserver record and the custom-element callback log are
+// identical on both browsers.
 //
 // Detected on the PARENT, at call time — `typeof parent.moveBefore === "function"`. Not on
 // `Element.prototype`: `parent` here is `this.anchor.parentNode`, which may be a
