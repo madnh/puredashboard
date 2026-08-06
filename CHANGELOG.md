@@ -134,6 +134,19 @@ the API may still change between minor versions.
   so a field named `__proto__`/`constructor` can't corrupt it.
 
 ### Fixed
+- **Moving a `<puredashboard-markdown>` no longer re-parses it or rebuilds its DOM.**
+  `connectedCallback` painted unconditionally, and re-parenting a node runs it again, so
+  every move re-parsed the source and replaced the whole rendered subtree — for output that
+  was byte-identical. Node identity, and anything an app had hung on those nodes, was lost
+  for nothing; a keyed `repeat()` reorder paid it per row. A `_dirty` flag now separates
+  "has a source" from "has painted that source", which `_set` could not: a `.value` set
+  before the first connect needs painting and an already-painted element being moved does
+  not, and both are `_set === true`. One rule holds everywhere now — only a source change
+  repaints, and a move is not a source change. `_dirty` starts **true** so the first connect
+  still normalises whatever it was given, including whitespace-only children, which
+  otherwise never took the adopt branch and would have kept their raw text node.
+  Consequence worth knowing: children you replace by hand now survive a move too, where a
+  move used to silently repaint over them.
 - **Moving a `<puredashboard-markdown>` no longer destroys the markdown it was given.**
   Only the *inline* form was affected — source passed as the element's children rather
   than through `.value`. Re-parenting a node is a remove plus an insert, so

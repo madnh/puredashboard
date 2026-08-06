@@ -266,9 +266,12 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
     after.value === "# One",
     "children replaced after adoption are not re-read as the source — got " + after.value,
   );
+  // A move is not a source change, so it no longer repaints — the author's markup is still
+  // there. That is the same rule as the no-move case below, which is the point: nothing
+  // except a render replaces the children, and a move is not a render.
   ok(
-    after.querySelector("h1")?.textContent === "One",
-    "…and the render still reflects the adopted source",
+    after.innerHTML === "# Two",
+    "…and a move does not repaint over it either — got " + after.innerHTML,
   );
   after.value = "# Two"; // the documented way to change it
   await tick();
@@ -297,6 +300,77 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
   ok(
     held.querySelector("h1")?.textContent === "One",
     "…and the next render puts the adopted source back",
+  );
+}
+
+// ============ a move is not a source change, so it must not repaint ================
+// connectedCallback runs on every re-parent. Painting there unconditionally re-parsed the
+// markdown and replaced the whole rendered subtree on every move, for output that was
+// byte-identical — so node identity, and anything an app hung on those nodes, was lost for
+// nothing. `_dirty` is what separates "has a source" from "has painted that source";
+// `_set` cannot, because a `.value` set before the first connect and an already-painted
+// element being moved are both `_set === true`.
+{
+  const a = document.createElement("div"), b = document.createElement("div");
+  document.body.append(a, b);
+  let renders = 0;
+  const el = document.createElement("puredashboard-markdown");
+  const paint = el._render.bind(el);
+  el._render = (...args) => { renders++; return paint(...args); };
+
+  el.value = "# H\n\npara"; // set BEFORE connect: has a source, has not painted it
+  a.append(el);
+  await tick();
+  ok(renders === 1, "a source set before the first connect is painted on connect");
+  const firstChild = el.firstElementChild;
+
+  b.append(el);
+  await tick();
+  a.append(el);
+  await tick();
+  ok(renders === 1, "two moves cause no repaint — got " + renders + " renders");
+  ok(el.firstElementChild === firstChild, "…and the rendered nodes keep their identity");
+
+  el.remove(); // changed while disconnected: the paint is stale, so reconnect must repaint
+  el.value = "# Changed";
+  b.append(el);
+  await tick();
+  ok(renders === 2, "a source changed while disconnected is repainted on reconnect");
+  ok(el.querySelector("h1")?.textContent === "Changed", "…with the new source");
+}
+
+// ============ first connect normalises whatever it was given =======================
+// `_dirty` starts true precisely so this holds. Starting it false looks equivalent and is
+// not: a whitespace-only element never takes the adopt branch, so it would never be marked
+// dirty, never paint, and keep its raw whitespace text node — a silent divergence from
+// every other first connect.
+{
+  const host = document.createElement("div");
+  document.body.append(host);
+
+  const ws = document.createElement("puredashboard-markdown");
+  ws.textContent = " \n ";
+  host.append(ws);
+  await tick();
+  ok(
+    ws.childNodes.length === 0,
+    "whitespace-only children are normalised away on first connect — got " +
+      ws.childNodes.length + " node(s)",
+  );
+
+  const empty = document.createElement("puredashboard-markdown");
+  host.append(empty);
+  await tick();
+  ok(empty.childNodes.length === 0, "an element given nothing connects with no children");
+
+  // and neither of those latched a source, so children given later are still adopted
+  empty.remove();
+  empty.textContent = "# Later";
+  host.append(empty);
+  await tick();
+  ok(
+    empty.querySelector("h1")?.textContent === "Later",
+    "connecting empty leaves the element able to adopt children later",
   );
 }
 

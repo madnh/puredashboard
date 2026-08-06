@@ -248,8 +248,9 @@ export function renderMarkdown(src) {
  * O(n²) re-parse. With no `.value`, inline text content is taken as the source — ONCE, on
  * first connect. After that the children are the rendered output, not the source, so they
  * are never re-read: to change the content later, set `.value`. Replacing the children by
- * hand does NOT change the source — your markup stays on screen for as long as nothing
- * re-renders, and the adopted source replaces it the moment anything does.
+ * hand does NOT change the source — your markup stays on screen until the source is
+ * rendered again, and re-parenting the element is not that: only a source change repaints,
+ * so moving it costs no re-parse and its rendered nodes keep their identity.
  *
  * @prop {string} value - The Markdown source. Set via the property (safe for
  *   untrusted text) or the `value` attribute. Default `""`. Setting it always wins over
@@ -268,13 +269,18 @@ class PuredashboardMarkdown extends HTMLElement {
   // inert <template> content — i.e. BEFORE upgrade — which leaves a plain own-property
   // shadowing this accessor. Reconcile it through the setter on upgrade so
   // `<puredashboard-markdown .value=${md}>` inside another component works.
-  constructor() { super(); this._upgrade("value"); }
+  // `_dirty` starts TRUE so the first connect always paints, whatever the element was given
+  // — including nothing, and including whitespace-only children, which `_render` normalises
+  // away. Starting it false looked equivalent and is not: a whitespace-only element never
+  // takes the adopt branch below, so it would never be marked dirty, never render, and keep
+  // its raw whitespace text node. See _render for what clears it.
+  constructor() { super(); this._dirty = true; this._upgrade("value"); }
   _upgrade(p) { if (Object.prototype.hasOwnProperty.call(this, p)) { const v = this[p]; delete this[p]; this[p] = v; } }
   // Setting `.value` COALESCES the re-render to the next animation frame. So a caller
   // STREAMING tokens (e.g. an AI/agent response) may set `.value` on every token without
   // paying an O(n²) re-parse — only ~one render per frame runs, always of the latest
   // value. Safe-by-default: callers don't need to throttle/debounce themselves.
-  set value(v) { this._value = v == null ? "" : String(v); this._set = true; if (this.isConnected) this._schedule(); }
+  set value(v) { this._value = v == null ? "" : String(v); this._set = true; this._dirty = true; if (this.isConnected) this._schedule(); }
   get value() { return this._value || ""; }
   // `_set` means "a source has been established" — by the setter, or by adopting inline
   // children below. It must be latched in BOTH cases, because connectedCallback runs again
@@ -286,9 +292,17 @@ class PuredashboardMarkdown extends HTMLElement {
   // was gone for good and sibling blocks came back welded into one paragraph. Adopting
   // once is what keeps a move (a keyed repeat() reorder, a drag-drop, or just wrapping the
   // element in a new parent) from destroying the source it was given.
+  //
+  // `_dirty` answers the OTHER question — "has the current source been painted yet?" — and
+  // `_set` cannot stand in for it: a `.value` set before the first connect has a source and
+  // needs painting, while an already-painted one being moved has a source and must not be.
+  // Both are `_set === true`. Without the distinction every move re-parsed the markdown and
+  // replaced the whole rendered subtree, discarding node identity for output that was
+  // byte-identical. Guarding on it makes one rule hold everywhere: only a source change
+  // paints, and a move is not a source change.
   connectedCallback() {
-    if (!this._set && this.textContent.trim()) { this._value = this.textContent; this._set = true; }  // inline markdown, adopted once
-    this._render();   // first paint is synchronous; subsequent .value changes coalesce per frame
+    if (!this._set && this.textContent.trim()) { this._value = this.textContent; this._set = true; this._dirty = true; }  // inline markdown, adopted once
+    if (this._dirty) this._render();   // first paint is synchronous; subsequent .value changes coalesce per frame
   }
   attributeChangedCallback(name, _old, val) { if (name === "value") this.value = val; }
   _schedule() {
@@ -298,7 +312,7 @@ class PuredashboardMarkdown extends HTMLElement {
     if (typeof requestAnimationFrame === "function") requestAnimationFrame(run);   // browser: ~1 render/frame
     else queueMicrotask(run);                                                       // non-visual env (tests)
   }
-  _render() { this.replaceChildren(renderMarkdown(this._value || "")); }
+  _render() { this._dirty = false; this.replaceChildren(renderMarkdown(this._value || "")); }
 }
 customElements.define("puredashboard-markdown", PuredashboardMarkdown);
 export { PuredashboardMarkdown };
