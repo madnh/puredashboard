@@ -307,8 +307,12 @@ const draw = () => renderResult(html`
   Measured: reversing `[1,2,3]` relocates the focused row; rotating it to `[2,3,1]`
   relocates a different one and focus survives; a removal leaving survivors non-adjacent
   (`[1,2,3,4,5] → [1,3,5]`) relocates rows just like a reorder; appends, prepends and
-  head/tail/contiguous removals relocate nothing. So don't reason from "this is only a
-  removal" — if a row holds focus or scroll you care about, check that, not the node.
+  head/tail/contiguous removals relocate nothing. **That middle case is what a FILTER
+  does** — and it is the one that catches people, because nobody expects narrowing a list
+  to move the rows that survive it. Reported from a real app: filtering a 20-row list to 5
+  kept every surviving row as the same node and still dropped focus to `<body>`. So don't
+  reason from "this is only a removal" — if a row holds focus or scroll you care about,
+  check that, not the node.
 - **A binding whose value is unchanged writes nothing.** `.value="${query}"` will not
   overwrite half-typed text when some *other* property re-renders the view. You don't
   have to drop the binding to keep an input usable.
