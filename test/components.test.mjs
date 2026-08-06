@@ -421,23 +421,44 @@ void uploadFile;
   ok(el2.items.length === 1, "remove(id) still drops that FILE");
   ok(el2.isConnected === true, "…and leaves the element in the document");
 
-  // removeFile(id) is the name that cannot collide, and is what the docs point at.
-  const el3 = mount("puredashboard-upload");
-  el3.multiple = true;
-  el3._add([
-    new w.File([new Uint8Array(4)], "a.png", { type: "image/png" }),
-    new w.File([new Uint8Array(4)], "b.png", { type: "image/png" }),
-  ]);
-  await tick();
-  el3.removeFile(el3.items[0].id);
-  await tick();
-  ok(el3.items.length === 1, "removeFile(id) drops that file");
-  ok(el3.isConnected === true, "removeFile(id) never detaches the element");
+}
+
+// ============ upload: removeFile(id), the unambiguous name ============
+// In its own block on purpose. Inside the previous one, a runtime without removeFile threw
+// on the first call and the suite died before reaching the cases after it — so a revert
+// showed one FAIL and a crash instead of a countable list. A crash tells the next reader
+// less than named failures do.
+{
+  const hasRemoveFile =
+    typeof document.createElement("puredashboard-upload").removeFile === "function";
+  ok(hasRemoveFile, "removeFile(id) exists");
+
+  // GUARDED, not merely asserted. Asserting existence and then calling it anyway still throws
+  // on a runtime without it, and the suite dies before anything after this can report — which
+  // is exactly how a revert check came back as "one FAIL and a crash" instead of a countable
+  // list. I made that mistake once in this very block; the guard is the fix.
+  if (hasRemoveFile) {
+    const el3 = mount("puredashboard-upload");
+    el3.multiple = true;
+    el3._add([
+      new w.File([new Uint8Array(4)], "a.png", { type: "image/png" }),
+      new w.File([new Uint8Array(4)], "b.png", { type: "image/png" }),
+    ]);
+    await tick();
+    el3.removeFile(el3.items[0].id);
+    await tick();
+    ok(el3.items.length === 1, "removeFile(id) drops that file");
+    ok(el3.isConnected === true, "removeFile(id) never detaches the element");
+  }
 
   // Overloading `remove` is fragile and these are the edges, pinned as they behave rather
   // than as anyone would wish: an argument that matches no item is a silent no-op, and it
   // does NOT fall through to detaching — falling through would let a stale id nuke the whole
   // component, which is worse than doing nothing.
+}
+
+// ============ upload: the edges of the kept `remove` overload ============
+{
   const el4 = mount("puredashboard-upload");
   el4.multiple = true;
   el4._add([new w.File([new Uint8Array(4)], "a.png", { type: "image/png" })]);
@@ -453,6 +474,22 @@ void uploadFile;
   ok(el4.isConnected === true && el4.items.length === 1, "remove(staleId) is a no-op, not a detach");
   el4.remove();
   ok(el4.isConnected === false, "…and a bare remove() still detaches");
+
+  // The hazard the value test could not see: an argument that IS undefined. `up.remove(sel?.id)`
+  // with nothing selected is the ordinary migration case, and under `id === undefined` it
+  // detached the uploader silently.
+  const el5 = mount("puredashboard-upload");
+  el5.multiple = true;
+  el5._add([new w.File([new Uint8Array(4)], "a.png", { type: "image/png" })]);
+  await tick();
+  const nothingSelected = undefined;
+  el5.remove(nothingSelected);
+  await tick();
+  ok(
+    el5.isConnected === true,
+    "remove(undefined-VALUED argument) is a no-op — it must not detach the element",
+  );
+  ok(el5.items.length === 1, "…and drops no file either");
 }
 
 // ============ upload: a thumbnail added while disconnected must not be re-minted ============

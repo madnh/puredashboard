@@ -173,11 +173,18 @@ the API may still change between minor versions.
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
-  DOM's own `Element.remove()`. `remove(id)` keeps working, but overloading it is fragile and
-  the edges are now pinned as they behave: `remove(null)`, `remove(0)` and a stale id are
-  silent no-ops rather than detaching, because falling through to a detach would let one stale
-  id destroy the whole component. A callback that forwards an index (`el.remove(i)`) therefore
-  detaches nothing — `removeFile` exists so that ambiguity is avoidable.
+  DOM's own `Element.remove()`. `remove(id)` keeps working, and the kept overload now
+  discriminates on `arguments.length` rather than on the VALUE being `undefined` — the value
+  test could not tell "no argument" from "an argument that is undefined", so
+  `up.remove(sel?.id)` with nothing selected **detached the uploader from the page**, silently
+  and with no error. That is the ordinary migration idiom, and it is measured. The other edges
+  are pinned as they behave: `remove(null)`, `remove(0)` and a stale id are silent no-ops
+  rather than detaching, because falling through to a detach would let one stale id destroy the
+  whole component. A callback that forwards an index (`el.remove(i)`) therefore detaches
+  nothing — `removeFile` exists so that ambiguity is avoidable.
+  A thumbnail whose `createObjectURL` failed transiently also recovers now: the reconnect
+  re-mint keys on `isImage && !thumb` as well as on the revoked flag, where before a single
+  failure left the item without a thumbnail for the element's life.
 - **`<puredashboard-upload>.remove()` detaches the element again.** `remove(id)` drops a FILE —
   and `remove` is also `Element.prototype.remove()`, which this class was shadowing outright.
   So `uploadEl.remove()` was a no-op for the DOM, and that is a method the ENGINE calls:

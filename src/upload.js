@@ -140,7 +140,13 @@ class PuredashboardUpload extends Reactive {
     // stops being true of every item the moment one is ADDED while disconnected: that item's
     // thumb is live, and re-minting it overwrote a URL nobody revoked. Measured that way —
     // created=4 revoked=1 live=3 for 2 items, one leaked per disconnected add.
-    for (const it of this.items || []) if (it.thumbDead) { it.thumb = this._mintThumb(it.file); it.thumbDead = false; }
+    // `thumbDead` covers the revoke; `isImage && !thumb` covers a mint that FAILED. A
+    // transient createObjectURL failure used to be permanent — the item stayed an image with
+    // no thumbnail for the element's life, because _revokeAll only marks a truthy thumb, so
+    // the flag was never set. Retrying on reconnect costs one call and recovers it.
+    for (const it of this.items || []) if (it.thumbDead || (it.isImage && !it.thumb)) {
+      it.thumb = this._mintThumb(it.file); it.thumbDead = false;
+    }
     super.connectedCallback();
   }
   disconnectedCallback() { this._revokeAll(); }
@@ -174,7 +180,13 @@ class PuredashboardUpload extends Reactive {
   // shadowed Element's outright, a keyed row whose top node was an upload could never be
   // dropped — measured, [1,2,3] -> [1,3] left all three on screen.
   remove(id) {
-    if (id === undefined) { super.remove(); return; }
+    // arguments.length, NOT `id === undefined`. The value test cannot tell "no argument" from
+    // "an argument that happens to be undefined", and the second is the ordinary migration
+    // case: `up.remove(sel?.id)` or `up.remove(item?.id)` evaluates to remove(undefined) the
+    // first time nothing is selected, and under a value test that DETACHED the uploader from
+    // the page — silently, no error. Measured. arguments.length separates exactly the two
+    // contracts and nothing else.
+    if (arguments.length === 0) { super.remove(); return; }
     this.removeFile(id);
   }
   _revokeAll() { for (const it of this.items || []) if (it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } it.thumbDead = true; } }
