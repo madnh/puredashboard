@@ -367,16 +367,26 @@ customElements.define("reactive-move-probe", MoveProbe);
 
 // ============ the native atomic-move path, exercised through a shim ==================
 // Row.moveBefore prefers the native Element.moveBefore() when the PARENT has it. jsdom has
-// no such method, so without a shim this branch would ship with nothing in the runner
-// touching it — someone could revert it to insertBefore and every suite would stay green.
+// none, so without a shim this branch would ship with nothing in the runner touching it.
 //
-// The shim records the dispatch and delegates to insertBefore, so what these pin is that the
-// engine CALLS the native path when it is available, with the right nodes and the right
-// reference, and that order and node identity come out the same as the fallback's. They do
-// NOT pin the benefit — a shim cannot emulate a state-preserving move, and jsdom has no
-// focus-through-relocation, no scroll and no iframes to preserve. That half is browser-only
-// (measured in Chrome: focus true, caret 3, scrollTop 60, iframe not reloaded, against
-// focus false, scrollTop 0, iframe reloaded on the fallback).
+// A first version of this block asserted only THAT moveBefore was called, and an independent
+// review broke it with three mutants that all passed 68/0. The worst kept the dispatch and
+// re-did the whole row with insertBefore afterwards — every property that version checked
+// still held, and the entire benefit was gone, because an insertBefore after the move is a
+// remove plus an insert. Two more survived because each row was ONE node: with a single node
+// there is no interior order to reverse and no half-relocated row to heal, so "a mid-row
+// throw" was not testing a mid-row throw.
+//
+// Hence the two changes here. Rows carry TWO top-level nodes, so a row has an interior. And
+// the shim stamps who PLACED each node, so a later insertBefore over the same node is
+// visible — that is what turns "moveBefore was called" into "moveBefore is what put it
+// there".
+//
+// Still NOT pinned, and it cannot be: the benefit. A shim is not a state-preserving move,
+// and jsdom has no focus-through-relocation, no scroll and no iframes. That half is
+// browser-only — measured in Chrome on this engine, a reversal and a 20→5 filter both give
+// focus=true caret=3 scroll=60 with an iframe's document kept, against focus=false scroll=0
+// and a reloaded iframe on the fallback.
 //
 // The detect is read at CALL time precisely so this is possible; caching it at module load
 // would make the shim useless.
@@ -384,45 +394,72 @@ customElements.define("reactive-move-probe", MoveProbe);
   const host = document.createElement("div");
   document.body.append(host);
   const view = (items) =>
-    html`<div>${repeat(items, (n) => n, (n) => html`<p><input id="s${n}" /></p>`)}</div>`;
-  const order = () => [...host.querySelectorAll("input")].map((i) => i.id).join(",");
+    html`<div>${repeat(items, (n) => n, (n) =>
+      html`<p id="p${n}"><input id="s${n}" /></p><span id="t${n}"></span>`)}</div>`;
+  const order = () => [...host.querySelectorAll("p,span")].map((n) => n.id).join(",");
+  const rowNodes = () => [...host.querySelectorAll("p,span")];
 
   const proto = w.Element.prototype;
-  const had = Object.prototype.hasOwnProperty.call(proto, "moveBefore");
+  const hadOwn = Object.prototype.hasOwnProperty.call(proto, "moveBefore");
+  const origMove = proto.moveBefore;
+  const origInsert = proto.insertBefore;
   let calls = 0;
-  proto.moveBefore = function (node, ref) { calls++; return this.insertBefore(node, ref); };
+  const stampInsert = function (node, ref) { node.__placer = "insert"; return origInsert.call(this, node, ref); };
+  const stampMove = function (node, ref) { calls++; node.__placer = "move"; return origInsert.call(this, node, ref); };
   try {
+    proto.insertBefore = stampInsert;
+    proto.moveBefore = stampMove;
+
     renderResult(view([1, 2, 3, 4, 5]), host);
     const kept = host.querySelector("#s2");
     calls = 0;
+    for (const n of rowNodes()) n.__placer = null;
     renderResult(view([5, 4, 3, 2, 1]), host);
-    ok(calls > 0, `native path: relocations dispatch through moveBefore — got ${calls} calls`);
-    ok(order() === "s5,s4,s3,s2,s1", `native path: the list reordered — got ${order()}`);
-    ok(host.querySelector("#s2") === kept, "native path: node identity is preserved");
 
-    // A HierarchyRequestError mid-row must be recovered by redoing the whole row, leaving
-    // the DOM where the fallback would have left it.
+    ok(calls > 0, `native path: relocations dispatch through moveBefore — got ${calls} calls`);
+    ok(
+      order() === "p5,t5,p4,t4,p3,t3,p2,t2,p1,t1",
+      `native path: order after reversal — got ${order()}`,
+    );
+    ok(host.querySelector("#s2") === kept, "native path: node identity is preserved");
+    const reInserted = rowNodes().filter((n) => n.__placer === "insert").map((n) => n.id);
+    ok(
+      reInserted.length === 0,
+      `native path: no relocated node was re-placed by insertBefore — got ${reInserted.join(",") || "none"}`,
+    );
+
+    // A HierarchyRequestError on the SECOND NODE of a row leaves that row half-relocated;
+    // the catch has to redo the whole row. With two-node rows the throw lands where it is
+    // supposed to, which is what makes this assertion mean anything.
     let n = 0;
     proto.moveBefore = function (node, ref) {
       calls++;
       if (++n === 2) { const e = new Error("nope"); e.name = "HierarchyRequestError"; throw e; }
-      return this.insertBefore(node, ref);
+      node.__placer = "move";
+      return origInsert.call(this, node, ref);
     };
     calls = 0;
     renderResult(view([1, 2, 3, 4, 5]), host);
     ok(calls > 0, "native path: a throwing move was still attempted");
-    ok(order() === "s1,s2,s3,s4,s5", `native path: a mid-row throw still lands correctly — got ${order()}`);
+    ok(
+      order() === "p1,t1,p2,t2,p3,t3,p4,t4,p5,t5",
+      `native path: a mid-row throw is healed by redoing the row — got ${order()}`,
+    );
 
     // …but any OTHER error is a bug in our loop and must not be swallowed.
-    proto.moveBefore = function () { const e = new TypeError("boom"); throw e; };
+    proto.moveBefore = function () { throw new TypeError("boom"); };
     let threw = null;
     try { renderResult(view([3, 1, 2, 5, 4]), host); } catch (e) { threw = e && e.name; }
     ok(threw === "TypeError", `native path: a non-HierarchyRequestError propagates — got ${threw}`);
   } finally {
-    if (had) delete proto.moveBefore;
+    proto.insertBefore = origInsert;
+    if (hadOwn) proto.moveBefore = origMove;
     else delete proto.moveBefore;
   }
-  ok(typeof w.Element.prototype.moveBefore === "undefined", "native path: the shim is cleaned up");
+  ok(
+    proto.insertBefore === origInsert && (hadOwn ? proto.moveBefore === origMove : !("moveBefore" in proto)),
+    "native path: both shims are restored, whichever the runtime had to begin with",
+  );
 }
 
 // ============ the two halves of in-place diffing, as documented ==============

@@ -308,6 +308,10 @@ const draw = () => renderResult(html`
   custom element in the row is disconnected and reconnected on both paths. So this is a
   progressive enhancement, not a guarantee: if your UI depends on focus surviving a reorder,
   it will differ between browsers, and Safari is the one that behaves as before.
+- **If you cannot accept that difference**, capture `document.activeElement` and its
+  `selectionStart`/`selectionEnd` before the update and restore them after — that part an app
+  can do for itself. What it cannot do is restore an inner scroll position it never read, or
+  un-reload an `<iframe>`; those are only preserved where the atomic move exists.
 - **Which rows get relocated is a property of the diff, not of what you called it.**
   Measured: reversing `[1,2,3]` relocates the focused row; rotating it to `[2,3,1]`
   relocates a different one and focus survives; a removal leaving survivors non-adjacent
