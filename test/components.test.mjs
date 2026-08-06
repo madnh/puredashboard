@@ -441,8 +441,14 @@ void uploadFile;
   // The record, because two commit messages got it wrong. e4c7fa8 claimed this file "fails 5"
   // against the pre-fix source; it measured as ONE fail plus `TypeError: el3.removeFile is not
   // a function`, and the run never reached the rest. b9c633e corrected that — and named the
-  // wrong commit, 4275413 instead of e4c7fa8. With the guard in place the same revert now
-  // completes and names SEVEN failures, which is the number worth carrying.
+  // wrong commit, 4275413 instead of e4c7fa8.
+  //
+  // The count depends on WHICH base you revert to, and "pre-fix" does not name one:
+  //   base at or before 6ff971d   88 passed, 7 failed
+  //   base 1958003 … b73179d      92 passed, 3 failed
+  // Both are honest, measuring different amounts of the work. What the guard fixed is the part
+  // that does NOT vary: the suite now COMPLETES at every base, where before it died after the
+  // first failure. That is the property worth keeping.
   if (hasRemoveFile) {
     const el3 = mount("puredashboard-upload");
     el3.multiple = true;
@@ -475,9 +481,20 @@ void uploadFile;
   el4.remove(0);
   await tick();
   ok(el4.isConnected === true && el4.items.length === 1, "remove(0) is a no-op — ids start at 1");
+  let filesEvents = 0;
+  el4.addEventListener("files", () => filesEvents++);
   el4.remove(99999);
   await tick();
   ok(el4.isConnected === true && el4.items.length === 1, "remove(staleId) is a no-op, not a detach");
+  ok(filesEvents === 0, `remove(staleId) emits no files event — got ${filesEvents}`);
+  el4.removeFile(99999);
+  await tick();
+  ok(filesEvents === 0, `removeFile(staleId) emits no files event either — got ${filesEvents}`);
+  el4.removeFile(el4.items[0].id);
+  await tick();
+  ok(filesEvents === 1, `…but a real removal does emit — got ${filesEvents}`);
+  el4._add([new w.File([new Uint8Array(4)], "b.png", { type: "image/png" })]);
+  await tick();
   el4.remove();
   ok(el4.isConnected === false, "…and a bare remove() still detaches");
 

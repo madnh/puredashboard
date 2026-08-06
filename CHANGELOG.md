@@ -182,6 +182,9 @@ the API may still change between minor versions.
   rather than detaching, because falling through to a detach would let one stale id destroy the
   whole component. A callback that forwards an index (`el.remove(i)`) therefore detaches
   nothing — `removeFile` exists so that ambiguity is avoidable.
+  A miss no longer announces a change either: `removeFile(id)` with an id that matches nothing
+  — and therefore `remove(null)`, `remove(0)` and a stale id — used to sync the form and emit
+  `files` with the list untouched, waking any consumer listening on that event for nothing.
   A thumbnail whose `createObjectURL` failed transiently also recovers now: the reconnect
   re-mint keys on `isImage && !thumb` as well as on the revoked flag, where before a single
   failure left the item without a thumbnail for the element's life.

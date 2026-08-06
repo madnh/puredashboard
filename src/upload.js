@@ -167,7 +167,11 @@ class PuredashboardUpload extends Reactive {
   /** Drop one selected file by its `id` (revokes its thumbnail). */
   removeFile(id) {
     const it = (this.items || []).find((x) => x.id === id);
-    if (it && it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } }
+    // A MISS changes nothing, so it must not announce a change. This used to sync the form and
+    // emit `files` with the list untouched — a consumer syncing on that event got a no-op
+    // wake, and remove(null), remove(0) and a stale id all produced one.
+    if (!it) return;
+    if (it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } }
     this.items = (this.items || []).filter((x) => x.id !== id);
     this._syncForm(); this._emit("files", this.files);
   }
