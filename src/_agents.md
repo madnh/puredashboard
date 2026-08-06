@@ -294,10 +294,19 @@ const draw = () => renderResult(html`
   ${repeat(sections, (s) => s.n, (s) => html`<p class="row">§${s.n} ${s.text}</p>`)}`, outlet);
 ```
 - **Rows whose key persists keep their existing DOM nodes.** Only new keys build DOM,
-  only dropped keys remove it. So scroll position, focus inside a row, and anything you
-  hung on the node (`dataset`, listeners, an "already seen" mark) survive an append —
-  which is what makes an append-only feed cheap. Use it instead of `replaceChildren()`
-  + rebuild; the bookkeeping you'd write by hand is what keyed reuse gives you.
+  only dropped keys remove it. On an **append or a removal**, surviving rows are not
+  touched at all: scroll, focus, and anything you hung on the node (`dataset`, listeners,
+  an "already seen" mark) all survive — which is what makes an append-only feed cheap.
+  Use it instead of `replaceChildren()` + rebuild; the bookkeeping you'd write by hand is
+  what keyed reuse gives you.
+- **A REORDER is different, and node identity will not tell you.** Moving a row goes
+  through `insertBefore`, which the DOM defines as a remove plus an insert. The node is
+  the same node afterwards — and focus and caret are gone, an inner scroll container is
+  back at 0, and any custom element in that row has had `connectedCallback` run again.
+  (Measured in Chrome: after reversing a keyed list the identity check passes while
+  `document.activeElement` is `<body>`.) So don't take "same node" as proof state
+  survived a reorder; check the state itself. Reordering rarely and appending often is
+  the shape this is cheapest for.
 - **A binding whose value is unchanged writes nothing.** `.value="${query}"` will not
   overwrite half-typed text when some *other* property re-renders the view. You don't
   have to drop the binding to keep an input usable.

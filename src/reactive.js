@@ -54,8 +54,19 @@ export const isResult = (x) => !!(x && x[RESULT]);
 
 // repeat(items, keyFn, tmplFn) — keyed list directive (like lit's repeat). Use as a
 // child binding: ${repeat(rows, (r) => r.id, (r, i) => html`...`)}. On update, rows
-// whose key persists keep their existing DOM node (and any focus/scroll inside) and
-// are MOVED, not rebuilt; only added/removed/changed rows touch the DOM.
+// whose key persists keep their existing DOM node and are MOVED, not rebuilt; only
+// added/removed/changed rows touch the DOM.
+//
+// What "keeps its node" does and does NOT buy you. A row updated IN PLACE (same key,
+// same position) keeps everything: focus, caret, scroll, and any state you hung on the
+// node. A row that MOVES keeps only the node — relocation goes through insertBefore,
+// which the DOM defines as a remove plus an insert, so focus and caret are lost, an
+// inner scroll container resets to 0, and a custom element inside the row is
+// disconnected and reconnected (its connectedCallback runs again). Measured in Chrome:
+// after reversing a keyed list, the node identity check passes while activeElement has
+// fallen back to <body>. Node identity is therefore NOT a proxy for state surviving a
+// reorder — check the state you actually care about. Appends and removals do not move
+// surviving rows and cost none of this.
 export function repeat(items, keyFn, tmplFn) { return { [REPEAT]: true, items, keyFn, tmplFn }; }
 const isRepeat = (x) => !!(x && x[REPEAT]);
 
@@ -108,8 +119,17 @@ function safeUrlAttr(name, val) {
 }
 
 // Row — one keyed item inside a repeat: its own anchor comment plus the nodes before
-// it. update() re-binds in place when the template matches (keeping the live nodes,
-// so focus survives); moveBefore() relocates the whole row in one shot.
+// it. update() re-binds in place when the template matches (keeping the live nodes, so
+// focus survives); moveBefore() relocates the whole row in one shot.
+//
+// NOTE the method below is ours and is built on insertBefore — it is not the native
+// Node.moveBefore(), whose name it shares. The native one is a state-preserving atomic
+// move (focus, caret and inner scroll all survive; measured in Chrome 149) but it is
+// Chrome/Edge 133+ and Firefox 144+ only, with no Safari, so adopting it would be a
+// feature-detected enhancement rather than a swap. It also only skips
+// disconnected/connectedCallback for custom elements that OPT IN by defining
+// connectedMoveCallback(); one that does not still gets the old pair, so it would not on
+// its own spare a component inside a row from re-running its connect logic.
 class Row {
   constructor(key) { this.key = key; this.anchor = document.createComment("row"); this.nodes = []; this.inst = null; }
   firstNode() { return this.nodes.length ? this.nodes[0] : this.anchor; }

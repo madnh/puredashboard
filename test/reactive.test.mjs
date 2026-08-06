@@ -294,6 +294,41 @@ const tick = () => new Promise((r) => queueMicrotask(r));
   );
 }
 
+// ============ what a keyed row keeps, and what it does NOT keep ==============
+// repeat() promises the NODE survives a reorder, and it does. State inside the node is a
+// separate question with a separate answer, and conflating the two is how a consuming app
+// concludes a reorder is free: the identity check passes while focus is already gone.
+// Relocation runs through insertBefore, which the DOM defines as a remove plus an insert.
+//
+// The second assertion pins a LIMITATION, deliberately. If repeat() ever adopts the
+// native state-preserving Node.moveBefore(), this is the case that must fail — update it
+// together with the comments on repeat() and Row in src/reactive.js and the reorder bullet
+// in src/_agents.md, which all state the current behaviour.
+{
+  const host = document.createElement("div");
+  document.body.append(host);
+  const view = (items) =>
+    html`<div>${repeat(items, (n) => n, (n) => html`<p><input id="i${n}" /></p>`)}</div>`;
+  renderResult(view([1, 2, 3]), host);
+  const target = host.querySelector("#i2");
+  target.focus();
+  ok(document.activeElement === target, "reorder: the input starts focused");
+
+  renderResult(view([1, 2, 3]), host); // same order → in-place update, nothing moves
+  ok(document.activeElement === target, "in-place update keeps focus (the engine's promise)");
+
+  renderResult(view([3, 2, 1]), host); // reversed → rows MOVE
+  ok(host.querySelector("#i2") === target, "reorder: the node itself survives, as documented");
+  ok(
+    document.activeElement !== target,
+    "reorder: focus does NOT survive — insertBefore is a remove + insert (documented limitation)",
+  );
+  ok(
+    [...host.querySelectorAll("input")].map((i) => i.id).join(",") === "i3,i2,i1",
+    "reorder: the rows really did reorder",
+  );
+}
+
 // ============ the two halves of in-place diffing, as documented ==============
 // docs/ARCHITECTURE.md and src/_agents.md promise a consuming app two things about
 // keeping an <input> usable. Pin both, because the NEGATIVE one is what an app hits

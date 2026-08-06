@@ -134,6 +134,17 @@ the API may still change between minor versions.
   so a field named `__proto__`/`constructor` can't corrupt it.
 
 ### Fixed
+- **Moving a `<puredashboard-markdown>` no longer destroys the markdown it was given.**
+  Only the *inline* form was affected — source passed as the element's children rather
+  than through `.value`. Re-parenting a node is a remove plus an insert, so
+  `connectedCallback` runs again; the inline fallback re-read `textContent`, which by then
+  was the element's own rendered output. `# Heading` had become an `<h1>` whose text is
+  `Heading`, so the hash was gone for good and sibling blocks came back welded into one
+  paragraph — `<h1>Heading</h1><p>Paragraph.</p>` → `<p>HeadingParagraph.</p>`, and moving
+  again could not recover it. The source is now adopted once. Reported against a keyed
+  `repeat()` reorder, but it needed neither: any re-parent did it, including wrapping the
+  element in a new node. A sweep of all 63 registered tags found no other component whose
+  content changes on a move. `.value`-sourced markdown was never affected.
 - **A wrapping `<label>` no longer names the WRONG control.** Every form-associated
   component mirrors a wrapping `<label>` onto its inner control as `aria-labelledby`,
   stamping that label with an id when it has none. The id came from a `let labelId = 0`
@@ -177,6 +188,21 @@ the API may still change between minor versions.
   capture.
 
 ### Docs
+- **Corrected what a keyed `repeat()` row keeps across a REORDER.** `repeat()`'s own
+  comment claimed rows whose key persists keep "any focus/scroll inside". True of an
+  in-place update, false of a move: relocation runs through `insertBefore`, a remove plus
+  an insert, so focus and caret are lost, an inner scroll container resets to 0, and a
+  custom element in the row is disconnected and reconnected. Measured in Chrome — after
+  reversing a keyed list the node-identity check passes while `document.activeElement` is
+  `<body>`. That is the trap: identity is the metric anyone checks first and it comes back
+  clean. Restated in `reactive.js` and `_agents.md`, and pinned in
+  `test/reactive.test.mjs` (in-place keeps focus, reorder does not).
+- `Row.moveBefore` is ours and built on `insertBefore`; it is not the native
+  `Node.moveBefore()` whose name it shares. Noted in place, with what adopting the native
+  one would and would not buy: it preserves focus, caret and inner scroll, but it is
+  Chrome/Edge 133+ and Firefox 144+ with no Safari, and it only skips
+  disconnected/connectedCallback for custom elements that opt in via
+  `connectedMoveCallback()`.
 - **The parts engine is now documented in the file that SHIPS.** `repeat()` and
   `renderResult()` are exported and work on any container — no `Reactive` subclass
   needed — but `_agents.md` never mentioned either, scoped authoring out ("only relevant

@@ -190,5 +190,64 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
   );
 }
 
+// ============ moving the element must not destroy the markdown it was given =========
+// Re-parenting is a remove + an insert, so connectedCallback runs AGAIN — on a keyed
+// repeat() reorder, a drag-drop, or just wrapping the element in a new parent. On that
+// second run the children are our own rendered output, not the source. Re-reading them
+// fed the render back in as markdown and the source was gone for good.
+{
+  const a = document.createElement("div"),
+    b = document.createElement("div");
+  document.body.append(a, b);
+
+  // source given as CHILDREN — the case that used to corrupt
+  const inline = document.createElement("puredashboard-markdown");
+  inline.textContent = "# Heading\n\nParagraph.";
+  a.append(inline);
+  await tick();
+  const first = inline.innerHTML;
+  ok(
+    first === "<h1>Heading</h1><p>Paragraph.</p>",
+    "inline markdown renders on first connect: " + first,
+  );
+  b.append(inline); // MOVE
+  await tick();
+  ok(
+    inline.innerHTML === first,
+    "inline markdown survives a move (was: heading lost, blocks welded) — got " +
+      inline.innerHTML,
+  );
+  a.append(inline); // and again, since the old bug was cumulative
+  await tick();
+  ok(inline.innerHTML === first, "inline markdown survives a second move");
+  ok(
+    inline.value === "# Heading\n\nParagraph.",
+    "the adopted source itself is still the markdown, not the rendered text",
+  );
+
+  // source given as .value — must be unaffected either way
+  const prop = document.createElement("puredashboard-markdown");
+  prop.value = "# Heading\n\nParagraph.";
+  a.append(prop);
+  await tick();
+  const propFirst = prop.innerHTML;
+  b.append(prop);
+  await tick();
+  ok(prop.innerHTML === propFirst, ".value-sourced markdown survives a move");
+
+  // an element connected EMPTY must still accept children as its source later
+  const late = document.createElement("puredashboard-markdown");
+  a.append(late);
+  await tick();
+  late.remove();
+  late.textContent = "# Later";
+  b.append(late);
+  await tick();
+  ok(
+    late.querySelector("h1")?.textContent === "Later",
+    "connecting empty does not latch: children given later are still adopted",
+  );
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

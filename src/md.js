@@ -271,8 +271,18 @@ class PuredashboardMarkdown extends HTMLElement {
   // value. Safe-by-default: callers don't need to throttle/debounce themselves.
   set value(v) { this._value = v == null ? "" : String(v); this._set = true; if (this.isConnected) this._schedule(); }
   get value() { return this._value || ""; }
+  // `_set` means "a source has been established" — by the setter, or by adopting inline
+  // children below. It must be latched in BOTH cases, because connectedCallback runs again
+  // every time the element is re-parented: insertBefore/appendChild of a node that already
+  // has a parent is defined as a remove followed by an insert, so a move disconnects and
+  // reconnects the whole subtree. On that second run our children are no longer the source
+  // — they are our own rendered output — and re-reading them fed the render back in as
+  // markdown: `# Heading` had become an <h1> whose textContent is `Heading`, so the hash
+  // was gone for good and sibling blocks came back welded into one paragraph. Adopting
+  // once is what keeps a move (a keyed repeat() reorder, a drag-drop, or just wrapping the
+  // element in a new parent) from destroying the source it was given.
   connectedCallback() {
-    if (!this._set && this.textContent.trim()) this._value = this.textContent;   // inline markdown fallback
+    if (!this._set && this.textContent.trim()) { this._value = this.textContent; this._set = true; }  // inline markdown, adopted once
     this._render();   // first paint is synchronous; subsequent .value changes coalesce per frame
   }
   attributeChangedCallback(name, _old, val) { if (name === "value") this.value = val; }
