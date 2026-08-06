@@ -129,15 +129,38 @@ function safeUrlAttr(name, val) {
 // focus survives); moveBefore() relocates the whole row in one shot.
 //
 // NOTE the method below is ours and is built on insertBefore — it is not the native
-// moveBefore(), whose name it shares. That one lives on Element (and Document /
-// DocumentFragment), NOT on Node: it is called as parent.moveBefore(node, ref) and
-// feature-detected as `"moveBefore" in Element.prototype`. It performs a state-preserving
-// atomic move — focus and inner scroll both survive (measured in Chrome) — but it is
-// Chrome/Edge 133+ and Firefox 144+ only, with no Safari, so adopting it would be a
-// feature-detected enhancement rather than a swap. It also only skips
-// disconnected/connectedCallback for custom elements that OPT IN by defining
-// connectedMoveCallback(); one that does not still gets the old pair, so it would not on
-// its own spare a component inside a row from re-running its connect logic.
+// moveBefore(), whose name it shares. That one performs a state-preserving atomic move:
+// focus, an inner scroll position and an <iframe>'s loaded document all survive it
+// (measured in Chrome), where insertBefore destroys all three. Chrome/Edge 133+ and
+// Firefox 144+, no Safari, so adopting it would be a feature-detected enhancement rather
+// than a swap.
+//
+// Detect it on the PARENT, at call time — `typeof parent.moveBefore === "function"`. Not
+// on `Element.prototype`: `parent` here is `this.anchor.parentNode`, which may be a
+// DocumentFragment, and `test/reactive.test.mjs` copies only six jsdom globals with
+// `Element` not among them, so a detect written that way throws ReferenceError in the only
+// runner this repo has. Detecting at call time is also what lets a test shim the dispatch;
+// caching the answer at module load pins nothing.
+//
+// It is NOT a free swap, and the reason is inside this library rather than outside it.
+// popover.js positions its panel ONCE, from getBoundingClientRect on open, with no
+// reposition listener (see `_reposition`). Today a relocated row tears the panel out of the
+// document and the browser drops it — self-correcting by accident. Under an atomic move the
+// panel survives at its open-time coordinates while the trigger travels: measured in
+// Chrome, a row sent to the end of a five-row list left the panel 331px from its trigger,
+// still open. popconfirm.js measures the same, 331px; tooltip.js has the same shape (its
+// disconnectedCallback drops listeners without closing) and is UNMEASURED. menubar.js is
+// NOT affected — its disconnectedCallback calls close(), and that callback still fires
+// under an atomic move, so it self-corrects (measured: openIndex 0 → -1). What decides it
+// is whether the component closes ITSELF on disconnect or leans on the browser dropping a
+// panel that left the document. The leaners have to be settled BEFORE this changes, or the
+// enhancement ships a visible defect on exactly the browsers it is meant to help.
+//
+// It also only skips disconnected/connectedCallback for custom elements that OPT IN by
+// defining connectedMoveCallback(); one that does not still gets the old pair, so it would
+// not on its own spare a component inside a row from re-running its connect logic. Focus
+// inside such a component does still survive, because renderResult rebinds in place rather
+// than replacing children.
 class Row {
   constructor(key) { this.key = key; this.anchor = document.createComment("row"); this.nodes = []; this.inst = null; }
   firstNode() { return this.nodes.length ? this.nodes[0] : this.anchor; }
