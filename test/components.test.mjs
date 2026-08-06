@@ -437,6 +437,12 @@ void uploadFile;
   // on a runtime without it, and the suite dies before anything after this can report — which
   // is exactly how a revert check came back as "one FAIL and a crash" instead of a countable
   // list. I made that mistake once in this very block; the guard is the fix.
+  //
+  // The record, because two commit messages got it wrong. e4c7fa8 claimed this file "fails 5"
+  // against the pre-fix source; it measured as ONE fail plus `TypeError: el3.removeFile is not
+  // a function`, and the run never reached the rest. b9c633e corrected that — and named the
+  // wrong commit, 4275413 instead of e4c7fa8. With the guard in place the same revert now
+  // completes and names SEVEN failures, which is the number worth carrying.
   if (hasRemoveFile) {
     const el3 = mount("puredashboard-upload");
     el3.multiple = true;
