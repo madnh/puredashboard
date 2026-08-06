@@ -172,6 +172,12 @@ the API may still change between minor versions.
   cannot pin is the benefit itself; that is browser-only and stated in the test.
 
 ### Fixed
+- **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
+  DOM's own `Element.remove()`. `remove(id)` keeps working, but overloading it is fragile and
+  the edges are now pinned as they behave: `remove(null)`, `remove(0)` and a stale id are
+  silent no-ops rather than detaching, because falling through to a detach would let one stale
+  id destroy the whole component. A callback that forwards an index (`el.remove(i)`) therefore
+  detaches nothing — `removeFile` exists so that ambiguity is avoidable.
 - **`<puredashboard-upload>.remove()` detaches the element again.** `remove(id)` drops a FILE —
   and `remove` is also `Element.prototype.remove()`, which this class was shadowing outright.
   So `uploadEl.remove()` was a no-op for the DOM, and that is a method the ENGINE calls:

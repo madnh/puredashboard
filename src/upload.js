@@ -81,6 +81,7 @@ const extOf = (name) => { const m = /\.([^.]+)$/.exec(name || ""); return m ? m[
  *
  * @method upload - `upload(url: string, opts?: {headers?,field?,method?}) => Promise<Array>` — send every pending (ready/errored) file; updates per-file status + progress.
  * @method clear  - `clear() => void` — remove all selected files (revokes thumbnails).
+ * @method removeFile - `removeFile(id: number) => void` — drop ONE selected file by its id (revokes its thumbnail). Prefer this over `remove(id)`: `remove` is also the DOM's own `Element.remove()`, so a bare `el.remove()` detaches the element and only an explicit id drops a file.
  *
  * @cssprop [--puredashboard-upload-thumb=40px] - Thumbnail / file-glyph box size.
  *
@@ -157,12 +158,24 @@ class PuredashboardUpload extends Reactive {
   // The two contracts do not overlap, so both are kept: no argument means the platform's
   // "detach me", an id means "drop that file". Item ids come from `++uid` and are never
   // undefined, so the discriminator is safe.
-  remove(id) {
-    if (id === undefined) { super.remove(); return; }
+  /** Drop one selected file by its `id` (revokes its thumbnail). */
+  removeFile(id) {
     const it = (this.items || []).find((x) => x.id === id);
     if (it && it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } }
     this.items = (this.items || []).filter((x) => x.id !== id);
     this._syncForm(); this._emit("files", this.files);
+  }
+  // `remove` is the platform's "detach me" AND was this component's "drop a file". Overloading
+  // it is fragile — measured: remove(null) and remove(0) do neither, silently, and a callback
+  // that forwards an index (el.remove(i)) detaches nothing. removeFile(id) is the name that
+  // cannot collide and is what the docs point at; this stays so existing callers keep working.
+  // No argument at all is the DOM contract, because that is the form the ENGINE uses:
+  // Row.remove() and NodePart.replace both call n.remove() bare, and while this method
+  // shadowed Element's outright, a keyed row whose top node was an upload could never be
+  // dropped — measured, [1,2,3] -> [1,3] left all three on screen.
+  remove(id) {
+    if (id === undefined) { super.remove(); return; }
+    this.removeFile(id);
   }
   _revokeAll() { for (const it of this.items || []) if (it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } it.thumbDead = true; } }
 

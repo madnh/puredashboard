@@ -420,6 +420,39 @@ void uploadFile;
   await tick();
   ok(el2.items.length === 1, "remove(id) still drops that FILE");
   ok(el2.isConnected === true, "…and leaves the element in the document");
+
+  // removeFile(id) is the name that cannot collide, and is what the docs point at.
+  const el3 = mount("puredashboard-upload");
+  el3.multiple = true;
+  el3._add([
+    new w.File([new Uint8Array(4)], "a.png", { type: "image/png" }),
+    new w.File([new Uint8Array(4)], "b.png", { type: "image/png" }),
+  ]);
+  await tick();
+  el3.removeFile(el3.items[0].id);
+  await tick();
+  ok(el3.items.length === 1, "removeFile(id) drops that file");
+  ok(el3.isConnected === true, "removeFile(id) never detaches the element");
+
+  // Overloading `remove` is fragile and these are the edges, pinned as they behave rather
+  // than as anyone would wish: an argument that matches no item is a silent no-op, and it
+  // does NOT fall through to detaching — falling through would let a stale id nuke the whole
+  // component, which is worse than doing nothing.
+  const el4 = mount("puredashboard-upload");
+  el4.multiple = true;
+  el4._add([new w.File([new Uint8Array(4)], "a.png", { type: "image/png" })]);
+  await tick();
+  el4.remove(null);
+  await tick();
+  ok(el4.isConnected === true && el4.items.length === 1, "remove(null) is a no-op, not a detach");
+  el4.remove(0);
+  await tick();
+  ok(el4.isConnected === true && el4.items.length === 1, "remove(0) is a no-op — ids start at 1");
+  el4.remove(99999);
+  await tick();
+  ok(el4.isConnected === true && el4.items.length === 1, "remove(staleId) is a no-op, not a detach");
+  el4.remove();
+  ok(el4.isConnected === false, "…and a bare remove() still detaches");
 }
 
 // ============ upload: a thumbnail added while disconnected must not be re-minted ============
