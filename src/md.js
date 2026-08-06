@@ -248,7 +248,8 @@ export function renderMarkdown(src) {
  * O(n²) re-parse. With no `.value`, inline text content is taken as the source — ONCE, on
  * first connect. After that the children are the rendered output, not the source, so they
  * are never re-read: to change the content later, set `.value`. Replacing the children by
- * hand has no effect and is reverted on the next render.
+ * hand does NOT change the source — your markup stays on screen for as long as nothing
+ * re-renders, and the adopted source replaces it the moment anything does.
  *
  * @prop {string} value - The Markdown source. Set via the property (safe for
  *   untrusted text) or the `value` attribute. Default `""`. Setting it always wins over

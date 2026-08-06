@@ -205,9 +205,12 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
   inline.textContent = "# Heading\n\nParagraph.";
   a.append(inline);
   await tick();
+  // `first` is only a before/after baseline below — assert the FIRST render semantically,
+  // so a renderer change that alters serialisation without altering behaviour stays green.
   const first = inline.innerHTML;
   ok(
-    first === "<h1>Heading</h1><p>Paragraph.</p>",
+    inline.querySelector("h1")?.textContent === "Heading" &&
+      inline.querySelector("p")?.textContent === "Paragraph.",
     "inline markdown renders on first connect: " + first,
   );
   b.append(inline); // MOVE
@@ -272,6 +275,28 @@ ok(!!render("---").querySelector("hr"), "--- → hr");
   ok(
     after.querySelector("h1")?.textContent === "Two",
     "setting .value after adoption does change the content",
+  );
+
+  // What hand-replacing the children actually does, since the JSDoc has to state it
+  // exactly: it does NOT change the source, but it DOES stay on screen — nothing polls the
+  // children, so the author's markup survives until something triggers a render, and only
+  // then is it replaced by the adopted source.
+  const held = document.createElement("puredashboard-markdown");
+  held.textContent = "# One";
+  a.append(held);
+  await tick();
+  held.textContent = "# Two"; // author overwrites the rendered output
+  await tick();
+  ok(
+    held.innerHTML === "# Two",
+    "hand-replaced children stay on screen while nothing re-renders — got " + held.innerHTML,
+  );
+  ok(held.value === "# One", "…while the source is untouched");
+  held.value = held.value; // any render at all, even to the same source
+  await tick();
+  ok(
+    held.querySelector("h1")?.textContent === "One",
+    "…and the next render puts the adopted source back",
   );
 }
 
