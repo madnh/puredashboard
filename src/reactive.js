@@ -156,13 +156,19 @@ function safeUrlAttr(name, val) {
 // document and the browser drops it — self-correcting by accident. Under an atomic move the
 // panel survives at its open-time coordinates while the trigger travels: measured in
 // Chrome, a row sent to the end of a five-row list left the panel 331px from its trigger,
-// still open. popconfirm.js measures the same, 331px; tooltip.js has the same shape (its
-// disconnectedCallback drops listeners without closing) and is UNMEASURED. menubar.js is
-// NOT affected — its disconnectedCallback calls close(), and that callback still fires
-// under an atomic move, so it self-corrects (measured: openIndex 0 → -1). What decides it
-// is whether the component closes ITSELF on disconnect or leans on the browser dropping a
-// panel that left the document. The leaners have to be settled BEFORE this changes, or the
-// enhancement ships a visible defect on exactly the browsers it is meant to help.
+// still open. popconfirm.js measures the same, 331px. Those two are the prerequisite: they
+// lean on the browser dropping a panel that left the document, and an atomic move takes
+// that away.
+//
+// The other two overlays are NOT prerequisites, for opposite reasons. menubar.js closes
+// ITSELF in disconnectedCallback, and that callback still fires under an atomic move, so it
+// self-corrects (measured: openIndex 0 → -1). tooltip.js is already broken WITHOUT this
+// change: its tip is position:fixed and nothing hides it on disconnect, so a relocation
+// strands it either way (measured, a shown tip left 331px behind under insertBefore and
+// 329px under moveBefore). That is a standing defect to fix on its own account, not a
+// reason to hold this one. Limit on that last figure: the tip was put in the shown state
+// through the public show(), not through hover or focus, so whether a real interaction
+// leaves one shown across a relocation is unmeasured.
 //
 // It also only skips disconnected/connectedCallback for custom elements that OPT IN by
 // defining connectedMoveCallback(); one that does not still gets the old pair, so it would
