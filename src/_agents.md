@@ -307,7 +307,9 @@ const draw = () => renderResult(html`
   `focus=false scroll=0` with the iframe reloaded. Selection offsets survive either way; a
   custom element in the row is disconnected and reconnected on both paths. So this is a
   progressive enhancement, not a guarantee: if your UI depends on focus surviving a reorder,
-  it will differ between browsers, and Safari is the one that behaves as before.
+  it will differ between browsers, and Safari is the one that behaves as before. The version
+  numbers are compat data; only Chrome has actually been run, so Firefox is expected rather
+  than confirmed.
 - **If you cannot accept that difference**, capture `document.activeElement` and its
   `selectionStart`/`selectionEnd` before the update and restore them after — that part an app
   can do for itself. What it cannot do is restore an inner scroll position it never read, or

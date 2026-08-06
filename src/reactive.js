@@ -147,8 +147,13 @@ function safeUrlAttr(name, val) {
 // document all survive it; insertBefore, which the DOM defines as a remove plus an insert,
 // destroys all three. Measured in Chrome: focus true/caret 3/scrollTop 60 and an iframe load
 // counter unchanged, against focus false/scrollTop 0/iframe reloaded on the fallback.
-// Chrome/Edge 133+ and Firefox 144+ only, no Safari, so this is an enhancement and not a
-// swap: where it is missing the fallback below is exactly what this library always did.
+//
+// Availability is Chrome/Edge 133+ and Firefox 144+, no Safari — that is COMPAT DATA, not
+// something run here. Only Chrome has been executed, on both paths. Firefox has the API and
+// nobody has confirmed it behaves as this comment says; Safari's fallback path is the one this
+// library always took, so it is not new, but it has not been executed either. Either way this
+// is an enhancement and not a swap: where the method is missing, the fallback below is exactly
+// what this library always did.
 //
 // Detected on the PARENT, at call time — `typeof parent.moveBefore === "function"`. Not on
 // `Element.prototype`: `parent` here is `this.anchor.parentNode`, which may be a
