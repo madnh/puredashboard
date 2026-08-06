@@ -243,5 +243,44 @@ const placeholder = (el) => el.querySelector("[data-lazy-placeholder]");
   ok(el.getAttribute("data-state") === "pending", "…and a detached element is no longer materialised by printing");
 }
 
+// ============ a relocation must not drop the element from the print set ============
+// PENDING is what the beforeprint hook walks to materialise everything still deferred.
+// disconnectedCallback removes us from it, and _placeholder() — the only thing that adds —
+// runs once behind _inited. So a relocation left the element permanently absent from it:
+// state stayed "pending", _inited stayed true and renderNow() still worked, which is exactly
+// why measuring those two saw nothing. The only symptom was a printed placeholder.
+{
+  const mk = () => {
+    const l = document.createElement("puredashboard-lazy");
+    l.height = "40px";
+    l.trigger = "manual";
+    l.render = () => document.createElement("span");
+    document.body.appendChild(l);
+    return l;
+  };
+  const control = mk();
+  const moved = mk();
+  await tick();
+  await tick();
+
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  host.appendChild(moved);            // MOVE — disconnect + reconnect
+  await tick();
+  await tick();
+
+  ok(moved.getAttribute("data-state") === "pending", "print set: the moved element is still pending");
+
+  w.dispatchEvent(new w.Event("beforeprint"));
+  await tick();
+  await tick();
+
+  ok(control.getAttribute("data-state") === "rendered", "print set: an untouched element renders on beforeprint");
+  ok(
+    moved.getAttribute("data-state") === "rendered",
+    `print set: a RELOCATED element renders too — got ${moved.getAttribute("data-state")}`,
+  );
+}
+
 console.log(`\nlazy.test.mjs: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -395,6 +395,65 @@ void uploadFile;
   );
 }
 
+// ============ upload: remove() must still detach the ELEMENT ============
+// `remove` is also Element.prototype.remove(). Shadowing it outright made uploadEl.remove()
+// a no-op for the DOM — and that is a method the ENGINE calls: Row.remove() in reactive.js
+// is `for (const n of this.nodes) n.remove()`, so a keyed row whose top-level node is an
+// upload could never be dropped. The two contracts do not overlap: no argument detaches,
+// an id drops that file.
+{
+  const el = mount("puredashboard-upload");
+  await tick();
+  ok(el.isConnected === true, "remove(): the element starts connected");
+  el.remove();
+  ok(el.isConnected === false, "remove() with NO argument detaches the element, as the DOM defines it");
+
+  const el2 = mount("puredashboard-upload");
+  el2.multiple = true;
+  el2._add([
+    new w.File([new Uint8Array(4)], "a.png", { type: "image/png" }),
+    new w.File([new Uint8Array(4)], "b.png", { type: "image/png" }),
+  ]);
+  await tick();
+  ok(el2.items.length === 2, "remove(id): two files selected");
+  el2.remove(el2.items[0].id);
+  await tick();
+  ok(el2.items.length === 1, "remove(id) still drops that FILE");
+  ok(el2.isConnected === true, "…and leaves the element in the document");
+}
+
+// ============ upload: a thumbnail added while disconnected must not be re-minted ============
+// The revoked flag lived on the ELEMENT, which stops being true of every item the moment one
+// is added while disconnected: that item's thumb is live, and re-minting it overwrote a URL
+// nobody revoked. Measured that way — created=4 revoked=1 live=3 for two items.
+{
+  const realCreate = URL.createObjectURL, realRevoke = URL.revokeObjectURL;
+  let created = 0, revoked = 0;
+  URL.createObjectURL = () => `blob:stub2/${++created}`;
+  URL.revokeObjectURL = () => { revoked++; };
+  try {
+    const u = mount("puredashboard-upload");
+    u.multiple = true;
+    u._add([new w.File([new Uint8Array(4)], "a.png", { type: "image/png" })]);
+    await tick();
+    u.remove();                       // disconnect -> revokes a.png's thumb
+    await tick();
+    u._add([new w.File([new Uint8Array(4)], "b.png", { type: "image/png" })]);  // added while OUT
+    await tick();
+    document.body.appendChild(u);     // reconnect -> must re-mint ONLY the dead one
+    await tick();
+    ok(u.items.length === 2, "disconnected add: two items");
+    ok(
+      created - revoked === u.items.length,
+      `disconnected add: one live URL per item — created ${created}, revoked ${revoked}, items ${u.items.length}`,
+    );
+    ok(u.items.every((it) => it.thumb && !it.thumbDead), "disconnected add: every item has a live thumb");
+  } finally {
+    URL.createObjectURL = realCreate;
+    URL.revokeObjectURL = realRevoke;
+  }
+}
+
 // ============ upload: a relocation must not leave dead thumbnail URLs ============
 // disconnectedCallback revokes every object URL, which is right for an element that is
 // leaving. But a RELOCATION is a disconnect plus a reconnect — re-parenting a node is

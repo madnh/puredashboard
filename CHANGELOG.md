@@ -172,6 +172,29 @@ the API may still change between minor versions.
   cannot pin is the benefit itself; that is browser-only and stated in the test.
 
 ### Fixed
+- **`<puredashboard-upload>.remove()` detaches the element again.** `remove(id)` drops a FILE —
+  and `remove` is also `Element.prototype.remove()`, which this class was shadowing outright.
+  So `uploadEl.remove()` was a no-op for the DOM, and that is a method the ENGINE calls:
+  `Row.remove()` is `for (const n of this.nodes) n.remove()`, so a keyed row whose top-level
+  node was an upload could never be dropped — measured, `[1,2,3] → [1,3]` left all three on
+  screen while `repeat()` forgot about the ghost. `NodePart.replace` uses `n.remove()` the same
+  way. Wrapping the element in any other node hid it, which is why it survived this long. The
+  two contracts do not overlap, so both are kept: no argument detaches, an id drops that file.
+  Pre-existing. A sweep of all 63 registered tags for methods shadowing the DOM prototype chain
+  found this is the only one the engine calls — the 21 `focus` overrides forward to an inner
+  control on purpose, and the four `title` props are a declared API choice.
+- **A relocated `<puredashboard-lazy>` is printed again.** `PENDING` is the set the
+  `beforeprint` hook walks to materialise everything still deferred; `disconnectedCallback`
+  removes the element from it and `_placeholder()`, the only thing that adds, runs once behind
+  `_inited`. So after a relocation the element was permanently absent from the print set —
+  measured, an untouched block renders on `beforeprint` and a moved one stays a placeholder.
+  Nothing else changed: `data-state` stayed `pending`, `_inited` stayed true and `renderNow()`
+  still worked, which is why a sweep measuring those two saw nothing.
+- **`<puredashboard-upload>` no longer leaks a thumbnail URL per file added while detached.**
+  The "already-revoked" flag lived on the element, which stops being true of every item the moment
+  one is added while disconnected: that item's thumb is live, and re-minting it on reconnect
+  overwrote a URL nobody revoked. Measured — created 4, revoked 1, three live URLs for two
+  items. The flag is now per item.
 - **`<puredashboard-combobox>` no longer leaves a listener on `document` after it is removed.**
   Opening the popup registers a `pointerdown` handler on `document` for light-dismiss, and
   nothing took it back — removing an open combobox left it registered for the page's lifetime,

@@ -135,22 +135,36 @@ class PuredashboardUpload extends Reactive {
   // thumbnail permanently broken with the URL string unchanged — revoked, not replaced, and
   // nothing rebuilt it. We still hold `it.file`, so mint them again on the way back in.
   connectedCallback() {
-    if (this._revoked) {
-      this._revoked = false;
-      for (const it of this.items || []) if (it.thumb) it.thumb = this._mintThumb(it.file);
-    }
+    // Per ITEM, not per element. A flag on the element said "this element was revoked", which
+    // stops being true of every item the moment one is ADDED while disconnected: that item's
+    // thumb is live, and re-minting it overwrote a URL nobody revoked. Measured that way —
+    // created=4 revoked=1 live=3 for 2 items, one leaked per disconnected add.
+    for (const it of this.items || []) if (it.thumbDead) { it.thumb = this._mintThumb(it.file); it.thumbDead = false; }
     super.connectedCallback();
   }
-  disconnectedCallback() { this._revokeAll(); this._revoked = true; }
+  disconnectedCallback() { this._revokeAll(); }
   get files() { return (this.items || []).map((it) => it.file); }
   clear() { this._revokeAll(); this.items = []; this._syncForm(); this._emit("files", this.files); }
+  // `remove` is ALSO Element.prototype.remove(), and this class shadows it. Overriding it
+  // outright made `uploadEl.remove()` a no-op for the DOM — measured: after el.remove() the
+  // element was still connected — and that is a method the ENGINE calls. `Row.remove()` in
+  // reactive.js does `for (const n of this.nodes) n.remove()`, so a keyed row whose top-level
+  // node IS an upload could never be dropped: repeat() removed it from its own bookkeeping and
+  // it stayed on screen forever (measured: [1,2,3] → [1,3] left all three). NodePart.replace
+  // uses n.remove() the same way. Wrapping the element in any other node hid it, which is why
+  // it survived this long.
+  //
+  // The two contracts do not overlap, so both are kept: no argument means the platform's
+  // "detach me", an id means "drop that file". Item ids come from `++uid` and are never
+  // undefined, so the discriminator is safe.
   remove(id) {
+    if (id === undefined) { super.remove(); return; }
     const it = (this.items || []).find((x) => x.id === id);
     if (it && it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } }
     this.items = (this.items || []).filter((x) => x.id !== id);
     this._syncForm(); this._emit("files", this.files);
   }
-  _revokeAll() { for (const it of this.items || []) if (it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } } }
+  _revokeAll() { for (const it of this.items || []) if (it.thumb) { try { URL.revokeObjectURL(it.thumb); } catch { /* */ } it.thumbDead = true; } }
 
   _emit(name, detail) {
     if (this.debug) { try { console.debug(`[${this.tagName.toLowerCase()}]`, name, detail); } catch { /* */ } }

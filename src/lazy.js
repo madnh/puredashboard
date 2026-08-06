@@ -156,7 +156,14 @@ class PuredashboardLazy extends HTMLElement {
       hookPrint();
       this._placeholder();
     }
-    if (this._state === "pending") this._arm();
+    // PENDING is what the beforeprint hook walks to materialise everything still deferred.
+    // disconnectedCallback drops us from it, and _placeholder() — the only place that adds —
+    // runs once behind _inited, so a RELOCATION (a disconnect plus a reconnect: re-parenting a
+    // node is a remove plus an insert) left the element permanently absent from the print set.
+    // Nothing else changed: state stayed "pending", _inited stayed true, renderNow() still
+    // worked — which is why a sweep that measured those two saw nothing. The only symptom was
+    // that printing the page left a placeholder where the content should be.
+    if (this._state === "pending") { PENDING.add(this); this._arm(); }
   }
   disconnectedCallback() { this._disarm(); PENDING.delete(this); }
 
