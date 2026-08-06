@@ -223,17 +223,19 @@ the API may still change between minor versions.
 - **The parts engine is now documented in the file that SHIPS.** `repeat()` and
   `renderResult()` are exported and work on any container — no `Reactive` subclass
   needed — but `_agents.md` never mentioned either, scoped authoring out ("only relevant
-  if you EXTEND the library"), and pointed four times into `docs/`, which does not ship.
-  A consuming app that vendored `src/` therefore had no way to reach the answer, and one
-  reached for hand-built DOM plus its own scroll anchoring instead. New recipe *Your app
-  renders its own views*, and a header note saying `docs/…` means the source repo.
-- **Documented the negative half of in-place diffing**, which existed nowhere: a binding
-  whose value is unchanged writes nothing (so a `.value` binding does not clobber
-  half-typed text), and the thing that *does* destroy an input is switching template
-  identity — `${cond ? html`…` : html`…`}` is two `strings` arrays, so flipping it
-  replaces the nodes. `docs/ARCHITECTURE.md` stated only the positive case.
-  `test/reactive.test.mjs` now pins both directions (9 assertions), including that the
-  rebuild really does lose the text, so the failure mode cannot drift into looking safe.
+  if you EXTEND the library"), and pointed five times, across four files, into `docs/`,
+  which does not ship. A consuming app that vendored `src/` therefore had no way to reach
+  the answer, and one reached for hand-built DOM plus its own scroll anchoring instead. New
+  recipe *Your app renders its own views*, and a header note saying `docs/…` means the
+  source repo.
+- **Documented the half of in-place diffing that existed nowhere: template identity.** A
+  binding whose value is unchanged writes nothing (so a `.value` binding does not clobber
+  half-typed text) — that half `docs/ARCHITECTURE.md` already stated, as "a no-op when
+  unchanged". What it never said is the consequence: the thing that *does* destroy an input
+  is switching template identity, because `${cond ? html`…` : html`…`}` is two `strings`
+  arrays and flipping it replaces the nodes. `test/reactive.test.mjs` now pins both
+  directions (9 assertions), including that the rebuild really does lose the text, so the
+  failure mode cannot drift into looking safe.
 - Document the trust boundary (component props are trusted author config;
   `accept`/`maxSize` are UX hints — validate on the server) in `_agents.md` / `upload.js`.
 
