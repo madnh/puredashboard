@@ -1,0 +1,32 @@
+/* puredashboard-field — styles for <puredashboard-field> (field.js). BEM, block = the tag.
+ *
+ * Self-contained & theme-able. Values come from the shared design tokens (--sp-*, --font-size-*, --weight-medium, --text, --muted,
+ * --danger) via a --pd-* chain that falls back to your app tokens and finally to neutral system colours — so it looks right with NO
+ * config and adapts to light/dark automatically. Theme by defining the app tokens, or override --pd-field-*.
+ *
+ * A column: the label, the control the author put inside, then the hint and the error. Deliberately minimal — do not over-design.
+ */
+puredashboard-field {
+  display: flex;
+  flex-direction: column;
+  --pd-text:   var(--text,   CanvasText);
+  --pd-muted:  var(--muted,  color-mix(in srgb, CanvasText 60%, Canvas));
+  --pd-red:    var(--red,    #dc2626);
+  --pd-danger: var(--danger, var(--pd-red));
+  --pd-field-gap: var(--sp-1, 4px);
+  gap: var(--pd-field-gap);
+  font-size: var(--font-size-sm, 12px);
+}
+
+.puredashboard-field__label {
+  font-weight: var(--weight-medium, 500);
+  color: var(--pd-text);
+}
+
+.puredashboard-field__hint {
+  color: var(--pd-muted);
+}
+
+.puredashboard-field__error {
+  color: var(--pd-danger);
+}

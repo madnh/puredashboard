@@ -415,6 +415,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-color` | `value`(hex), `showValue` | native `input`/`change` | swatch |
 | `puredashboard-rate` | `value`, `count`, `allowHalf`, `allowClear` | `change`{value} | star rating (role=slider) |
 | `puredashboard-form` | `noValidate`; attrs `direction="row"`, `aria-label`/`aria-labelledby`/`aria-describedby`/`autocomplete` (moved onto the `<form>`) | `submit`{values,formData,valid}, `invalid`, `reset` | wraps children in a real `<form>` |
+| `puredashboard-field` | `label`, `hint`, `error` | — | wraps ONE control child: `<label for>`, label-click focus; label/hint/error ids and `aria-invalid` set on the control's inner field |
 | `puredashboard-upload` | `accept`, `multiple`, `maxSize`; method `upload(url)` | `files`, `uploadprogress`, `uploaddone`, … | drag-drop, multipart |
 
 ### Navigation

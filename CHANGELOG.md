@@ -181,6 +181,16 @@ the API may still change between minor versions.
   `…:ss` when `step` admits seconds) with **no time zone** (convert it yourself),
   `min`/`max`/`step`/`required`/`readonly`/`size`/`error`/`labels`, native `input` /
   `change` events. Upstreamed from model-gateway (GW-163).
+- **`<puredashboard-field>`** (`field.js`): a form field wrapper — a visible label above
+  ONE control the author puts inside (a PureDashboard control or a native
+  input/select/textarea), an optional hint and an optional error below it, with the ARIA
+  wiring done: `<label for>` (id generated if missing), a label click focuses a
+  custom-element control, the label id in `aria-labelledby` and the hint/error ids in
+  `aria-describedby` of the control's inner native field, `aria-invalid="true"` while
+  there is an error — kept when the control re-renders, also for a control appended after
+  connect, and removed again when cleared. Plain `HTMLElement`, light DOM, the control is
+  never moved or wrapped; text is set with `textContent` only. Upstreamed from
+  model-gateway (GW-163).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
