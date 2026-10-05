@@ -98,6 +98,39 @@ puredashboard-combobox {
 .puredashboard-combobox__clear:hover { color: var(--pd-text); }
 .puredashboard-combobox__input--clearable { padding-right: calc(var(--pd-combobox-pad-x) + 2.6em); }
 
+/* multiple — the control is the bordered box: chips (puredashboard-tag) then the text box, wrapping onto more
+ * lines as chips accumulate; the inner input drops its own border and grows to fill the rest of the line. */
+.puredashboard-combobox__control--multiple {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  min-height: var(--pd-combobox-height);
+  padding: 3px calc(var(--pd-combobox-pad-x) + 1.4em) 3px 4px;
+  background: var(--pd-panel);
+  border: 1px solid var(--pd-border);
+  border-radius: var(--pd-radius);
+  transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-combobox__control--multiple:has(.puredashboard-combobox__clear) { padding-right: calc(var(--pd-combobox-pad-x) + 2.6em); }
+.puredashboard-combobox__control--multiple:hover { border-color: var(--pd-border-2); }
+.puredashboard-combobox__control--multiple:focus-within { border-color: var(--pd-accent); box-shadow: var(--pd-focus-ring); }
+.puredashboard-combobox__control--multiple .puredashboard-combobox__input,
+.puredashboard-combobox__control--multiple .puredashboard-combobox__input:focus {
+  flex: 1 1 6em;
+  width: auto;
+  min-width: 6em;
+  height: calc(var(--pd-combobox-height) - 8px);
+  padding: 0 4px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+/* A long chip label wraps inside the chip instead of widening the control past its slot (tags are nowrap). */
+.puredashboard-combobox__chip { max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+
 /* listbox popup — top layer (Popover) or fixed/high-z fallback. Re-declare the theme
  * tokens here so the popup is themed whether Popover promotes it or the fallback keeps
  * it in the control's subtree. */

@@ -210,6 +210,16 @@ the API may still change between minor versions.
   a switch or toggle button is one node in the accessibility tree); setting the host
   attribute again updates the state, an empty string clears it. Without them nothing
   changes. Upstreamed from model-gateway (GW-167).
+- **`<puredashboard-combobox multiple>`**: multi-select. `value` is a `string[]`; chosen
+  options show as removable `<puredashboard-tag>` chips before the text box (which still
+  filters); the list stays open after a pick and a pick toggles; chosen options are
+  `aria-selected` in an `aria-multiselectable` listbox; Backspace on an empty text box
+  removes the last chip; removing a chip moves focus to the next chip, else the previous,
+  else the text box without opening the list; Tab only closes; the form value is `name`
+  repeated once per value; `change` carries the array; new `labels` key `remove(label)`.
+  Without `multiple` the DOM, values, events and form value are unchanged (golden replay
+  in the tests). `combobox.js` now imports `tag.js`. Upstreamed from model-gateway
+  (GW-168).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

@@ -407,7 +407,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-textarea` | `value`, `rows`, `autoGrow`, `size`, `error` | native `input`/`change` | |
 | `puredashboard-number` | `value`, `min`, `max`, `step`, `size`, `error` | native `input`/`change` | ± steppers |
 | `puredashboard-select` | `options`([{value,label}]|string[]), `value`, `placeholder`, `size` | native `change` | wraps `<select>` |
-| `puredashboard-combobox` | `options`, `value`, `placeholder`, `allowCustom`, `serverFilter`, `loading`, `clearable` | `change`{value}, `comboboxopen`, `comboboxsearch`{text} | searchable (APG combobox); server search = `serverFilter` + answer `comboboxsearch` with new `options` |
+| `puredashboard-combobox` | `options`, `value`, `placeholder`, `allowCustom`, `serverFilter`, `loading`, `clearable`, `multiple` | `change`{value}, `comboboxopen`, `comboboxsearch`{text} | searchable (APG combobox); server search = `serverFilter` + answer `comboboxsearch` with new `options`; `multiple`: `value` is `string[]`, chips, name repeated in the form |
 | `puredashboard-checkbox` | `checked`, `indeterminate`, `value`, `label`, `required` | native `change` | |
 | `puredashboard-switch` | `checked`, `value`, `label` | native `change` | role=switch |
 | `puredashboard-radio-group` | `options`, `value`, `name`, `required` | `change`{value} | APG radio group |

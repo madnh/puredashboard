@@ -30,6 +30,7 @@
 // --disabled-opacity) via a --pd-* fallback chain, so it looks right with NO theme
 // linked. See docs/DEVELOPMENT.md → "Definition of Done".
 import { Reactive, html, repeat, labelIdFor } from "./reactive.js";
+import "./tag.js"; // chips of `multiple`
 
 // All FIXED user-facing strings live here (English defaults). Override any subset via
 // the `labels` property to localise — e.g. cb.labels = { noResults: "Không có" }.
@@ -40,6 +41,7 @@ const LABELS = {
   loading: "Loading…",
   clear: "Clear",
   required: "This field is required.",
+  remove: (label) => `Remove ${label}`,
 };
 
 let uid = 0;
@@ -71,14 +73,16 @@ let uid = 0;
  * @prop {boolean} serverFilter - If `true`, the typed text does NOT filter `options` here: the app answers the `comboboxsearch` event by setting new `options` (server-side search). Default `false`.
  * @prop {boolean} loading     - Show only a "Loading…" row (the old options are hidden and cannot be committed) while the app fetches `options` (after `comboboxopen` / `comboboxsearch`). Default `false`.
  * @prop {boolean} clearable   - Show a clear button while a value is set (emits `change` with `""`). Default `false`.
+ * @prop {boolean} multiple    - Multi-select: `value` is a `string[]`; chosen options show as removable `puredashboard-tag` chips before the text box, the list stays open after a pick (a pick toggles), chosen options are `aria-selected`, Backspace on an empty text box removes the last chip, the form value is `name` repeated once per value, and `change` carries the array. `allowCustom` does not apply. Default `false`.
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
- * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `loading`, `clear` (the clear button's aria-label), `required`. Unset keys keep the English default.
+ * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `loading`, `clear` (the clear button's aria-label), `required`, `remove` (chip close button, `(label) => string`). Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission (on the host).
+ * @attr {boolean} multiple    - Declarative form of `multiple`.
  * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires comboboxopen - Bubbling `CustomEvent` each time the list opens: the moment to (re)load `options`.
  * @fires comboboxsearch - Bubbling `CustomEvent` per keystroke in the input, `detail.text` is the typed text.
- * @fires change - Bubbling `CustomEvent` fired on commit (selecting an option or, with `allowCustom`, committing free text). `detail.value` is the newly committed value.
+ * @fires change - Bubbling `CustomEvent` fired on commit (selecting an option or, with `allowCustom`, committing free text). `detail.value` is the newly committed value (with `multiple`, the new `string[]`).
  *
  * @method focus - `focus() => void` — focus the text input.
  *
@@ -97,7 +101,7 @@ class PuredashboardCombobox extends Reactive {
   static formAssociated = true;
   static properties = {
     options: {}, value: {}, placeholder: {}, disabled: {}, required: {},
-    allowCustom: {}, error: {}, labels: {}, serverFilter: {}, loading: {}, clearable: {},
+    allowCustom: {}, error: {}, labels: {}, serverFilter: {}, loading: {}, clearable: {}, multiple: {},
     // Internal reactive state (not part of the public API): whether the popup is
     // open, the current filter query, and the active option index (-1 = none).
     _open: {}, _query: {}, _active: {},
@@ -116,11 +120,11 @@ class PuredashboardCombobox extends Reactive {
   // configured the natural way inside a form — <puredashboard-combobox required name="x">
   // — not only via JS. Boolean attrs map by presence. (`options` are data, set via the
   // property, not an attribute.)
-  static observedAttributes = ["value", "placeholder", "disabled", "required", "name", "aria-label", "aria-labelledby"];
+  static observedAttributes = ["value", "placeholder", "disabled", "required", "name", "aria-label", "aria-labelledby", "multiple"];
   attributeChangedCallback(name, _old, val) {
     if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     if (name === "name") { this.requestUpdate(); return; } // used only for form submission
-    const bool = name === "disabled" || name === "required";
+    const bool = name === "disabled" || name === "required" || name === "multiple";
     this[name] = bool ? val !== null : val;
   }
 
@@ -144,10 +148,51 @@ class PuredashboardCombobox extends Reactive {
   // The option currently matching `value`, if any.
   _selected() { return this._options().find((o) => o.value === this.value) || null; }
 
+  // multiple: the chosen values as a fresh string[] (a plain string value counts as one).
+  _values() {
+    const v = this.value;
+    if (Array.isArray(v)) return v.map(String);
+    return v == null || v === "" ? [] : [String(v)];
+  }
+  _hasValue() { return this.multiple ? this._values().length > 0 : !!this.value; }
+  _isChosen(o) { return this.multiple ? this._values().includes(o.value) : o.value === this.value; }
+  // multiple: add or remove one value, keep the list open, emit `change` with the new array.
+  _toggle(o) {
+    if (!o || o.disabled) return;
+    const vals = this._values();
+    const next = vals.includes(o.value) ? vals.filter((v) => v !== o.value) : [...vals, o.value];
+    this.value = next;
+    this.emit("change", { value: [...next] });
+  }
+  _removeValue(v) {
+    const next = this._values().filter((x) => x !== v);
+    this.value = next;
+    this.emit("change", { value: [...next] });
+  }
+  // multiple, a chip's close button: remove the value, then keep keyboard focus in the control, since the focused button
+  // leaves with its chip: the next chip's close button, else the previous one, else the text box WITHOUT opening the list.
+  // Focus that was elsewhere (a mouse click that did not focus the button) is left alone.
+  _removeChip(v) {
+    const vals = this._values(), i = vals.indexOf(v);
+    const target = vals[i + 1] ?? vals[i - 1];
+    const hadFocus = this.contains(document.activeElement);
+    this._removeValue(v);
+    if (!hadFocus) return;
+    queueMicrotask(() => { // after the render queued by the value change
+      const at = target === undefined ? -1 : this._values().indexOf(target);
+      const chip = at < 0 ? null : this.querySelectorAll(".puredashboard-combobox__chip")[at];
+      const btn = chip && chip.querySelector(".js-puredashboard-tag__close");
+      if (btn) { btn.focus(); return; }
+      this._quietFocus = true;
+      try { this.focus(); } finally { this._quietFocus = false; }
+    });
+  }
+
   // The visible input text: the filter query while the list is open (the user is
   // typing), else the selected option's label, else (allowCustom) the raw value.
   _display() {
     if (this._open) return this._query ?? "";
+    if (this.multiple) return ""; // the chosen values are the chips
     const sel = this._selected();
     if (sel) return sel.label;
     return this.allowCustom ? (this.value ?? "") : "";
@@ -165,7 +210,7 @@ class PuredashboardCombobox extends Reactive {
 
   setup() {
     this._default = this.getAttribute("value") ?? "";
-    if (this.value == null) this.value = this._default;
+    if (this.value == null) this.value = this.multiple ? [] : this._default;
     if (this.options == null) this.options = [];
     if (this._open == null) this._open = false;
     if (this._query == null) this._query = "";
@@ -173,7 +218,7 @@ class PuredashboardCombobox extends Reactive {
   }
 
   // Form-associated lifecycle.
-  formResetCallback() { this.value = this._default ?? ""; this._close(); }
+  formResetCallback() { this.value = this.multiple ? [] : this._default ?? ""; this._close(); }
   formDisabledCallback(disabled) { this.disabled = disabled; }
   get form() { return this._internals ? this._internals.form : null; }
   get validity() { return this._internals ? this._internals.validity : null; }
@@ -187,9 +232,9 @@ class PuredashboardCombobox extends Reactive {
   // dismissal), with a fixed/high-z fallback where Popover is unavailable (mirrors
   // menu.js). Light-dismiss is wired by hand on document pointerdown.
   _open_() {
-    if (this._open || this.disabled) return;
+    if (this._open || this.disabled || this._quietFocus) return; // _quietFocus: programmatic focus after a chip removal
     // allowCustom with free text (no option selected): reopen on that text, not on an empty box, so it is not lost.
-    this._query = this.allowCustom && !this._selected() ? (this.value ?? "") : "";
+    this._query = this.allowCustom && !this.multiple && !this._selected() ? (this.value ?? "") : "";
     this._typed = false; this._active = -1; this._open = true;
     document.addEventListener("pointerdown", this._onOutside, true);
     this.emit("comboboxopen", {});
@@ -203,7 +248,7 @@ class PuredashboardCombobox extends Reactive {
   }
   // Closing without Enter/Tab (outside click, Escape) keeps what was typed when allowCustom: commit it instead of redrawing from the old value.
   _commitTyped() {
-    if (!this._open || !this.allowCustom || !this._typed) return;
+    if (!this._open || !this.allowCustom || this.multiple || !this._typed) return;
     const q = (this._query ?? "").trim();
     const exact = this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
     const next = exact ? exact.value : q;
@@ -232,6 +277,7 @@ class PuredashboardCombobox extends Reactive {
   // Commit an option: set the value, fill the input with its label, close, and emit
   // `change` when the value actually changed.
   _commit(o) {
+    if (this.multiple) { this._toggle(o); return; }
     if (!o || o.disabled) return;
     const changed = this.value !== o.value;
     this.value = o.value;
@@ -250,7 +296,7 @@ class PuredashboardCombobox extends Reactive {
     if (this._open && q) {
       const exact = this.loading ? null : this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
       if (exact) { this._commit(exact); return; }
-      if (this.allowCustom) {
+      if (this.allowCustom && !this.multiple) {
         const changed = this.value !== q;
         this.value = q; this._close();
         if (changed) this.emit("change", { value: q });
@@ -294,11 +340,19 @@ class PuredashboardCombobox extends Reactive {
       }
       case "Escape": {
         if (this._open) { e.preventDefault(); this._commitTyped(); this._close(); }
-        else if (this.value) { e.preventDefault(); this._clear(); } // 2nd Escape clears
+        else if (this._hasValue()) { e.preventDefault(); this._clear(); } // 2nd Escape clears
         break;
       }
       case "Tab": {
-        if (this._open) this._commitCurrent(); // let focus leave; just commit + close
+        if (this._open && this.multiple) this._close(); // multiple: picks are explicit (Enter/click); Tab only leaves
+        else if (this._open) this._commitCurrent(); // let focus leave; just commit + close
+        break;
+      }
+      case "Backspace": {
+        // multiple: Backspace on an empty text box removes the last chip.
+        if (!this.multiple || (e.target && e.target.value) || !this._values().length) return;
+        e.preventDefault();
+        this._removeValue(this._values().at(-1));
         break;
       }
       default: return;
@@ -317,6 +371,12 @@ class PuredashboardCombobox extends Reactive {
 
   // Clear the current selection (2nd Escape). Emits `change` when it actually clears.
   _clear() {
+    if (this.multiple) {
+      if (!this._values().length) return;
+      this.value = []; this._query = "";
+      this.emit("change", { value: [] });
+      return;
+    }
     if (!this.value) return;
     this.value = ""; this._query = "";
     this.emit("change", { value: "" });
@@ -326,9 +386,14 @@ class PuredashboardCombobox extends Reactive {
   // An explicit `error` → customError; required && empty → valueMissing; else valid.
   updated() {
     if (!this._internals || !this._internals.setFormValue) return;
-    this._internals.setFormValue(this.value ?? null);
+    if (this.multiple) {
+      // One entry per value under the host's name (a nameless control submits nothing).
+      const fd = new FormData(), name = this.getAttribute("name");
+      if (name) for (const v of this._values()) fd.append(name, v);
+      this._internals.setFormValue(fd);
+    } else this._internals.setFormValue(this.value ?? null);
     if (this.error) this._internals.setValidity({ customError: true }, this.error, this._input() || undefined);
-    else if (this.required && !this.value) this._internals.setValidity({ valueMissing: true }, this._label("required"), this._input() || undefined);
+    else if (this.required && !this._hasValue()) this._internals.setValidity({ valueMissing: true }, this._label("required"), this._input() || undefined);
     else this._internals.setValidity({});
   }
 
@@ -360,16 +425,18 @@ class PuredashboardCombobox extends Reactive {
     // Popover API support decides the popup strategy: promote to the top layer via
     // popover="manual" when available, else render a plain node the fallback positions.
     const usePopover = typeof HTMLElement.prototype.showPopover === "function";
+    const multi = !!this.multiple;
+    const chips = multi ? this._values().map((v) => this._options().find((o) => o.value === v) || { value: v, label: v }) : [];
     return html`
-      <div class="puredashboard-combobox__control">
-        <input class="puredashboard-combobox__input js-puredashboard-combobox__input${this.clearable && this.value ? " puredashboard-combobox__input--clearable" : ""}" type="text" role="combobox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
-        ${this.clearable && this.value && !this.disabled ? html`<button type="button" class="puredashboard-combobox__clear" tabindex="-1" aria-label="${this._label("clear")}" @mousedown="${(e) => e.preventDefault()}" @click="${() => { this._clear(); this._close(); }}"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>` : ""}
+      <div class="puredashboard-combobox__control${multi ? " puredashboard-combobox__control--multiple" : ""}">${multi ? repeat(chips, (c) => c.value, (c) => html`<puredashboard-tag class="puredashboard-combobox__chip" size="sm" ?closable="${!this.disabled}" .labels="${{ remove: this._label("remove", c.label) }}" @close="${(e) => { e.preventDefault(); this._removeChip(c.value); }}">${c.label}</puredashboard-tag>`) : ""}
+        <input class="puredashboard-combobox__input js-puredashboard-combobox__input${this.clearable && this._hasValue() ? " puredashboard-combobox__input--clearable" : ""}" type="text" role="combobox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${multi && chips.length ? "" : this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
+        ${this.clearable && this._hasValue() && !this.disabled ? html`<button type="button" class="puredashboard-combobox__clear" tabindex="-1" aria-label="${this._label("clear")}" @mousedown="${(e) => e.preventDefault()}" @click="${() => { this._clear(); this._close(); }}"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>` : ""}
         <svg class="puredashboard-combobox__chevron" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-        <div class="puredashboard-combobox__list js-puredashboard-combobox__list${open ? " puredashboard-combobox__list--open" : ""}" id="${this._listId}" role="listbox" popover="${usePopover ? "manual" : null}" ?hidden="${!open}">
+        <div class="puredashboard-combobox__list js-puredashboard-combobox__list${open ? " puredashboard-combobox__list--open" : ""}" id="${this._listId}" role="listbox" aria-multiselectable="${multi ? "true" : null}" popover="${usePopover ? "manual" : null}" ?hidden="${!open}">
           ${open && this.loading ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("loading")}</div>` : ""}
           ${open && !this.loading && list.length === 0 ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("noResults")}</div>` : ""}
           ${repeat(list, (o) => o.value, (o, i) => {
-            const selected = o.value === this.value;
+            const selected = this._isChosen(o);
             const active = i === this._active;
             return html`<div class="puredashboard-combobox__option js-puredashboard-combobox__option${selected ? " puredashboard-combobox__option--selected" : ""}${active ? " puredashboard-combobox__option--active" : ""}${o.disabled ? " puredashboard-combobox__option--disabled" : ""}" id="${this._optId(i)}" role="option" aria-selected="${selected ? "true" : "false"}" aria-disabled="${o.disabled ? "true" : "false"}" @mousedown="${(e) => { e.preventDefault(); if (!o.disabled) this._commit(o); }}">${o.label}</div>`;
           })}
@@ -397,7 +464,7 @@ class PuredashboardCombobox extends Reactive {
   // API when available (top layer, escapes overflow); fixed/high-z fallback otherwise.
   proto._syncPopup = function _syncPopup() {
     const list = this.$(".js-puredashboard-combobox__list");
-    const input = this._input();
+    const input = this.multiple ? this.$(".puredashboard-combobox__control") : this._input(); // multiple: anchor under the chips too
     if (!list || !input) return;
     const open = !!this._open && !this.disabled;
     const usePopover = typeof list.showPopover === "function";

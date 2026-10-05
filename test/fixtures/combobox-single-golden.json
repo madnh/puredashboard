@@ -1,0 +1,449 @@
+{
+ "basic": [
+  {
+   "step": "mount",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "open",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"z-index: 1000; position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\">\n          \n          \n          <div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-0\" aria-selected=\"false\" aria-disabled=\"false\">Alpha</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-1\" aria-selected=\"false\" aria-disabled=\"false\">Beta</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option puredashboard-combobox__option--disabled\" id=\"js-puredashboard-combobox__opt-N-2\" aria-selected=\"false\" aria-disabled=\"true\">Gamma</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-3\" aria-selected=\"false\" aria-disabled=\"false\">Delta</div>\n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ]
+   ],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "type e",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"z-index: 1000; position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\">\n          \n          \n          <div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-0\" aria-selected=\"false\" aria-disabled=\"false\">Beta</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-1\" aria-selected=\"false\" aria-disabled=\"false\">Delta</div>\n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "e",
+   "events": [
+    [
+     "comboboxsearch",
+     {
+      "text": "e"
+     }
+    ]
+   ],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "ArrowDown",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"js-puredashboard-combobox__opt-N-0\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"z-index: 1000; position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\">\n          \n          \n          <div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option puredashboard-combobox__option--active\" id=\"js-puredashboard-combobox__opt-N-0\" aria-selected=\"false\" aria-disabled=\"false\">Beta</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-1\" aria-selected=\"false\" aria-disabled=\"false\">Delta</div>\n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "e",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "ArrowDown 2",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"js-puredashboard-combobox__opt-N-1\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"z-index: 1000; position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\">\n          \n          \n          <div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-0\" aria-selected=\"false\" aria-disabled=\"false\">Beta</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option puredashboard-combobox__option--active\" id=\"js-puredashboard-combobox__opt-N-1\" aria-selected=\"false\" aria-disabled=\"false\">Delta</div>\n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "e",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "Enter commits",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "d",
+   "text": "Delta",
+   "events": [
+    [
+     "change",
+     {
+      "value": "d"
+     }
+    ]
+   ],
+   "form": {
+    "value": "d",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "reopen",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px; z-index: 1000;\">\n          \n          \n          <div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-0\" aria-selected=\"false\" aria-disabled=\"false\">Alpha</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option\" id=\"js-puredashboard-combobox__opt-N-1\" aria-selected=\"false\" aria-disabled=\"false\">Beta</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option puredashboard-combobox__option--disabled\" id=\"js-puredashboard-combobox__opt-N-2\" aria-selected=\"false\" aria-disabled=\"true\">Gamma</div><div role=\"option\" class=\"puredashboard-combobox__option js-puredashboard-combobox__option puredashboard-combobox__option--selected\" id=\"js-puredashboard-combobox__opt-N-3\" aria-selected=\"true\" aria-disabled=\"false\">Delta</div>\n        </div>\n      </div>\n      ",
+   "value": "d",
+   "text": "",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ]
+   ],
+   "form": {
+    "value": "d",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "mousedown Alpha",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "a",
+   "text": "Alpha",
+   "events": [
+    [
+     "change",
+     {
+      "value": "a"
+     }
+    ]
+   ],
+   "form": {
+    "value": "a",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "Escape closes",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "a",
+   "text": "Alpha",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ]
+   ],
+   "form": {
+    "value": "a",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "2nd Escape clears",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [
+    [
+     "change",
+     {
+      "value": ""
+     }
+    ]
+   ],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "Tab commits exact",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "d",
+   "text": "Delta",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ],
+    [
+     "comboboxsearch",
+     {
+      "text": "delta"
+     }
+    ],
+    [
+     "change",
+     {
+      "value": "d"
+     }
+    ]
+   ],
+   "form": {
+    "value": "d",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "clear button",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [
+    [
+     "change",
+     {
+      "value": ""
+     }
+    ]
+   ],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "no results",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px; z-index: 1000;\">\n          \n          <div class=\"puredashboard-combobox__empty\" role=\"option\" aria-disabled=\"true\">No results</div>\n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "zz",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ],
+    [
+     "comboboxsearch",
+     {
+      "text": "zz"
+     }
+    ]
+   ],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "outside click",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "value set",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input puredashboard-combobox__input--clearable\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        <button type=\"button\" class=\"puredashboard-combobox__clear\" tabindex=\"-1\" aria-label=\"Clear\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg></button>\n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "b",
+   "text": "Beta",
+   "events": [],
+   "form": {
+    "value": "b",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "form reset",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"Chọn\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  }
+ ],
+ "custom": [
+  {
+   "step": "mount",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {
+      "valueMissing": true
+     },
+     "msg": "This field is required."
+    }
+   }
+  },
+  {
+   "step": "outside commits free text",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "Free",
+   "text": "Free",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ],
+    [
+     "comboboxsearch",
+     {
+      "text": "Free"
+     }
+    ],
+    [
+     "change",
+     {
+      "value": "Free"
+     }
+    ]
+   ],
+   "form": {
+    "value": "Free",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "reopen over free text",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"true\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list puredashboard-combobox__list--open\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px; z-index: 1000;\">\n          \n          <div class=\"puredashboard-combobox__empty\" role=\"option\" aria-disabled=\"true\">No results</div>\n          \n        </div>\n      </div>\n      ",
+   "value": "Free",
+   "text": "Free",
+   "events": [
+    [
+     "comboboxopen",
+     {}
+    ]
+   ],
+   "form": {
+    "value": "Free",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "Escape commits exact label",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "b",
+   "text": "Beta",
+   "events": [
+    [
+     "comboboxsearch",
+     {
+      "text": "Beta"
+     }
+    ],
+    [
+     "change",
+     {
+      "value": "b"
+     }
+    ]
+   ],
+   "form": {
+    "value": "b",
+    "validity": {
+     "flags": {},
+     "msg": ""
+    }
+   }
+  },
+  {
+   "step": "error",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"true\" aria-describedby=\"js-puredashboard-combobox__error-N\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      <div class=\"puredashboard-combobox__error\" role=\"alert\" id=\"js-puredashboard-combobox__error-N\">Bad</div>",
+   "value": "b",
+   "text": "Beta",
+   "events": [],
+   "form": {
+    "value": "b",
+    "validity": {
+     "flags": {
+      "customError": true
+     },
+     "msg": "Bad"
+    }
+   }
+  },
+  {
+   "step": "required empty",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {
+      "valueMissing": true
+     },
+     "msg": "This field is required."
+    }
+   }
+  },
+  {
+   "step": "disabled",
+   "html": "\n      <div class=\"puredashboard-combobox__control\">\n        <input type=\"text\" role=\"combobox\" autocomplete=\"off\" spellcheck=\"false\" aria-autocomplete=\"list\" class=\"puredashboard-combobox__input js-puredashboard-combobox__input\" aria-label=\"\" aria-labelledby=\"\" aria-expanded=\"false\" aria-controls=\"js-puredashboard-combobox__list-N\" aria-activedescendant=\"\" aria-invalid=\"false\" aria-describedby=\"\" placeholder=\"\" required=\"\" disabled=\"\">\n        \n        <svg class=\"puredashboard-combobox__chevron\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n        <div role=\"listbox\" class=\"puredashboard-combobox__list js-puredashboard-combobox__list\" id=\"js-puredashboard-combobox__list-N\" style=\"position: fixed; margin: 0px; inset: auto; min-width: 0px; top: 4px; left: 8px;\" hidden=\"\">\n          \n          \n          \n        </div>\n      </div>\n      ",
+   "value": "",
+   "text": "",
+   "events": [],
+   "form": {
+    "value": "",
+    "validity": {
+     "flags": {
+      "valueMissing": true
+     },
+     "msg": "This field is required."
+    }
+   }
+  }
+ ]
+}
