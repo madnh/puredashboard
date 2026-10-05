@@ -16,6 +16,13 @@
 //   }).show();
 //   // later: d.close("ok");  →  d.closed resolves to "ok"
 //
+//   // Actions: buttons rendered by the library (<puredashboard-button>) in a footer row, no hand-built DOM.
+//   dialog({ title: "Delete?", actions: [
+//     { label: "Cancel", value: "cancel" },
+//     { label: "Delete", value: "ok", variant: "primary", danger: true },       // closes with that value
+//     { label: "Save", variant: "primary", onclick: (ev, d) => save(d) },       // or run your own handler
+//   ] }).show();                                                                // d.actions = [button elements]
+//
 //   drawer({ position: "right", title: "Filters", content: (b) => {…} }).show();
 //
 // Layout: the dialog is a flex column — the header and the optional footer stay
@@ -85,6 +92,37 @@ export function dialog(opts = {}) {
     el.appendChild(foot);
   }
 
+  // ---- actions (optional) — footer buttons rendered by the library --------------
+  // `actions: [{ label, value?, variant?, danger?, disabled?, attrs?, onclick? }]`. Each becomes a <puredashboard-button> in a
+  // `.puredashboard-dialog__actions` row appended to the footer (created when `footer` is absent). A click calls `onclick(ev, ctrl)`
+  // if given, otherwise closes the dialog with `value`. The elements are returned as `ctrl.actions` (same order).
+  const actionEls = [];
+  if (Array.isArray(opts.actions) && opts.actions.length) {
+    // The buttons are <puredashboard-button>s: make sure that element is defined, or an app that never imported button.js
+    // would get unknown elements (no focus, no keyboard activation, no button role). Loaded only when actions are used, so
+    // a dialog without them stays dependency-free; the elements created below upgrade in place once it is defined.
+    if (typeof customElements !== "undefined" && !customElements.get("puredashboard-button")) import("./button.js");
+    if (!foot) {
+      foot = document.createElement("div");
+      foot.className = "puredashboard-dialog__footer";
+      el.appendChild(foot);
+    }
+    const row = document.createElement("div");
+    row.className = "puredashboard-dialog__actions";
+    for (const a of opts.actions) {
+      const b = document.createElement("puredashboard-button");
+      if (a.variant) b.setAttribute("variant", a.variant);
+      if (a.danger) b.setAttribute("danger", "");
+      if (a.disabled) b.setAttribute("disabled", "");
+      for (const [k, v] of Object.entries(a.attrs || {})) b.setAttribute(k, v);
+      b.textContent = a.label;
+      b.addEventListener("click", (e) => { if (a.onclick) a.onclick(e, ctrl); else ctrl.close(a.value); });
+      row.appendChild(b);
+      actionEls.push(b);
+    }
+    foot.appendChild(row);
+  }
+
   document.body.appendChild(el);
 
   // ---- drawer layout + slide (inline, CSP-safe) -------------------------------
@@ -127,7 +165,7 @@ export function dialog(opts = {}) {
   el.addEventListener("close", teardown);          // Esc / native closedby path
 
   const ctrl = {
-    el, body, footer: foot, closed,
+    el, body, footer: foot, closed, actions: actionEls,
     show() {
       if (typeof el.showModal === "function") { try { el.showModal(); } catch { /* jsdom */ } }
       if (!el.open) el.open = true;                // fallback where modal isn't supported

@@ -103,6 +103,8 @@ if (await confirm("Delete 3 services?")) { /* … */ }        // → boolean
 const name = await prompt("New name?", { value: "web-01" }); // → string | null
 dialog({ title: "Edit", content: (body) => body.append(myForm), onClose: (v) => {} }).show();
 drawer({ position: "right", title: "Filters", content: (b) => {} }).show();
+dialog({ title: "Delete?", content: "Sure?", actions: [{ label: "Cancel", value: "cancel" },
+  { label: "Delete", value: "ok", variant: "primary", danger: true }] }).show();   // library-rendered footer buttons; or onclick: (ev, d) => …
 ```
 ```js
 import { menu } from "LIB/menu.js";              // anchored dropdown

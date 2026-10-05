@@ -196,6 +196,15 @@ the API may still change between minor versions.
   scrolls only `<main>`, but such a wrapper was sized by its content, so the whole page
   scrolled and the sider scrolled with it. `.app-frame` is a flex column that fills
   `<body>`, has `min-height: 0` and scrolls itself. Upstreamed from model-gateway (GW-163).
+- **`dialog({ actions })`**: footer buttons rendered by the library. Each
+  `{ label, value?, variant?, danger?, disabled?, attrs?, onclick? }` becomes a
+  `<puredashboard-button>` in a `.puredashboard-dialog__actions` row appended to the
+  footer (created when there is no `footer`). A click calls `onclick(ev, ctrl)` if given,
+  otherwise closes the dialog with `value`; the elements are returned as `ctrl.actions`.
+  `button.js` is loaded on demand the first time actions are used, so the buttons work
+  even if the app never imported it, and a dialog without `actions` stays
+  dependency-free. Without `actions` nothing changes. Upstreamed from model-gateway
+  (GW-167).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
