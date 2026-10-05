@@ -65,7 +65,7 @@ let uid = 0;
  * @prop {string}  placeholder - Placeholder text for the empty input. Default `""`.
  * @prop {boolean} disabled    - Disable the control. Default `false`.
  * @prop {boolean} required    - Mark required (empty → `valueMissing`). Default `false`.
- * @prop {boolean} allowCustom - If `true`, a typed value with no matching option is accepted as the value (free text). Default `false`.
+ * @prop {boolean} allowCustom - If `true`, a typed value with no matching option is accepted as the value (free text) — on Enter/Tab, and also when the list closes by an outside click or Escape, so typed text is never silently dropped; reopening over free text keeps it in the box. Default `false`.
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `required`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission (on the host).
@@ -180,7 +180,9 @@ class PuredashboardCombobox extends Reactive {
   // menu.js). Light-dismiss is wired by hand on document pointerdown.
   _open_() {
     if (this._open || this.disabled) return;
-    this._query = ""; this._active = -1; this._open = true;
+    // allowCustom with free text (no option selected): reopen on that text, not on an empty box, so it is not lost.
+    this._query = this.allowCustom && !this._selected() ? (this.value ?? "") : "";
+    this._typed = false; this._active = -1; this._open = true;
     document.addEventListener("pointerdown", this._onOutside, true);
   }
   _close() {
@@ -190,7 +192,15 @@ class PuredashboardCombobox extends Reactive {
     const list = this.$(".js-puredashboard-combobox__list");
     try { if (list && list.matches && list.matches(":popover-open") && list.hidePopover) list.hidePopover(); } catch { /* */ }
   }
-  _onOutside = (e) => { if (!this.contains(e.target)) { this._close(); this.requestUpdate(); } };
+  // Closing without Enter/Tab (outside click, Escape) keeps what was typed when allowCustom: commit it instead of redrawing from the old value.
+  _commitTyped() {
+    if (!this._open || !this.allowCustom || !this._typed) return;
+    const q = (this._query ?? "").trim();
+    const exact = this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
+    const next = exact ? exact.value : q;
+    if (this.value !== next) { this.value = next; this.emit("change", { value: next }); }
+  }
+  _onOutside = (e) => { if (!this.contains(e.target)) { this._commitTyped(); this._close(); this.requestUpdate(); } };
 
   // The light-dismiss listener lives on DOCUMENT, so it outlives this element unless we take
   // it back. Removing the element while the popup is open left it registered for the page's
@@ -244,7 +254,7 @@ class PuredashboardCombobox extends Reactive {
   // ---- input / keyboard ----------------------------------------------------
   _onInput(e) {
     if (this.disabled) return;
-    this._query = e.target.value;
+    this._query = e.target.value; this._typed = true;
     if (!this._open) { this._open = true; document.addEventListener("pointerdown", this._onOutside, true); }
     this._active = -1; // reset active option as the filtered set changes
   }
@@ -272,7 +282,7 @@ class PuredashboardCombobox extends Reactive {
         break;
       }
       case "Escape": {
-        if (this._open) { e.preventDefault(); this._close(); }
+        if (this._open) { e.preventDefault(); this._commitTyped(); this._close(); }
         else if (this.value) { e.preventDefault(); this._clear(); } // 2nd Escape clears
         break;
       }

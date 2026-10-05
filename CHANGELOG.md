@@ -332,6 +332,12 @@ the API may still change between minor versions.
 - **Router** (`router.js`): a malformed `%`-escape in a route param (e.g. `#/x/%`) no
   longer throws an uncaught `URIError` that wedged `render()` — it falls back to the raw
   capture.
+- **`<puredashboard-combobox allowCustom>` no longer drops typed free text.** Closing the
+  list by an outside click or Escape redrew the box from the old value, so the text was
+  lost; it is now committed (an exact label match commits that option, otherwise the text
+  itself, with `change`). Reopening over free text starts from it instead of an empty
+  box. Without `allowCustom` nothing changes: those closes still revert. Upstreamed from
+  model-gateway (GW-160).
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

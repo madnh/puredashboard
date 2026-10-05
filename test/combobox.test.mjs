@@ -274,5 +274,58 @@ const OPTS = [
   ok(hits === 0, `dismiss listener: removing the element unregisters it — fired ${hits} time(s)`);
 }
 
+// ---- allowCustom: closing by outside click or Escape keeps (commits) the typed text ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  el.allowCustom = true;
+  await tick();
+  const input = el.querySelector(".js-puredashboard-combobox__input");
+  const changes = [];
+  el.addEventListener("change", (e) => changes.push(e.detail.value));
+  type(input, "Free one"); await tick();
+  document.body.dispatchEvent(new w.Event("pointerdown", { bubbles: true })); await tick();
+  ok(el.value === "Free one", "allowCustom: outside click commits the typed text");
+  ok(input.value === "Free one", "allowCustom: input still shows the typed text after outside click");
+  ok(changes.length === 1 && changes[0] === "Free one", "allowCustom: outside click emits one change with the typed text");
+
+  type(input, "Free two"); await tick();
+  key(input, "Escape"); await tick();
+  ok(input.getAttribute("aria-expanded") === "false", "allowCustom: Escape still closes the list");
+  ok(el.value === "Free two", "allowCustom: Escape commits the typed text");
+  ok(changes.length === 2 && changes[1] === "Free two", "allowCustom: Escape emits change with the typed text");
+
+  type(input, "vietnam"); await tick();
+  document.body.dispatchEvent(new w.Event("pointerdown", { bubbles: true })); await tick();
+  ok(el.value === "vn", "allowCustom: typed text that equals an option label commits that option's value");
+
+  // reopening over free text starts from that text, not an empty box
+  el.value = "Free three"; await tick();
+  input.dispatchEvent(new w.Event("focus")); await tick();
+  ok(input.getAttribute("aria-expanded") === "true", "reopened");
+  ok(input.value === "Free three", "allowCustom: reopening over free text keeps it in the box");
+  const n = changes.length;
+  document.body.dispatchEvent(new w.Event("pointerdown", { bubbles: true })); await tick();
+  ok(el.value === "Free three" && changes.length === n, "allowCustom: open + close without typing commits nothing");
+}
+
+// ---- without allowCustom, outside click / Escape still revert typed text (default unchanged) ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  el.value = "vn";
+  await tick();
+  const input = el.querySelector(".js-puredashboard-combobox__input");
+  let changed = 0;
+  el.addEventListener("change", () => changed++);
+  type(input, "Germ"); await tick();
+  document.body.dispatchEvent(new w.Event("pointerdown", { bubbles: true })); await tick();
+  ok(el.value === "vn" && changed === 0, "default: outside click does not commit typed text");
+  ok(input.value === "Vietnam", "default: input reverts to the selected label after outside click");
+  type(input, "Germ"); await tick();
+  key(input, "Escape"); await tick();
+  ok(el.value === "vn" && changed === 0, "default: Escape does not commit typed text");
+}
+
 console.log(`combobox.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
