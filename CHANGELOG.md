@@ -127,6 +127,17 @@ the API may still change between minor versions.
   after every render (and removed from it when removed from the host). Before, they sat on
   the wrapper where the browser ignores them, so a `<datalist>`, a numeric range or a mobile
   keyboard hint had no effect. Upstreamed from model-gateway (GW-160).
+- **`<puredashboard-combobox>` can be fed by the app (server search, refresh, clear).**
+  New events `comboboxopen` (each time the list opens, including reopening by typing
+  after Escape) and `comboboxsearch` (`detail.text`, per keystroke); new properties
+  `serverFilter` (typed text does not filter `options` locally — the app answers
+  `comboboxsearch` with new `options`), `loading` (only a "Loading…" row; the old options
+  are hidden and cannot be committed) and `clearable` (a clear button while a value is
+  set; emits `change` with `""`). New `labels` keys `loading`, `clear`. All opt-in.
+  Upstreamed from model-gateway (GW-162); the vendor patch's event names
+  `combobox-open` / `combobox-search` became `comboboxopen` / `comboboxsearch` (library
+  event names are one lowercase word, and a bare `open` would collide with the bubbling
+  `open` of `<puredashboard-popover>` / `<puredashboard-popconfirm>`).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

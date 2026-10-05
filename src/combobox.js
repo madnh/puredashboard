@@ -37,6 +37,8 @@ import { Reactive, html, repeat, labelIdFor } from "./reactive.js";
 // CONTENT (from `options` / the `placeholder` property), NOT fixed strings.
 const LABELS = {
   noResults: "No results",
+  loading: "Loading…",
+  clear: "Clear",
   required: "This field is required.",
 };
 
@@ -66,11 +68,16 @@ let uid = 0;
  * @prop {boolean} disabled    - Disable the control. Default `false`.
  * @prop {boolean} required    - Mark required (empty → `valueMissing`). Default `false`.
  * @prop {boolean} allowCustom - If `true`, a typed value with no matching option is accepted as the value (free text) — on Enter/Tab, and also when the list closes by an outside click or Escape, so typed text is never silently dropped; reopening over free text keeps it in the box. Default `false`.
+ * @prop {boolean} serverFilter - If `true`, the typed text does NOT filter `options` here: the app answers the `comboboxsearch` event by setting new `options` (server-side search). Default `false`.
+ * @prop {boolean} loading     - Show only a "Loading…" row (the old options are hidden and cannot be committed) while the app fetches `options` (after `comboboxopen` / `comboboxsearch`). Default `false`.
+ * @prop {boolean} clearable   - Show a clear button while a value is set (emits `change` with `""`). Default `false`.
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
- * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `required`. Unset keys keep the English default.
+ * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `loading`, `clear` (the clear button's aria-label), `required`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission (on the host).
  * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
+ * @fires comboboxopen - Bubbling `CustomEvent` each time the list opens: the moment to (re)load `options`.
+ * @fires comboboxsearch - Bubbling `CustomEvent` per keystroke in the input, `detail.text` is the typed text.
  * @fires change - Bubbling `CustomEvent` fired on commit (selecting an option or, with `allowCustom`, committing free text). `detail.value` is the newly committed value.
  *
  * @method focus - `focus() => void` — focus the text input.
@@ -90,7 +97,7 @@ class PuredashboardCombobox extends Reactive {
   static formAssociated = true;
   static properties = {
     options: {}, value: {}, placeholder: {}, disabled: {}, required: {},
-    allowCustom: {}, error: {}, labels: {},
+    allowCustom: {}, error: {}, labels: {}, serverFilter: {}, loading: {}, clearable: {},
     // Internal reactive state (not part of the public API): whether the popup is
     // open, the current filter query, and the active option index (-1 = none).
     _open: {}, _query: {}, _active: {},
@@ -149,9 +156,10 @@ class PuredashboardCombobox extends Reactive {
   // Options filtered by the current query (case-insensitive substring on the label).
   // An empty query shows every option.
   _filtered() {
+    if (this.loading) return []; // while the app refreshes `options`, the old ones must not be selectable
     const q = (this._query ?? "").trim().toLowerCase();
     const all = this._options();
-    if (!q) return all;
+    if (!q || this.serverFilter) return all;
     return all.filter((o) => o.label.toLowerCase().includes(q));
   }
 
@@ -184,6 +192,7 @@ class PuredashboardCombobox extends Reactive {
     this._query = this.allowCustom && !this._selected() ? (this.value ?? "") : "";
     this._typed = false; this._active = -1; this._open = true;
     document.addEventListener("pointerdown", this._onOutside, true);
+    this.emit("comboboxopen", {});
   }
   _close() {
     if (!this._open) return;
@@ -239,7 +248,7 @@ class PuredashboardCombobox extends Reactive {
     if (this._active >= 0 && list[this._active]) { this._commit(list[this._active]); return; }
     const q = (this._query ?? "").trim();
     if (this._open && q) {
-      const exact = this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
+      const exact = this.loading ? null : this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
       if (exact) { this._commit(exact); return; }
       if (this.allowCustom) {
         const changed = this.value !== q;
@@ -255,7 +264,9 @@ class PuredashboardCombobox extends Reactive {
   _onInput(e) {
     if (this.disabled) return;
     this._query = e.target.value; this._typed = true;
-    if (!this._open) { this._open = true; document.addEventListener("pointerdown", this._onOutside, true); }
+    // Typing reopens a list closed by Escape: that is an open too (emitted before the search so the app sees them in order).
+    if (!this._open) { this._open = true; document.addEventListener("pointerdown", this._onOutside, true); this.emit("comboboxopen", {}); }
+    this.emit("comboboxsearch", { text: e.target.value });
     this._active = -1; // reset active option as the filtered set changes
   }
 
@@ -351,10 +362,12 @@ class PuredashboardCombobox extends Reactive {
     const usePopover = typeof HTMLElement.prototype.showPopover === "function";
     return html`
       <div class="puredashboard-combobox__control">
-        <input class="puredashboard-combobox__input js-puredashboard-combobox__input" type="text" role="combobox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
+        <input class="puredashboard-combobox__input js-puredashboard-combobox__input${this.clearable && this.value ? " puredashboard-combobox__input--clearable" : ""}" type="text" role="combobox" aria-label="${this._ariaName()}" aria-labelledby="${this._ariaNamedBy()}" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="${open ? "true" : "false"}" aria-controls="${this._listId}" aria-activedescendant="${activeId}" aria-invalid="${invalid ? "true" : "false"}" aria-describedby="${this.error ? this._errId : ""}" .value="${this._display()}" placeholder="${this.placeholder || ""}" ?disabled="${!!this.disabled}" ?required="${!!this.required}" @input="${(e) => this._onInput(e)}" @keydown="${(e) => this._onKeydown(e)}" @focus="${() => this._open_()}" @click="${() => this._open_()}">
+        ${this.clearable && this.value && !this.disabled ? html`<button type="button" class="puredashboard-combobox__clear" tabindex="-1" aria-label="${this._label("clear")}" @mousedown="${(e) => e.preventDefault()}" @click="${() => { this._clear(); this._close(); }}"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>` : ""}
         <svg class="puredashboard-combobox__chevron" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         <div class="puredashboard-combobox__list js-puredashboard-combobox__list${open ? " puredashboard-combobox__list--open" : ""}" id="${this._listId}" role="listbox" popover="${usePopover ? "manual" : null}" ?hidden="${!open}">
-          ${open && list.length === 0 ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("noResults")}</div>` : ""}
+          ${open && this.loading ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("loading")}</div>` : ""}
+          ${open && !this.loading && list.length === 0 ? html`<div class="puredashboard-combobox__empty" role="option" aria-disabled="true">${this._label("noResults")}</div>` : ""}
           ${repeat(list, (o) => o.value, (o, i) => {
             const selected = o.value === this.value;
             const active = i === this._active;

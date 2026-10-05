@@ -327,5 +327,87 @@ const OPTS = [
   ok(el.value === "vn" && changed === 0, "default: Escape does not commit typed text");
 }
 
+// ---- comboboxopen / comboboxsearch events ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  await tick();
+  const input = el.querySelector(".js-puredashboard-combobox__input");
+  const log = [];
+  el.addEventListener("comboboxopen", (e) => log.push(["open", e.bubbles]));
+  el.addEventListener("comboboxsearch", (e) => log.push(["search", e.detail.text]));
+  input.dispatchEvent(new w.Event("focus")); await tick();
+  ok(log.length === 1 && log[0][0] === "open" && log[0][1] === true, "comboboxopen fires (bubbling) when the list opens");
+  input.dispatchEvent(new w.Event("click")); await tick();
+  ok(log.length === 1, "comboboxopen does not fire again while already open");
+  type(input, "vi"); await tick();
+  ok(log.length === 2 && log[1][0] === "search" && log[1][1] === "vi", "comboboxsearch carries detail.text per keystroke");
+  key(input, "Escape"); await tick();
+  type(input, "vie"); await tick();
+  ok(log.length === 4 && log[2][0] === "open" && log[3][0] === "search" && log[3][1] === "vie", "reopening by typing after Escape fires comboboxopen, then comboboxsearch");
+}
+
+// ---- serverFilter: typed text does not filter options locally ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  el.serverFilter = true;
+  await tick();
+  const input = el.querySelector(".js-puredashboard-combobox__input");
+  type(input, "zzz"); await tick();
+  ok(el.querySelectorAll('[role="option"]:not([aria-disabled="true"])').length === OPTS.length, "serverFilter: every option stays listed whatever is typed");
+  ok(!el.querySelector(".puredashboard-combobox__empty"), "serverFilter: no 'No results' row while options exist");
+  const el2 = mount("puredashboard-combobox");
+  el2.options = OPTS;
+  await tick();
+  const input2 = el2.querySelector(".js-puredashboard-combobox__input");
+  type(input2, "zzz"); await tick();
+  ok(el2.querySelectorAll('[role="option"]:not([aria-disabled="true"])').length === 0, "default: typed text still filters locally");
+}
+
+// ---- loading: only a Loading row, old options cannot be committed ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  el.loading = true;
+  await tick();
+  const input = el.querySelector(".js-puredashboard-combobox__input");
+  input.dispatchEvent(new w.Event("focus")); await tick();
+  const rows = el.querySelectorAll('[role="option"]');
+  ok(rows.length === 1 && rows[0].textContent === "Loading…" && rows[0].getAttribute("aria-disabled") === "true", "loading: a single disabled Loading… row");
+  let changed = 0;
+  el.addEventListener("change", () => changed++);
+  type(input, "Vietnam"); await tick();
+  key(input, "ArrowDown"); key(input, "Enter"); await tick();
+  ok(changed === 0 && (el.value == null || el.value === ""), "loading: an exact label match of an old option is not committed");
+  input.dispatchEvent(new w.Event("focus")); await tick(); // Enter closed the list; reopen it
+  el.loading = false; await tick();
+  ok(!el.querySelector(".puredashboard-combobox__empty") && el.querySelectorAll('[role="option"]').length === OPTS.length, "loading off: Loading row gone, options back");
+  el.labels = { loading: "Đang tải…" }; el.loading = true; await tick();
+  ok(el.querySelector(".puredashboard-combobox__empty").textContent === "Đang tải…", "loading label is localisable");
+}
+
+// ---- clearable: clear button while a value is set ----
+{
+  const el = mount("puredashboard-combobox");
+  el.options = OPTS;
+  el.value = "vn";
+  await tick();
+  ok(!el.querySelector(".puredashboard-combobox__clear"), "default: no clear button");
+  el.clearable = true; await tick();
+  const btn = el.querySelector(".puredashboard-combobox__clear");
+  ok(btn && btn.getAttribute("aria-label") === "Clear" && btn.getAttribute("type") === "button" && btn.tabIndex === -1, "clearable: named, non-submitting, out of the tab order");
+  ok(btn.querySelector("svg[aria-hidden=\"true\"]"), "clear button glyph is an inline SVG");
+  let detail = null;
+  el.addEventListener("change", (e) => { detail = e.detail; });
+  btn.dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(el.value === "" && detail && detail.value === "", "clear button clears the value and emits change with \"\"");
+  ok(!el.querySelector(".puredashboard-combobox__clear"), "clear button hidden once there is no value");
+  el.value = "vn"; el.disabled = true; await tick();
+  ok(!el.querySelector(".puredashboard-combobox__clear"), "clear button hidden while disabled");
+  el.disabled = false; el.labels = { clear: "Xoá" }; await tick();
+  ok(el.querySelector(".puredashboard-combobox__clear").getAttribute("aria-label") === "Xoá", "clear label is localisable");
+}
+
 console.log(`combobox.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

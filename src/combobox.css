@@ -79,6 +79,25 @@ puredashboard-combobox {
   overflow: visible;
 }
 
+/* clear button — left of the chevron, only while a value is set (clearable). */
+.puredashboard-combobox__clear {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--pd-combobox-pad-x) + 1.4em);
+  transform: translateY(-50%);
+  padding: 0 0.25em;
+  border: 0;
+  background: transparent;
+  color: var(--pd-muted);
+  font: inherit;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.puredashboard-combobox__clear:hover { color: var(--pd-text); }
+.puredashboard-combobox__input--clearable { padding-right: calc(var(--pd-combobox-pad-x) + 2.6em); }
+
 /* listbox popup — top layer (Popover) or fixed/high-z fallback. Re-declare the theme
  * tokens here so the popup is themed whether Popover promotes it or the fallback keeps
  * it in the control's subtree. */
