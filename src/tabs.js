@@ -92,6 +92,8 @@ class PuredashboardTabs extends Reactive {
     const t = (this.tabs || []).find((x) => x && x.id === id);
     if (!t || t.disabled) return;
     if (this.value === id) return;
+    // the re-render replaces the buttons: when focus is inside the tab list, put it on the new selected one in updated()
+    this._refocus = this.contains(document.activeElement);
     this.value = id;
     this.emit("tabchange", { value: id });
   }
@@ -111,7 +113,11 @@ class PuredashboardTabs extends Reactive {
       default: return;
     }
     e.preventDefault();
-    if (next) { this._activate(next.id); this.$(`[data-tab="${next.id}"]`)?.focus(); }
+    if (!next) return;
+    // _activate re-renders the buttons (the old one is replaced) and refocuses the new selected one in updated(); focusing the old
+    // button lost focus to <body> after a single arrow key.
+    if (next.id === cur) this.$(`[data-tab="${next.id}"]`)?.focus();
+    else this._activate(next.id);
   }
 
   // After each render, reflect the active tab onto the author-provided panels:
@@ -120,6 +126,7 @@ class PuredashboardTabs extends Reactive {
   // absent or not yet in the DOM).
   updated() {
     const active = this._current();
+    if (this._refocus) { this._refocus = false; this.$('[role="tab"][aria-selected="true"]')?.focus(); }
     for (const t of this.tabs || []) {
       if (!t || !t.panelId) continue;
       const panel = document.getElementById(t.panelId);

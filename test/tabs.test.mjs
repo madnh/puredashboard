@@ -172,5 +172,38 @@ const key = (el, k) => el.dispatchEvent(new w.KeyboardEvent("keydown", { key: k,
   ok(el2.querySelector("[role='tablist']").getAttribute("aria-label") === "Tabs", "default label kept when not overridden");
 }
 
+// ---- focus stays on the newly selected tab after a key or a click (the buttons re-render) ----
+{
+  const el = mount("puredashboard-tabs");
+  el.tabs = THREE();
+  await tick();
+  const sel = () => el.querySelector('[role="tab"][aria-selected="true"]');
+  sel().focus();
+  key(document.activeElement, "ArrowRight"); await tick();
+  ok(el.value === "b" && document.activeElement === sel() && sel().dataset.tab === "b", "after ONE ArrowRight focus is on the new selected tab");
+  key(document.activeElement, "ArrowRight"); await tick();
+  ok(el.value === "c" && document.activeElement === sel(), "a second ArrowRight still has a focused tab to act on");
+  key(document.activeElement, "Home"); await tick();
+  ok(el.value === "a" && document.activeElement === sel(), "Home: focus on the first tab");
+  key(document.activeElement, "End"); await tick();
+  ok(el.value === "c" && document.activeElement === sel(), "End: focus on the last tab");
+  el.querySelector('[data-tab="b"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(el.value === "b" && document.activeElement === sel(), "click with focus in the list: focus on the clicked (now selected) tab");
+}
+
+// ---- focus elsewhere is never stolen ----
+{
+  const outside = document.createElement("input");
+  document.body.appendChild(outside);
+  const el = mount("puredashboard-tabs");
+  el.tabs = THREE();
+  await tick();
+  outside.focus();
+  el.querySelector('[data-tab="c"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(el.value === "c" && document.activeElement === outside, "activation while focus is outside the tabs does not move focus");
+  el.value = "a"; await tick();
+  ok(document.activeElement === outside, "setting value programmatically does not move focus");
+}
+
 console.log(`tabs.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

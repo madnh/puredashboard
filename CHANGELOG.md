@@ -368,6 +368,11 @@ the API may still change between minor versions.
   itself, with `change`). Reopening over free text starts from it instead of an empty
   box. Without `allowCustom` nothing changes: those closes still revert. Upstreamed from
   model-gateway (GW-160).
+- **`<puredashboard-tabs>` no longer drops keyboard focus.** The tab buttons re-render on
+  every change, so after a click or one ArrowLeft/ArrowRight/Home/End the focused button
+  was replaced and focus fell to `<body>` — a second arrow key did nothing. When focus was
+  inside the tab list, the newly selected tab is focused after the render; focus outside
+  the tabs is never moved. Upstreamed from model-gateway (GW-161).
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`
