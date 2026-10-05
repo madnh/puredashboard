@@ -49,6 +49,8 @@ const LABELS = {
  * @prop {boolean} bordered - Draw the panel border/background. Default `true`.
  * @prop {Object}  labels   - Override UI strings. Keys: `region`. Unset keys keep the English default.
  * @attr {string}  title    - Declarative form of `title`.
+ * @attr {string}  role     - Kept if authored; otherwise `group`. Only the default group role gets the fallback name (`labels.region`; empty = none), and not when `aria-labelledby` is set.
+ * @attr {boolean} scroll   - Let the body scroll horizontally when its content is wider than the card (otherwise it is clipped).
  * @attr {boolean} bordered - Declarative form of `bordered` (presence). Absent attribute keeps the default `true`; use `bordered="false"` to turn it off.
  *
  * @cssprop [--pd-card-pad]    - Padding inside header/body/footer (defaults to `--sp-4`).
@@ -146,8 +148,10 @@ class PuredashboardCard extends HTMLElement {
     this.appendChild(body);
     if (this._footer) this.appendChild(this._footer);
 
-    this.setAttribute("role", "group");
-    if (!this.hasAttribute("aria-label") && !this._title) this.setAttribute("aria-label", this._label("region"));
+    // An authored role (e.g. region, or none) is kept; the fallback name is only for the default group role and an empty
+    // `labels.region` means no fallback name.
+    if (!this.hasAttribute("role")) this.setAttribute("role", "group");
+    if (this.getAttribute("role") === "group" && !this.hasAttribute("aria-label") && !this.hasAttribute("aria-labelledby") && !this._title && this._label("region")) this.setAttribute("aria-label", this._label("region"));
     this._reflectBordered();
   }
 

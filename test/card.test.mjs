@@ -129,5 +129,42 @@ void PuredashboardCard;
   ok(el._label("region") === "Bảng", "labels override the default string");
 }
 
+// ---- an authored role is kept; the fallback name only for the default group role ----
+{
+  document.body.innerHTML = `<puredashboard-card><p>x</p></puredashboard-card>`;
+  const def = document.body.firstElementChild;
+  ok(def.getAttribute("role") === "group" && def.getAttribute("aria-label") === "Panel", "default: role=group with the fallback name");
+
+  document.body.innerHTML = `<puredashboard-card role="region" aria-label="Usage"><p>x</p></puredashboard-card>`;
+  const reg = document.body.firstElementChild;
+  ok(reg.getAttribute("role") === "region" && reg.getAttribute("aria-label") === "Usage", "authored role=region kept, authored name kept");
+
+  document.body.innerHTML = `<puredashboard-card role="none"><p>x</p></puredashboard-card>`;
+  const none = document.body.firstElementChild;
+  ok(none.getAttribute("role") === "none" && !none.hasAttribute("aria-label"), "authored role=none kept, no fallback name");
+
+  document.body.innerHTML = `<p id="h">Heading</p><puredashboard-card aria-labelledby="h"><p>x</p></puredashboard-card>`;
+  const lb = document.body.querySelector("puredashboard-card");
+  ok(lb.getAttribute("role") === "group" && !lb.hasAttribute("aria-label"), "aria-labelledby: no fallback aria-label competing with it");
+
+  const empty = document.createElement("puredashboard-card");
+  empty.labels = { region: "" };
+  document.body.appendChild(empty);
+  ok(!empty.hasAttribute("aria-label"), "labels.region empty: no fallback name at all (was aria-label=\"\")");
+}
+
+// ---- scroll: a wide body scrolls instead of being clipped (CSS contract, computed in jsdom) ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/card.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  document.body.innerHTML = `<puredashboard-card><p>a</p></puredashboard-card><puredashboard-card scroll><p>b</p></puredashboard-card>`;
+  const [a, b] = document.body.querySelectorAll("puredashboard-card");
+  ok(w.getComputedStyle(a.querySelector(".puredashboard-card__body")).overflowX !== "auto", "default: body does not scroll");
+  ok(w.getComputedStyle(b.querySelector(".puredashboard-card__body")).overflowX === "auto", "scroll: body scrolls horizontally");
+  style.remove();
+}
+
 console.log(`card.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

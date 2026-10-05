@@ -31,6 +31,9 @@ puredashboard-card {
   overflow: clip;
 }
 
+/* `scroll` on the host: a wide body scrolls inside the card instead of being clipped by overflow: clip above. */
+puredashboard-card[scroll] > .puredashboard-card__body { overflow-x: auto; }
+
 /* Flat variant — the script sets data-card-flat when bordered is false. */
 puredashboard-card[data-card-flat] {
   background: none;

@@ -213,6 +213,13 @@ the API may still change between minor versions.
   actions columns alike), so assistive tech maps each cell to its column header
   unambiguously. This changes the markup of every table; nothing else about the header
   changes. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-card>` keeps an authored `role`; `scroll` attribute.** The card
+  always forced `role="group"` with the English fallback name "Panel". An authored role
+  (`region`, `none`…) is now kept; the fallback name applies only to the default group
+  role, not when `aria-labelledby` is set, and an empty `labels.region` now means no name
+  (it used to write `aria-label=""`). A `scroll` host attribute lets a body wider than
+  the card scroll horizontally instead of being clipped. Upstreamed from model-gateway
+  (GW-161).
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
