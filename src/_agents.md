@@ -419,7 +419,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 ### Navigation
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
-| `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements |
+| `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId,href}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements; with `href` on the tabs = link mode: `<nav>` of real `<a>`, `value` = current page (`aria-current`), no panels/keyboard/`tabchange`; `disabled`/no-`href` tab = non-link span |
 | `puredashboard-breadcrumb` | `items`([{label,href}]), `maxItems` | — | last = current; real `<a>` |
 | `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount`, `hasMore` | `pagechange`{page,direction} | windowed + ellipsis; `hasMore` = cursor/keyset paging (`pageCount` reached so far, one more offered) |
 | `puredashboard-steps` | `steps`, `current`(0-based), `vertical`, `clickable` | `stepchange`{index} | |

@@ -205,5 +205,46 @@ const key = (el, k) => el.dispatchEvent(new w.KeyboardEvent("keydown", { key: k,
   ok(document.activeElement === outside, "setting value programmatically does not move focus");
 }
 
+// ---- link mode: any tab with href → a <nav> of real links ----
+{
+  const el = mount("puredashboard-tabs");
+  el.tabs = [
+    { id: "a", label: "Alpha", href: "/a", panelId: "pa" },
+    { id: "b", label: "Bravo", href: "/b?x=1" },
+    { id: "c", label: "Charlie", href: "/c", disabled: true },
+    { id: "d", label: "Delta" },
+  ];
+  el.value = "b";
+  await tick();
+  const nav = el.querySelector("nav.puredashboard-tabs__list");
+  ok(nav && nav.getAttribute("aria-label") === "Tabs", "link mode renders a named <nav>");
+  ok(!el.querySelector('[role="tablist"], [role="tab"]'), "link mode: no tab roles");
+  const links = [...nav.querySelectorAll("a")];
+  ok(links.length === 2 && links[0].getAttribute("href") === "/a" && links[1].getAttribute("href") === "/b?x=1", "enabled tabs with href are real <a href>");
+  ok(links[1].getAttribute("aria-current") === "page" && links[1].classList.contains("puredashboard-tabs__tab--active"), "value's tab is aria-current=page and styled active");
+  ok(links[0].getAttribute("aria-current") === "false", "other links are not current");
+  ok(links.every((a) => !a.hasAttribute("tabindex")), "no roving tabindex: every link is in the tab order");
+  const spans = [...nav.querySelectorAll("span.puredashboard-tabs__tab")];
+  ok(spans.length === 2 && spans.every((s) => s.getAttribute("aria-disabled") === "true"), "disabled or href-less tabs are non-link spans with aria-disabled");
+  let changes = 0;
+  el.addEventListener("tabchange", () => changes++);
+  links[0].dispatchEvent(new w.MouseEvent("click", { bubbles: true, cancelable: true })); await tick();
+  key(links[0], "ArrowRight"); await tick();
+  ok(changes === 0 && el.value === "b", "link mode: neither click nor arrow keys activate anything (navigation is the browser's)");
+}
+
+// ---- link mode leaves panels alone; without href the tablist is unchanged ----
+{
+  document.body.innerHTML = `<div id="pa">A</div><div id="pb" hidden>B</div>`;
+  const el = mount("puredashboard-tabs");
+  el.tabs = [{ id: "a", label: "Alpha", href: "/a", panelId: "pa" }, { id: "b", label: "Bravo", href: "/b", panelId: "pb" }];
+  el.value = "b";
+  await tick();
+  ok(!document.getElementById("pa").hidden && document.getElementById("pb").hidden, "link mode: panelId is ignored (panels untouched)");
+  el.tabs = [{ id: "a", label: "Alpha" }, { id: "b", label: "Bravo" }];
+  await tick();
+  ok(el.querySelector('[role="tablist"]') && !el.querySelector("nav"), "no href: back to the APG tablist");
+}
+
 console.log(`tabs.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

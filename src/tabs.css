@@ -43,6 +43,10 @@ puredashboard-tabs {
 }
 .puredashboard-tabs__tab:hover:not(:disabled) { color: var(--pd-text); }
 
+/* link mode: a <nav> of real <a> links styled as the same tabs; wraps instead of overflowing */
+.puredashboard-tabs__list--links { flex-wrap: wrap; }
+a.puredashboard-tabs__tab { display: inline-block; text-decoration: none; }
+
 /* the active indicator: a STRAIGHT underline bar on the list baseline. Drawn as a
  * pseudo-element (no border-radius) so the line never curls up at its ends. */
 .puredashboard-tabs__tab::after {

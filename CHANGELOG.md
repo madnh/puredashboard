@@ -168,6 +168,13 @@ the API may still change between minor versions.
   far and offers one more after them, with a trailing `…` while more may follow.
   `pagechange` now also carries `direction` (`"next"` | `"prev"`, relative to the previous
   page) — additive, `detail.page` is unchanged. Upstreamed from model-gateway (GW-163).
+- **`<puredashboard-tabs>` link mode.** When any tab has an `href`, the bar renders a
+  `<nav>` of real `<a>` links styled as the same tabs (open in a new tab, back/forward
+  and middle-click work): the tab for `value` carries `aria-current="page"`; there are no
+  tab roles, no roving tabindex, no arrow keys, no panels (`panelId` is ignored) and no
+  `tabchange` — navigation is the browser's. A tab that is `disabled` or has no `href`
+  renders as a non-link `<span aria-disabled="true">`. Without any `href` nothing changes.
+  Upstreamed from model-gateway (GW-163).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
