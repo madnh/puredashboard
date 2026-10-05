@@ -24,6 +24,10 @@ const LABELS = {
   required: "This field is required.",
 };
 
+// Native <input> attributes with no reactive property of their own: authored on the HOST (<puredashboard-input list="ids" maxlength="8">),
+// copied to the inner <input> after every render — otherwise they sit on a wrapper element where the browser ignores them.
+const FORWARDED = ["list", "autocomplete", "inputmode", "maxlength", "minlength", "min", "max", "step", "pattern", "enterkeyhint", "autocapitalize", "spellcheck"];
+
 let uid = 0;
 
 /**
@@ -45,6 +49,7 @@ let uid = 0;
  * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
  * @prop {Object}  labels      - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission.
+ * @attr {string}  list, autocomplete, inputmode, maxlength, minlength, min, max, step, pattern, enterkeyhint, autocapitalize, spellcheck - Forwarded as-is to the inner native `<input>` (removed from it when the host attribute is removed).
  * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
  *
  * @fires input  - Native, bubbling `input` from the inner field (per keystroke). Read `.value` / `event.target.value`.
@@ -78,9 +83,9 @@ class PuredashboardInput extends Reactive {
   // Reflect declarative HTML attributes into reactive properties, so the control
   // can be configured the natural way inside a form — <puredashboard-input
   // type="email" required> — not only via JS. Boolean attrs map by presence.
-  static observedAttributes = ["value", "type", "placeholder", "size", "disabled", "required", "readonly", "aria-label", "aria-labelledby"];
+  static observedAttributes = ["value", "type", "placeholder", "size", "disabled", "required", "readonly", "aria-label", "aria-labelledby", ...FORWARDED];
   attributeChangedCallback(name, _old, val) {
-    if (name.startsWith("aria-")) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
+    if (name.startsWith("aria-") || FORWARDED.includes(name)) { this.requestUpdate(); return; }   // mirrored onto the inner control in render()
     const bool = name === "disabled" || name === "required" || name === "readonly";
     this[name] = bool ? val !== null : val;
   }
@@ -113,9 +118,14 @@ class PuredashboardInput extends Reactive {
 
   // Push the current value + validity into the owning <form> after every render.
   updated() {
+    const field = this._field();
+    if (field) for (const a of FORWARDED) {
+      const v = this.getAttribute(a);
+      if (v === null) field.removeAttribute(a);
+      else if (field.getAttribute(a) !== v) field.setAttribute(a, v);
+    }
     if (!this._internals || !this._internals.setFormValue) return;
     this._internals.setFormValue(this.value ?? "");
-    const field = this._field();
     if (this.error) this._internals.setValidity({ customError: true }, this.error, field || undefined);
     else if (field && field.validity) this._internals.setValidity(field.validity, field.validationMessage, field);
     else this._internals.setValidity({});

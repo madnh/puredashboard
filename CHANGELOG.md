@@ -121,6 +121,12 @@ the API may still change between minor versions.
   a copy button that reads `textContent` on click and keeps escapes (no raw newline / ANSI
   reaches the clipboard → paste-injection safe). XSS-safe: keys/values render as escaped
   text nodes.
+- **`<puredashboard-input>` forwards native input attributes.** `list`, `autocomplete`,
+  `inputmode`, `maxlength`, `minlength`, `min`, `max`, `step`, `pattern`, `enterkeyhint`,
+  `autocapitalize` and `spellcheck` authored on the host are copied to the inner `<input>`
+  after every render (and removed from it when removed from the host). Before, they sat on
+  the wrapper where the browser ignores them, so a `<datalist>`, a numeric range or a mobile
+  keyboard hint had no effect. Upstreamed from model-gateway (GW-160).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

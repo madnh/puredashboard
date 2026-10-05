@@ -119,5 +119,32 @@ void PuredashboardInput;
   ok(el2._label("required") === "This field is required.", "default label kept when not overridden");
 }
 
+// ---- host-only native attributes are forwarded to the inner <input> ----
+{
+  document.body.innerHTML = `<datalist id="dl"><option value="a"></option></datalist><puredashboard-input list="dl" maxlength="8" minlength="2" inputmode="numeric" autocomplete="off" min="1" max="9" step="2" pattern="[0-9]+" enterkeyhint="done" autocapitalize="none" spellcheck="false"></puredashboard-input>`;
+  const el = document.body.querySelector("puredashboard-input");
+  await tick();
+  const field = el.querySelector(".js-puredashboard-input__field");
+  const want = { list: "dl", maxlength: "8", minlength: "2", inputmode: "numeric", autocomplete: "off", min: "1", max: "9", step: "2", pattern: "[0-9]+", enterkeyhint: "done", autocapitalize: "none", spellcheck: "false" };
+  for (const [k, v] of Object.entries(want)) ok(field.getAttribute(k) === v, `host ${k}="${v}" forwarded to the inner input`);
+  el.setAttribute("maxlength", "4");
+  await tick();
+  ok(field.getAttribute("maxlength") === "4", "a later change of a forwarded host attribute reaches the inner input");
+  el.removeAttribute("list");
+  await tick();
+  ok(!field.hasAttribute("list"), "removing a forwarded host attribute removes it from the inner input");
+  el.value = "x";
+  await tick();
+  ok(field.getAttribute("maxlength") === "4" && field.getAttribute("pattern") === "[0-9]+", "forwarded attributes survive a re-render");
+}
+
+// ---- without host attributes nothing extra lands on the inner input (default unchanged) ----
+{
+  const el = mount("puredashboard-input");
+  await tick();
+  const field = el.querySelector(".js-puredashboard-input__field");
+  ok(["list", "maxlength", "min", "max", "step", "pattern", "inputmode"].every((a) => !field.hasAttribute(a)), "no forwarded attribute appears when none is authored");
+}
+
 console.log(`input.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
