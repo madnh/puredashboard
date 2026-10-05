@@ -60,9 +60,10 @@ const LABELS = {
  *
  * @element puredashboard-table
  *
- * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row) }`.
+ * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row), thAttrs? }` (`thAttrs`: attributes for that column's `<th>` — for NON-sortable columns, e.g. a server-sorted `{ "aria-sort": "ascending" }`; on a `sortable` column it would override the library's own aria-sort).
  * @prop {Array}    rows       - Data rows (array of objects).
  * @prop {Function} [rowKey]   - `(row) => key` identity for selection (falls back to `row.id ?? row.name ?? JSON`).
+ * @prop {Function} [rowAttrs] - `(row, index) => object` of attributes for each row's `<tr>` (`index` = position within the current page) (`data-*`, `id`…; `class` is added to the row's classes; `null`/`false` removes). Re-applied after every render.
  * @prop {Function} [getHref]  - `(row) => string`; when set, each row gets an "Open" `<a href>`.
  * @prop {Array}    [actions]  - Per-row buttons `{ name, label, danger? }` → fire `rowaction`.
  * @prop {Array}    [bulkActions] - Buttons shown when rows are selected `{ name, label, danger? }` → fire `bulkaction`.
@@ -77,6 +78,7 @@ const LABELS = {
  * @prop {Array}    selectedKeys - (read-only getter) selected row keys.
  *
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
+ * @attr {boolean} wrap-headers - Let long header labels wrap (headers are `nowrap` by default).
  * @fires puredashboard-table#sortchange      - `detail`: `{ key, dir: "asc"|"desc" }`.
  * @fires puredashboard-table#filterchange    - `detail`: `{ q: string }`.
  * @fires puredashboard-table#pagechange      - `detail`: `{ page, pageSize }`.
@@ -95,7 +97,7 @@ const LABELS = {
  */
 class PuredashboardTable extends Reactive {
   static properties = {
-    columns: {}, rows: {}, rowKey: {}, getHref: {}, actions: {}, bulkActions: {},
+    columns: {}, rows: {}, rowKey: {}, rowAttrs: {}, getHref: {}, actions: {}, bulkActions: {},
     filterable: {}, searchKeys: {},
     pageSize: {}, pageSizes: {}, page: {}, selectable: {}, debug: {}, labels: {},
     sortKey: {}, sortDir: {}, filter: {},
@@ -119,6 +121,22 @@ class PuredashboardTable extends Reactive {
   updated() {
     const s = this.querySelector(".js-puredashboard-table__page-size");
     if (s && this.pageSize > 0 && s.value !== String(this.pageSize)) s.value = String(this.pageSize);
+    if (typeof this.rowAttrs === "function") {
+      this.querySelectorAll("tbody > tr.puredashboard-table__row").forEach((tr, i) => {
+        if (this._view[i] !== undefined) this._stamp(tr, this.rowAttrs(this._view[i], i));
+      });
+    }
+    const ths = this.querySelectorAll("thead > tr > th");
+    (this.columns || []).forEach((c, i) => { const th = ths[i + (this.selectable ? 1 : 0)]; if (c.thAttrs && th) this._stamp(th, c.thAttrs); });
+  }
+
+  // Apply an attribute map to a node: `class` adds to the existing classes, null/false removes, true sets an empty value.
+  _stamp(node, attrs) {
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === "class") node.classList.add(...String(v).split(/\s+/).filter(Boolean));
+      else if (v == null || v === false) node.removeAttribute(k);
+      else if (node.getAttribute(k) !== String(v)) node.setAttribute(k, v === true ? "" : String(v));
+    }
   }
 
   _notify(name, detail) {
@@ -204,18 +222,18 @@ class PuredashboardTable extends Reactive {
     const span = cols.length + (hasActions ? 1 : 0) + (selectable ? 1 : 0);
 
     const head = html`<thead><tr>
-      ${selectable ? html`<th class="puredashboard-table__th puredashboard-table__check-head">
+      ${selectable ? html`<th scope="col" class="puredashboard-table__th puredashboard-table__check-head">
         <input type="checkbox" class="js-puredashboard-table__check-all" aria-label="${this._label("selectAll")}" .checked=${allSel} .indeterminate=${someSel && !allSel}></th>` : ""}
       ${cols.map((c) => {
-        if (!c.sortable) return html`<th class="puredashboard-table__th" style="text-align:${c.align || "left"}">${c.label}</th>`;
+        if (!c.sortable) return html`<th scope="col" class="puredashboard-table__th" style="text-align:${c.align || "left"}">${c.label}</th>`;
         const active = this.sortKey === c.key;
         const aria = active ? (this.sortDir === "desc" ? "descending" : "ascending") : "none";
         const ic = active ? (this.sortDir === "desc" ? arrowDown : arrowUp) : sortNeutral;
-        return html`<th class="puredashboard-table__th puredashboard-table__th--sortable" style="text-align:${c.align || "left"}" aria-sort="${aria}">
+        return html`<th scope="col" class="puredashboard-table__th puredashboard-table__th--sortable" style="text-align:${c.align || "left"}" aria-sort="${aria}">
           <button type="button" class="puredashboard-table__sort ${active ? "puredashboard-table__sort--active" : ""}" data-sort="${c.key}">
             <span>${c.label}</span><span class="puredashboard-table__sort-icon">${ic}</span></button></th>`;
       })}
-      ${hasActions ? html`<th class="puredashboard-table__th puredashboard-table__actions-head">${this._label("actions")}</th>` : ""}
+      ${hasActions ? html`<th scope="col" class="puredashboard-table__th puredashboard-table__actions-head">${this._label("actions")}</th>` : ""}
     </tr></thead>`;
 
     const body = rows.length

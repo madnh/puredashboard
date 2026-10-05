@@ -147,6 +147,12 @@ the API may still change between minor versions.
   `aria-label` replaces the English default name, so no `labels.form` override is needed.
   `direction="row"` lays the fields out in a wrapping row aligned on their bottom edge
   (a filter bar). Without them nothing changes. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-table>`: `rowAttrs`, per-column `thAttrs`, `wrap-headers`.**
+  `rowAttrs(row, index)` returns attributes for each row's `<tr>` (`data-*`, `id`…;
+  `class` is added to the row's classes; `null`/`false` removes) and a column's
+  `thAttrs` does the same for its `<th>` (e.g. `aria-sort` for a server-sorted,
+  non-`sortable` column). Both are re-applied after every render. A `wrap-headers` host
+  attribute lets long header labels wrap. Upstreamed from model-gateway (GW-161).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
@@ -199,6 +205,10 @@ the API may still change between minor versions.
   mid-row-throw recovery and that a non-`HierarchyRequestError` propagates — reverting the
   change fails 3 assertions, where before jsdom could not see the path at all. What the shim
   cannot pin is the benefit itself; that is browser-only and stated in the test.
+- **`<puredashboard-table>` header cells carry `scope="col"`** (selection, data and
+  actions columns alike), so assistive tech maps each cell to its column header
+  unambiguously. This changes the markup of every table; nothing else about the header
+  changes. Upstreamed from model-gateway (GW-161).
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
