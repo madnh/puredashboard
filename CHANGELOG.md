@@ -175,6 +175,12 @@ the API may still change between minor versions.
   `tabchange` — navigation is the browser's. A tab that is `disabled` or has no `href`
   renders as a non-link `<span aria-disabled="true">`. Without any `href` nothing changes.
   Upstreamed from model-gateway (GW-163).
+- **`<puredashboard-datetime>`** (`datetime.js`): a local date-and-time picker, the
+  `datetime-local` sibling of `<puredashboard-date>` / `<puredashboard-time>` and built
+  the same way — a native input inside, form-associated, value `yyyy-mm-ddTHH:mm` (or
+  `…:ss` when `step` admits seconds) with **no time zone** (convert it yourself),
+  `min`/`max`/`step`/`required`/`readonly`/`size`/`error`/`labels`, native `input` /
+  `change` events. Upstreamed from model-gateway (GW-163).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

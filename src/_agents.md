@@ -411,6 +411,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-radio-group` | `options`, `value`, `name`, `required` | `change`{value} | APG radio group |
 | `puredashboard-slider` | `value`, `min`, `max`, `step`, `showValue` | native `input`/`change` | wraps `<input type=range>` |
 | `puredashboard-date` / `puredashboard-time` | `value`, `min`, `max`, `step`(time) | native `input`/`change` | wrap native pickers |
+| `puredashboard-datetime` | `value` (`yyyy-mm-ddTHH:mm`, no time zone), `min`, `max`, `step` | native `input`/`change` | wraps native `datetime-local` |
 | `puredashboard-color` | `value`(hex), `showValue` | native `input`/`change` | swatch |
 | `puredashboard-rate` | `value`, `count`, `allowHalf`, `allowClear` | `change`{value} | star rating (role=slider) |
 | `puredashboard-form` | `noValidate`; attrs `direction="row"`, `aria-label`/`aria-labelledby`/`aria-describedby`/`autocomplete` (moved onto the `<form>`) | `submit`{values,formData,valid}, `invalid`, `reset` | wraps children in a real `<form>` |

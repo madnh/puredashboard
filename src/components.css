@@ -41,6 +41,7 @@
 @import "combobox.css";
 @import "date.css";
 @import "time.css";
+@import "datetime.css";
 @import "rate.css";
 /* layout */
 @import "divider.css";
