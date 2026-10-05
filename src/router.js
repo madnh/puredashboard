@@ -154,13 +154,32 @@ export class Router {
 
     document.title = titleFor(hit.route.title, hit.params, this.appName);
     const swap = () => this._mountWithLayout(hit, pageMod, layoutMod, ctx);
-    if (this.useTransition && document.startViewTransition) document.startViewTransition(swap);
+    if (this.useTransition && document.startViewTransition) this._transition(swap, token);
     else swap();
     this.current = hit;
     this._setActiveLinks(hit.path);
     // Reactive layouts/pages render their links on a microtask, after this point —
     // re-run once the queue drains so their <a> links also get aria-current.
     if (typeof queueMicrotask === "function") queueMicrotask(() => this._setActiveLinks(hit.path));
+  }
+
+  // Run `swap` in a view transition. The browser aborts a transition when the viewport is resized while it runs or when a newer
+  // transition starts; the promises of the ViewTransition then reject (InvalidStateError / AbortError), and unhandled they surface as
+  // errors in the console although nothing is wrong. An abort is not a failure of the navigation: the DOM update still has to happen,
+  // so if the browser dropped the transition before calling `swap`, run it here — unless a newer navigation has started since
+  // (`token`), whose page must not be overwritten by this stale one. An error thrown by `swap` itself still propagates, ONCE:
+  // all three promises reject with it, so it is rethrown from updateCallbackDone only and swallowed on ready / finished.
+  _transition(swap, token) {
+    let ran = false, swapError;
+    const run = () => {
+      ran = true;
+      try { return swap(); } catch (e) { swapError = e; throw e; }
+    };
+    const vt = document.startViewTransition(run);
+    const ignore = () => {};
+    vt.ready.catch(ignore);
+    vt.updateCallbackDone.catch((e) => { if (e === swapError) throw e; });
+    vt.finished.catch(ignore).then(() => { if (!ran && token === this._token) run(); });
   }
 
   // Mount the layout (reusing it across routes that share it — chrome like a sidebar

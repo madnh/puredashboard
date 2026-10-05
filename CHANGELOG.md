@@ -426,6 +426,14 @@ the API may still change between minor versions.
 - **`<puredashboard-alert hidden>` now hides.** The host's `display: block` overrode the
   user-agent `[hidden]` rule, so a hidden alert stayed visible. Upstreamed from
   model-gateway (GW-161).
+- **Router: an aborted view transition is no longer an unhandled rejection.** The
+  `ViewTransition` returned by `document.startViewTransition` was dropped, so when the
+  browser aborted it (viewport resized mid-transition, a newer navigation) its promises
+  rejected unhandled and an `InvalidStateError` / `AbortError` showed in the console
+  although nothing was wrong. The three promises are now handled; if the browser dropped
+  the transition before calling the DOM update, the router runs it itself — unless a
+  newer navigation has started since. An error thrown by the page's own mount still
+  surfaces, once (it was reported three times). Upstreamed from model-gateway (GW-166).
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`
