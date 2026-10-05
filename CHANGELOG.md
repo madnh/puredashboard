@@ -138,6 +138,9 @@ the API may still change between minor versions.
   `combobox-open` / `combobox-search` became `comboboxopen` / `comboboxsearch` (library
   event names are one lowercase word, and a bare `open` would collide with the bubbling
   `open` of `<puredashboard-popover>` / `<puredashboard-popconfirm>`).
+- **`<puredashboard-progress inline>`**: an `inline` host attribute makes the bar
+  `inline-block` (vertically centred), so a thin bar can sit on the same line as text.
+  Default stays `block`. Upstreamed from model-gateway (GW-161).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

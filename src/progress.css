@@ -36,6 +36,12 @@ puredashboard-progress {
   --pd-progress-color: var(--pd-accent);   /* fill colour; status modifiers override */
 }
 
+/* Inline variant: a thin bar that sits on the same line as text (set `inline` on the host). The default stays display:block. */
+puredashboard-progress[inline] {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* size knobs */
 .puredashboard-progress--sm { --pd-progress-line-h: 5px;  --pd-progress-circle: 64px;  --pd-progress-circle-sw: 6; }
 .puredashboard-progress--lg { --pd-progress-line-h: 12px; --pd-progress-circle: 128px; --pd-progress-circle-sw: 10; }

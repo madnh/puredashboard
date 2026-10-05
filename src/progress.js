@@ -58,6 +58,7 @@ const LABELS = {
  * @prop {string}  size          - `"sm"` | `"md"` (default) | `"lg"` — track / ring thickness.
  * @prop {Object}  labels        - Override UI strings. Keys: `label(pct)`. Unset keys keep the English default.
  *
+ * @attr {boolean} inline     - Lay the host out `inline-block` (vertically centred) so a thin bar can sit on the same line as text. Absent = `block`, as before.
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @cssprop [--pd-progress-line-h]    - Line track thickness (defaults per `size`).
  * @cssprop [--pd-progress-circle]    - Circle diameter (defaults per `size`).

@@ -140,5 +140,21 @@ void PuredashboardProgress;
   ok(el2._label("label", 20) === "20%", "default label kept when not overridden");
 }
 
+// ---- `inline` host attribute: inline-block instead of block (CSS contract, computed in jsdom) ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/progress.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const a = mount("puredashboard-progress");
+  const b = mount("puredashboard-progress");
+  b.setAttribute("inline", "");
+  await tick();
+  ok(w.getComputedStyle(a).display === "block", "default: progress host is display:block");
+  ok(w.getComputedStyle(b).display === "inline-block", "inline attribute: progress host is display:inline-block");
+  ok(w.getComputedStyle(b).verticalAlign === "middle", "inline attribute: aligned to the middle of the text line");
+  style.remove();
+}
+
 console.log(`progress.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
