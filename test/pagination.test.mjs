@@ -168,5 +168,42 @@ const nextBtn = (el) => el.querySelector(".puredashboard-pagination__btn--next")
   ok(el2._label("ariaLabel") === "Pagination", "default nav label kept when not overridden");
 }
 
+// ---- hasMore (cursor / keyset paging): pages reached + one more, trailing gap ----
+{
+  const el = mount("puredashboard-pagination");
+  el.pageCount = 2; el.page = 2; el.hasMore = true;
+  await tick();
+  const gaps = () => el.querySelectorAll(".puredashboard-pagination__ellipsis").length;
+  const next = () => el.querySelector('[data-nav="next"]');
+  ok(pages(el).join() === "1,2,3", "hasMore: the reached pages plus one more are offered");
+  ok(gaps(el) === 1 && el.querySelector(".puredashboard-pagination__list > li:last-child .puredashboard-pagination__ellipsis"), "hasMore: a trailing … after the numbers");
+  ok(!next().disabled, "hasMore: next is enabled on the last reached page");
+  const seen = [];
+  el.addEventListener("pagechange", (e) => seen.push(e.detail));
+  next().dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(seen.length === 1 && seen[0].page === 3 && seen[0].direction === "next", "next into the unknown page: pagechange { page: 3, direction: next }");
+  // the app learns page 3 was the last one
+  el.pageCount = 3; el.hasMore = false; await tick();
+  ok(pages(el).join() === "1,2,3" && gaps(el) === 0, "hasMore off: exactly the reached pages, no trailing …");
+  ok(next().disabled, "hasMore off on the last page: next disabled");
+  el.querySelector('[data-nav="prev"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(seen[1].page === 2 && seen[1].direction === "prev", "prev: direction prev");
+}
+
+// ---- has-more attribute, and direction on a number click ----
+{
+  document.body.innerHTML = `<puredashboard-pagination page="1" page-count="1" has-more></puredashboard-pagination>`;
+  const el = document.body.firstElementChild;
+  await tick();
+  ok(el.hasMore === true && pages(el).join() === "1,2", "has-more attribute reflects to hasMore");
+  el.removeAttribute("has-more"); await tick();
+  ok(el.hasMore === false && pages(el).length === 0, "removing has-more turns it off (one page left: the empty nav, as before)");
+  el.pageCount = 10; el.page = 5; await tick();
+  let d = null;
+  el.addEventListener("pagechange", (e) => { d = e.detail; });
+  el.querySelector('[data-page="4"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true })); await tick();
+  ok(d && d.page === 4 && d.direction === "prev", "number click backwards: direction prev");
+}
+
 console.log(`pagination.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

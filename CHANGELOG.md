@@ -163,6 +163,11 @@ the API may still change between minor versions.
   `role="heading"` with that `aria-level` (`3` = the native `<h3>`), `"none"` a plain
   `<div>`; unset or invalid keeps the `<h3>`. `regions = false` drops the per-panel
   region role. Defaults unchanged. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-pagination hasMore>` for cursor (keyset) paging.** When the total is
+  unknown, `hasMore` (attribute `has-more`) treats `pageCount` as the pages reached so
+  far and offers one more after them, with a trailing `…` while more may follow.
+  `pagechange` now also carries `direction` (`"next"` | `"prev"`, relative to the previous
+  page) — additive, `detail.page` is unchanged. Upstreamed from model-gateway (GW-163).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

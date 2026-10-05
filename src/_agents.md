@@ -421,7 +421,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 |---|---|---|---|
 | `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements |
 | `puredashboard-breadcrumb` | `items`([{label,href}]), `maxItems` | — | last = current; real `<a>` |
-| `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount` | `pagechange`{page} | windowed + ellipsis |
+| `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount`, `hasMore` | `pagechange`{page,direction} | windowed + ellipsis; `hasMore` = cursor/keyset paging (`pageCount` reached so far, one more offered) |
 | `puredashboard-steps` | `steps`, `current`(0-based), `vertical`, `clickable` | `stepchange`{index} | |
 | `puredashboard-nav` | `items`(tree {label,href,icon,children}), `current` | `toggle` | sidebar; real `<a>`, collapsible groups |
 | `puredashboard-menubar` | `menus`([{label,items,icon,disabled}]), `orientation`, `disabled`, `openIndex`; methods `open(i)`/`close()` | `select`{value,menu,index}, `openchange`{open,index} | desktop app menu bar (File · Edit · View); each dropdown is a full `menu()` (icons, shortcuts, groups, checkbox/radio, submenus); APG menubar keyboard + hover-to-switch |

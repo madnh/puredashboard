@@ -55,6 +55,7 @@ const LABELS = {
  * @prop {number}  total        - Total item count; with `pageSize`, `pageCount = ceil(total / pageSize)`.
  * @prop {number}  pageSize     - Items per page; used with `total` to derive `pageCount`.
  * @prop {number}  siblingCount - Page numbers shown either side of the current page. Default `1`.
+ * @prop {boolean} hasMore      - Cursor (keyset) paging, total unknown: `pageCount` is the number of pages already reached and one more page is offered after them, with a trailing `…` while more may follow. Default `false`.
  * @prop {boolean} disabled     - Disable the whole control. Default `false`.
  * @prop {Object}  labels       - Override UI strings. Keys: `prev`, `next`, `page(n)`, `current(n)`, `ariaLabel`. Unset keys keep the English default.
  * @attr {number}  page         - Declarative 1-based current page.
@@ -62,10 +63,11 @@ const LABELS = {
  * @attr {number}  total        - Declarative total item count.
  * @attr {number}  page-size    - Declarative items per page.
  * @attr {number}  sibling-count - Declarative sibling count.
+ * @attr {boolean} has-more     - Declarative `hasMore`.
  * @attr {boolean} disabled     - Declarative disabled state.
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  *
- * @fires puredashboard-pagination#pagechange - Bubbling `CustomEvent`; `detail`: `{ page }` (clamped to `[1, pageCount]`).
+ * @fires puredashboard-pagination#pagechange - Bubbling `CustomEvent`; `detail`: `{ page, direction }` (page clamped to `[1, pageCount]`; `direction` is `"next"` or `"prev"` relative to the previous page).
  *
  * @cssprop [--pd-pagination-height] - Button size (defaults to `--control-height-sm`).
  *
@@ -78,15 +80,16 @@ const LABELS = {
 class PuredashboardPagination extends Reactive {
   static properties = {
     page: {}, pageCount: {}, total: {}, pageSize: {}, siblingCount: {},
-    disabled: {}, labels: {},
+    hasMore: {}, disabled: {}, labels: {},
   };
 
   // Reflect declarative HTML attributes into reactive properties, so the control
   // can be configured the natural way in markup, not only via JS. Boolean attrs
   // map by presence; numeric attrs are parsed.
-  static observedAttributes = ["page", "page-count", "total", "page-size", "sibling-count", "disabled"];
+  static observedAttributes = ["page", "page-count", "total", "page-size", "sibling-count", "has-more", "disabled"];
   attributeChangedCallback(name, _old, val) {
     if (name === "disabled") { this.disabled = val !== null; return; }
+    if (name === "has-more") { this.hasMore = val !== null; return; }
     const prop = { "page-count": "pageCount", "page-size": "pageSize", "sibling-count": "siblingCount" }[name] || name;
     this[prop] = val == null ? undefined : Number(val);
   }
@@ -101,9 +104,11 @@ class PuredashboardPagination extends Reactive {
 
   // Derived page count: total+pageSize wins when both are usable; else pageCount;
   // never below 1.
+  // With `hasMore` (cursor / keyset paging: the total is unknown) `pageCount` is the number of pages already reached and ONE more
+  // page is offered after them.
   _count() {
     if (this.total != null && this.pageSize > 0) return Math.max(1, Math.ceil(this.total / this.pageSize));
-    return Math.max(1, Math.floor(this.pageCount) || 1);
+    return Math.max(1, Math.floor(this.pageCount) || 1) + (this.hasMore ? 1 : 0);
   }
 
   // Navigate to prev/next/<n>, clamp to [1, count], update state AND emit — so the
@@ -116,7 +121,7 @@ class PuredashboardPagination extends Reactive {
     p = Math.min(count, Math.max(1, p));
     if (p === cur) return;
     this.page = p;
-    this.emit("pagechange", { page: p });
+    this.emit("pagechange", { page: p, direction: p > cur ? "next" : "prev" });
   }
 
   // Current page clamped into the valid range for `count`.
@@ -162,7 +167,7 @@ class PuredashboardPagination extends Reactive {
       <button type="button" class="puredashboard-pagination__btn puredashboard-pagination__btn--prev" data-nav="prev" aria-label="${this._label("prev")}" ?disabled="${disabled || cur <= 1}">${chevronLeft}</button>
       <ul class="puredashboard-pagination__list">${items.map((it) => it === GAP
         ? html`<li class="puredashboard-pagination__item"><span class="puredashboard-pagination__ellipsis" aria-hidden="true">${GAP}</span></li>`
-        : html`<li class="puredashboard-pagination__item"><button type="button" class="puredashboard-pagination__btn puredashboard-pagination__btn--page ${it === cur ? "puredashboard-pagination__btn--current" : ""}" data-page="${it}" aria-label="${it === cur ? this._label("current", it) : this._label("page", it)}" aria-current="${it === cur ? "page" : "false"}" ?disabled="${disabled}">${it}</button></li>`)}</ul>
+        : html`<li class="puredashboard-pagination__item"><button type="button" class="puredashboard-pagination__btn puredashboard-pagination__btn--page ${it === cur ? "puredashboard-pagination__btn--current" : ""}" data-page="${it}" aria-label="${it === cur ? this._label("current", it) : this._label("page", it)}" aria-current="${it === cur ? "page" : "false"}" ?disabled="${disabled}">${it}</button></li>`)}${this.hasMore ? html`<li class="puredashboard-pagination__item"><span class="puredashboard-pagination__ellipsis" aria-hidden="true">${GAP}</span></li>` : ""}</ul>
       <button type="button" class="puredashboard-pagination__btn puredashboard-pagination__btn--next" data-nav="next" aria-label="${this._label("next")}" ?disabled="${disabled || cur >= count}">${chevronRight}</button>
     </nav>`;
   }
