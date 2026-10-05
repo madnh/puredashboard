@@ -164,5 +164,45 @@ await import("../src/input.js");
   ok(el2._label("submit") === "Submit", "default label kept when not overridden");
 }
 
+// ---- host aria-label / aria-labelledby / aria-describedby / autocomplete move to the inner <form> ----
+{
+  document.body.innerHTML = `<p id="fh">Filters</p><p id="fd">Narrow the list</p><puredashboard-form aria-label="Search orders" aria-describedby="fd" autocomplete="off"><input name="q"></puredashboard-form>`;
+  const el = document.body.querySelector("puredashboard-form");
+  await tick();
+  const form = el.form;
+  ok(form.getAttribute("aria-label") === "Search orders", "authored aria-label replaces the default form name");
+  ok(form.getAttribute("aria-describedby") === "fd", "aria-describedby moved to the <form>");
+  ok(form.getAttribute("autocomplete") === "off", "autocomplete moved to the <form>");
+  ok(!el.hasAttribute("aria-label") && !el.hasAttribute("aria-describedby") && !el.hasAttribute("autocomplete"), "moved attributes are gone from the generic host");
+  el.setAttribute("aria-labelledby", "fh");
+  ok(form.getAttribute("aria-labelledby") === "fh" && !el.hasAttribute("aria-labelledby"), "an attribute set after connect is moved too");
+  el.setAttribute("aria-label", "Orders");
+  ok(form.getAttribute("aria-label") === "Orders", "a later aria-label replaces the form name");
+}
+
+// ---- without authored attributes the default name stays (default unchanged) ----
+{
+  const el = mount("puredashboard-form");
+  await tick();
+  ok(el.form.getAttribute("aria-label") === "Form", "default: form named by labels.form");
+  ok(!el.form.hasAttribute("autocomplete") && !el.form.hasAttribute("aria-describedby"), "default: nothing else added to the <form>");
+}
+
+// ---- direction="row": fields side by side (CSS contract, computed in jsdom) ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/form.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const a = mount("puredashboard-form");
+  const b = mount("puredashboard-form");
+  b.setAttribute("direction", "row");
+  await tick();
+  const ca = w.getComputedStyle(a.form), cb = w.getComputedStyle(b.form);
+  ok(ca.flexDirection === "column", "default: fields stack in a column");
+  ok(cb.flexDirection === "row" && cb.flexWrap === "wrap" && cb.alignItems === "flex-end", "direction=row: wrapping row aligned on the bottom edge");
+  style.remove();
+}
+
 console.log(`form.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

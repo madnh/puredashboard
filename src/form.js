@@ -29,6 +29,11 @@ const LABELS = {
   form: "Form",
 };
 
+// Attributes authored on the HOST that belong on the inner <form> (the host is a generic element, where aria-* is not allowed and
+// autocomplete does nothing). They are MOVED to the <form> on connect and on later changes; an authored aria-label replaces the
+// English default name, so no `labels.form` override is needed.
+const FORWARDED = ["aria-label", "aria-labelledby", "aria-describedby", "autocomplete"];
+
 /**
  * A form ORCHESTRATOR that wraps its light-DOM children in a real native
  * `<form>` so PureDashboard's form-associated controls (input, select, checkbox,
@@ -50,6 +55,8 @@ const LABELS = {
  * @prop {Object}  labels     - Override UI strings. Keys: `submit`, `form`. Unset keys keep the English default.
  * @prop {Object}  values     - Read-only getter: the current values as a plain object (repeated names become arrays).
  * @attr {boolean} novalidate - Declarative form of `noValidate`.
+ * @attr {string}  aria-label, aria-labelledby, aria-describedby, autocomplete - Moved to the inner `<form>` (so removing one from the host later has no effect: change it on `form.form`); `aria-label` replaces the default name.
+ * @attr {string}  direction  - `row` lays the fields out side by side (wrapping). Default stacks them.
  *
  * @fires submit  - `CustomEvent` (bubbles, cancelable) on a valid submit. `detail = { values, formData, valid: true }`.
  * @fires invalid - `CustomEvent` (bubbles) when submit is blocked by failing validation. `detail = { valid: false }`.
@@ -70,7 +77,7 @@ const LABELS = {
  * form.addEventListener("submit", (e) => console.log(e.detail.values)); // { email: "…" }
  */
 class PuredashboardForm extends HTMLElement {
-  static get observedAttributes() { return ["novalidate"]; }
+  static get observedAttributes() { return ["novalidate", ...FORWARDED]; }
 
   constructor() {
     super();
@@ -89,6 +96,16 @@ class PuredashboardForm extends HTMLElement {
 
   attributeChangedCallback(name, _old, val) {
     if (name === "novalidate") this.noValidate = val !== null;
+    else if (val !== null) this._moveAttr(name);
+  }
+
+  // Move one authored host attribute onto the inner <form> (no-op until the form exists; _wrap() moves what was already there).
+  _moveAttr(name) {
+    if (!this._form) return;
+    const v = this.getAttribute(name);
+    if (v === null) return;
+    this._form.setAttribute(name, v);
+    this.removeAttribute(name);
   }
 
   // _label(key, …args) → localised string: this.labels override, else the default.
@@ -117,6 +134,7 @@ class PuredashboardForm extends HTMLElement {
     while (this.firstChild) form.appendChild(this.firstChild);
     this.appendChild(form);
     this._form = form;
+    for (const a of FORWARDED) this._moveAttr(a);
 
     form.addEventListener("submit", this._onSubmit);
     form.addEventListener("reset", this._onReset);

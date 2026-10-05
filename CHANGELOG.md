@@ -141,6 +141,12 @@ the API may still change between minor versions.
 - **`<puredashboard-progress inline>`**: an `inline` host attribute makes the bar
   `inline-block` (vertically centred), so a thin bar can sit on the same line as text.
   Default stays `block`. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-form>` names and lays out its `<form>` from host attributes.**
+  `aria-label`, `aria-labelledby`, `aria-describedby` and `autocomplete` authored on the
+  host are moved onto the inner `<form>` (on connect and on later changes); an authored
+  `aria-label` replaces the English default name, so no `labels.form` override is needed.
+  `direction="row"` lays the fields out in a wrapping row aligned on their bottom edge
+  (a filter bar). Without them nothing changes. Upstreamed from model-gateway (GW-161).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

@@ -25,6 +25,13 @@ puredashboard-form {
   margin: 0;
 }
 
+/* Horizontal layout (set `direction="row"` on the host): fields side by side, wrapping, aligned on their bottom edge. */
+puredashboard-form[direction="row"] > .puredashboard-form__form {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
 /* Optional author-authored error summary. Style the BEM class; the component
  * never depends on it (script hooks are the separate js-… class), so authors can
  * restyle or drop it freely. */
