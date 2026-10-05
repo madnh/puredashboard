@@ -157,6 +157,12 @@ the API may still change between minor versions.
   `alert` | `status` | `none` (`none` carries no name); any other value is ignored. Unset
   keeps the role by type (error/warning = alert, info/success = status). Upstreamed from
   model-gateway (GW-161).
+- **`<puredashboard-collapse>`: `headingLevel` and `regions`.** Every header sat in an
+  `<h3>` and every panel was a `role="region"`, so a long list of disclosures added as
+  many headings and landmarks to the page outline. `headingLevel` = `1`–`6` renders a
+  `role="heading"` with that `aria-level` (`3` = the native `<h3>`), `"none"` a plain
+  `<div>`; unset or invalid keeps the `<h3>`. `regions = false` drops the per-panel
+  region role. Defaults unchanged. Upstreamed from model-gateway (GW-161).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

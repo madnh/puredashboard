@@ -165,5 +165,41 @@ const ITEMS = [
   ok(el2._label("group") === "Sections", "default label kept when not overridden");
 }
 
+// ---- headingLevel: outline control of each header wrapper ----
+{
+  const heads = (el) => [...el.querySelectorAll(".puredashboard-collapse__heading")];
+  const el = mount("puredashboard-collapse");
+  el.items = ITEMS;
+  await tick();
+  ok(heads(el).every((h) => h.tagName === "H3" && !h.hasAttribute("role")), "default: each header in a native <h3>");
+  el.headingLevel = 2; await tick();
+  ok(heads(el).every((h) => h.tagName === "DIV" && h.getAttribute("role") === "heading" && h.getAttribute("aria-level") === "2"), "headingLevel=2: role=heading aria-level=2");
+  el.headingLevel = "5"; await tick();
+  ok(heads(el).every((h) => h.getAttribute("aria-level") === "5"), "headingLevel accepts a string level");
+  el.headingLevel = 3; await tick();
+  ok(heads(el).every((h) => h.tagName === "H3" && !h.hasAttribute("role")), "headingLevel=3 is the native <h3>");
+  el.headingLevel = "none"; await tick();
+  ok(heads(el).every((h) => h.tagName === "DIV" && !h.hasAttribute("role") && !h.hasAttribute("aria-level")), "headingLevel=none: plain div, no heading in the outline");
+  for (const bad of [0, 7, "x", 2.5]) {
+    el.headingLevel = bad; await tick();
+    ok(heads(el).every((h) => h.tagName === "H3"), `invalid headingLevel ${JSON.stringify(bad)} falls back to <h3>`);
+  }
+  ok(el.querySelector(".puredashboard-collapse__header").getAttribute("aria-expanded") !== null, "header button still rendered inside the wrapper");
+}
+
+// ---- regions=false: no role=region landmark per panel ----
+{
+  const el = mount("puredashboard-collapse");
+  el.items = ITEMS;
+  await tick();
+  const panels = () => [...el.querySelectorAll(".puredashboard-collapse__panel")];
+  ok(panels().every((p) => p.getAttribute("role") === "region" && p.getAttribute("aria-labelledby")), "default: each panel is a labelled region");
+  el.regions = false; await tick();
+  ok(panels().every((p) => !p.hasAttribute("role") && !p.hasAttribute("aria-labelledby")), "regions=false: no role=region, no aria-labelledby");
+  ok(panels().every((p) => p.id), "regions=false: panels keep their id (aria-controls target)");
+  el.regions = true; await tick();
+  ok(panels().every((p) => p.getAttribute("role") === "region"), "regions back to true restores the regions");
+}
+
 console.log(`collapse.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

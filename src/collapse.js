@@ -56,6 +56,8 @@ const chevron = html`<svg class="puredashboard-collapse__chevron" viewBox="0 0 2
  * @prop {Array} items - Item defs: `{ key: string, header: string|Node, content: string|Node, disabled?: boolean }`. `header`/`content` each accept a string (auto-escaped) OR a DOM node / nested `html` template / array — pass a node or template to embed a custom element (you build it, you own its safety; plain strings stay escaped).
  * @prop {boolean} multiple - When `false` (default) the group is an ACCORDION: at most one item open, opening one closes the rest. When `true`, items open/close independently.
  * @prop {(string|string[])} value - Open state. In accordion mode a single open key (or `undefined`); in `multiple` mode an array of open keys. Get/set.
+ * @prop {(string|number)} headingLevel - Wrapper of each header button: unset (default) an `<h3>`; `1`-`6` a `role="heading"` with that `aria-level` (`3` is the same `<h3>` as the default); `"none"` a plain `<div>` (no heading in the outline); any other value falls back to the default.
+ * @prop {boolean} regions - Give each panel `role="region"` + `aria-labelledby` (default `true`); `false` omits them (APG: avoid many landmarks for long lists).
  * @prop {Object} labels - Override UI strings. Keys: `group` (the group `aria-label`). Unset keys keep the English default.
  *
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
@@ -77,7 +79,7 @@ const chevron = html`<svg class="puredashboard-collapse__chevron" viewBox="0 0 2
  */
 class PuredashboardCollapse extends Reactive {
   static properties = {
-    items: {}, multiple: {}, value: {}, labels: {},
+    items: {}, multiple: {}, value: {}, labels: {}, headingLevel: {}, regions: {},
   };
 
   constructor() {
@@ -155,11 +157,19 @@ class PuredashboardCollapse extends Reactive {
         const disabled = !!it.disabled;
         const headerId = this._headerId(it.key);
         const panelId = this._panelId(it.key);
+        const btn = html`<button type="button" class="puredashboard-collapse__header" id="${headerId}" data-key="${it.key}" aria-expanded="${open ? "true" : "false"}" aria-controls="${panelId}" ?disabled="${disabled}"><span class="puredashboard-collapse__label">${it.header}</span>${chevron}</button>`;
+        // Valid: "none", or 1-6 (3 is the native <h3> of the default); anything else falls back to the default <h3>.
+        const lv = String(this.headingLevel ?? "");
+        const lvl = lv === "none" || /^[1-6]$/.test(lv) ? lv : "";
+        const heading = lvl === "" || lvl === "3" ? html`<h3 class="puredashboard-collapse__heading">${btn}</h3>`
+          : lvl === "none" ? html`<div class="puredashboard-collapse__heading">${btn}</div>`
+          : html`<div class="puredashboard-collapse__heading" role="heading" aria-level="${lvl}">${btn}</div>`;
+        const panel = this.regions === false
+          ? html`<div class="puredashboard-collapse__panel" id="${panelId}" ?hidden="${!open}"><div class="puredashboard-collapse__content">${it.content}</div></div>`
+          : html`<div class="puredashboard-collapse__panel" id="${panelId}" role="region" aria-labelledby="${headerId}" ?hidden="${!open}"><div class="puredashboard-collapse__content">${it.content}</div></div>`;
         return html`<div class="puredashboard-collapse__item ${open ? "puredashboard-collapse__item--open" : ""} ${disabled ? "puredashboard-collapse__item--disabled" : ""}">
-          <h3 class="puredashboard-collapse__heading">
-            <button type="button" class="puredashboard-collapse__header" id="${headerId}" data-key="${it.key}" aria-expanded="${open ? "true" : "false"}" aria-controls="${panelId}" ?disabled="${disabled}"><span class="puredashboard-collapse__label">${it.header}</span>${chevron}</button>
-          </h3>
-          <div class="puredashboard-collapse__panel" id="${panelId}" role="region" aria-labelledby="${headerId}" ?hidden="${!open}"><div class="puredashboard-collapse__content">${it.content}</div></div>
+          ${heading}
+          ${panel}
         </div>`;
       })}
     </div>`;

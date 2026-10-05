@@ -438,7 +438,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-avatar` | `src`, `name`, `size`, `shape`, `color` | — | image → initials fallback |
 | `puredashboard-list` | `items`([{title,description,extra}]), `header`, `footer`, `bordered`, `loading` | — | |
 | `puredashboard-tree` | `nodes`(hierarchical), `selectedKey`, `expandedKeys` | `select`{key,node}, `toggle` | APG tree |
-| `puredashboard-collapse` | `items`([{key,header,content}]), `value`, `multiple` | `change`{value} | APG accordion |
+| `puredashboard-collapse` | `items`([{key,header,content}]), `value`, `multiple`, `headingLevel`(1-6/none), `regions` | `change`{value} | APG accordion |
 | `puredashboard-timeline` | `items`([{label,content,color,dot}]), `mode`(left/right/alternate), `pending` | — | |
 | `puredashboard-empty` | `description`, `compact` | — | actions = children |
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
