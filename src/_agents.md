@@ -456,7 +456,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 ### Feedback
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
-| `puredashboard-alert` | `type`, `title`, `message`, `showIcon`, `closable` | `close`(cancelable) | inline banner |
+| `puredashboard-alert` | `type`, `title`, `message`, `showIcon`, `closable`, `live`(alert/status/none) | `close`(cancelable) | inline banner |
 | `puredashboard-progress` | `value`, `max`, `variant`(line/circle), `status`, `showInfo`, `indeterminate` | — | |
 | `puredashboard-meter` | `value`, `min`, `max`, `low`/`high`/`optimum`, `label`, `showValue`, `format`(Intl opts), `locale`, `size` | — | `role=meter` gauge for a READING in a range (disk/quota/score) — not a task's progress; low/high/optimum give the native `<meter>` green/amber/red zones |
 | `puredashboard-spinner` | `size`, `label`, `labelVisible`, `inline` | — | role=status |

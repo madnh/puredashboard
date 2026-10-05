@@ -153,6 +153,10 @@ the API may still change between minor versions.
   `thAttrs` does the same for its `<th>` (e.g. `aria-sort` for a server-sorted,
   non-`sortable` column). Both are re-applied after every render. A `wrap-headers` host
   attribute lets long header labels wrap. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-alert live>`**: chooses the box's role by use instead of by colour —
+  `alert` | `status` | `none` (`none` carries no name); any other value is ignored. Unset
+  keeps the role by type (error/warning = alert, info/success = status). Upstreamed from
+  model-gateway (GW-161).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
@@ -373,6 +377,9 @@ the API may still change between minor versions.
   was replaced and focus fell to `<body>` — a second arrow key did nothing. When focus was
   inside the tab list, the newly selected tab is focused after the render; focus outside
   the tabs is never moved. Upstreamed from model-gateway (GW-161).
+- **`<puredashboard-alert hidden>` now hides.** The host's `display: block` overrode the
+  user-agent `[hidden]` rule, so a hidden alert stayed visible. Upstreamed from
+  model-gateway (GW-161).
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

@@ -170,5 +170,50 @@ void PuredashboardAlert;
   ok(el2._label("close") === "Dismiss", "default label kept when not overridden");
 }
 
+// ---- live: role chosen by use, independent of the type colour ----
+{
+  const el = mount("puredashboard-alert");
+  el.type = "error"; el.live = "status";
+  await tick();
+  const box = () => el.querySelector(".puredashboard-alert__box");
+  ok(box().getAttribute("role") === "status", "live=status overrides the error type's alert role");
+  el.live = "alert"; await tick();
+  ok(box().getAttribute("role") === "alert", "live=alert");
+  el.setAttribute("live", "status"); await tick();
+  ok(box().getAttribute("role") === "status", "live attribute reflects to the property");
+  el.live = "bogus"; await tick();
+  ok(box().getAttribute("role") === "alert", "an invalid live value is ignored (role by type)");
+  el.message = "changed"; el.live = "status"; await tick();
+  el.message = "changed again"; await tick();
+  ok(box().getAttribute("role") === "status", "live role survives a content change");
+}
+
+// ---- live=none: no role semantics and no name; the name comes back when leaving none ----
+{
+  const el = document.createElement("puredashboard-alert");
+  el.setAttribute("aria-label", "Quota");
+  document.body.appendChild(el);
+  el.live = "none";
+  await tick();
+  const box = () => el.querySelector(".puredashboard-alert__box");
+  ok(box().getAttribute("role") === "none", "live=none sets role=none");
+  ok(!box().hasAttribute("aria-label"), "live=none carries no aria-label");
+  el.live = "alert"; await tick();
+  ok(box().getAttribute("role") === "alert" && box().getAttribute("aria-label") === "Quota", "leaving none restores the authored name");
+  el.live = "none"; await tick();
+  el.live = ""; await tick();
+  ok(box().getAttribute("aria-label") === "Quota", "unsetting live after none restores the authored name");
+}
+
+// ---- [hidden] hides the host (display:block would otherwise override the UA rule) ----
+// CSS contract only: jsdom's getComputedStyle reports display:none for any [hidden] element whatever the author
+// stylesheet says (measured: it did so with this rule removed), so the browser outcome is not observable here.
+{
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/alert.css", import.meta.url), "utf8");
+  ok(/puredashboard-alert\s*\{[^}]*display:\s*block/.test(css), "alert host is display:block (which overrides the UA [hidden] rule)");
+  ok(/puredashboard-alert\[hidden\]\s*\{\s*display:\s*none/.test(css), "puredashboard-alert[hidden] { display: none } restores hiding");
+}
+
 console.log(`alert.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

@@ -38,6 +38,7 @@ const TYPES = {
 };
 // "danger" is an accepted alias for "error".
 const ALIAS = { danger: "error" };
+const LIVE = { alert: "alert", status: "status", none: "none" };   // allowed values of the `live` override
 const normType = (t) => (ALIAS[t] || (TYPES[t] ? t : "info"));
 
 /**
@@ -55,6 +56,7 @@ const normType = (t) => (ALIAS[t] || (TYPES[t] ? t : "info"));
  * @prop {string|Node}  message  - Body: a string (auto-escaped) OR a DOM node / nested `html` template / array to embed a custom element (you build it, you own its safety; plain strings stay escaped). Default `""`.
  * @prop {boolean} closable - Render a close button that dismisses the banner. Default `false`.
  * @prop {boolean} showIcon - Show the per-type leading glyph. Default `true`.
+ * @prop {string}  live     - Role of the box: `"alert"` | `"status"` | `"none"` (no name then); any other value is ignored. Unset keeps the default by type (error/warning = alert, info/success = status). Default `""`.
  * @prop {Object}  labels   - Override UI strings. Keys: `close` (the close button's aria-label). Unset keys keep the English default.
  *
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
@@ -72,13 +74,13 @@ const normType = (t) => (ALIAS[t] || (TYPES[t] ? t : "info"));
  */
 class PuredashboardAlert extends Reactive {
   static properties = {
-    type: {}, title: {}, message: {}, closable: {}, showIcon: {}, labels: {},
+    type: {}, title: {}, message: {}, closable: {}, showIcon: {}, labels: {}, live: {},
   };
 
   // Reflect declarative HTML attributes into reactive properties, so the banner can be
   // authored the natural way — <puredashboard-alert type="error" closable>. Boolean
   // attrs map by presence.
-  static observedAttributes = ["type", "title", "message", "closable", "show-icon"];
+  static observedAttributes = ["type", "title", "message", "closable", "show-icon", "live"];
   attributeChangedCallback(name, _old, val) {
     if (name === "closable") { this.closable = val !== null; return; }
     if (name === "show-icon") { this.showIcon = val !== null; return; }
@@ -105,8 +107,11 @@ class PuredashboardAlert extends Reactive {
     const type = normType(this.type);
     const cfg = TYPES[type];
     const showIcon = this.showIcon !== false;
+    const role = LIVE[this.live] || cfg.role;
+    // role="none" must not carry a name. Omitted in the template (null drops the attribute), not removed after the render: the
+    // engine skips an attribute whose value did not change, so a post-render removal was never undone when live left "none".
     return html`
-      <div class="puredashboard-alert__box puredashboard-alert__box--${type}" role="${cfg.role}" aria-label="${this.getAttribute("aria-label") ?? ""}">
+      <div class="puredashboard-alert__box puredashboard-alert__box--${type}" role="${role}" aria-label="${role === "none" ? null : this.getAttribute("aria-label") ?? ""}">
         ${showIcon ? html`<span class="puredashboard-alert__icon">${cfg.icon}</span>` : ""}
         <div class="puredashboard-alert__body">
           ${this.title ? html`<div class="puredashboard-alert__title">${this.title}</div>` : ""}

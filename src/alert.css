@@ -26,6 +26,9 @@ puredashboard-alert {
   --pd-alert-border: var(--border, color-mix(in srgb, var(--pd-accent) 40%, transparent));
 }
 
+/* display:block above would override the UA rule for [hidden], so a hidden alert would stay visible. */
+puredashboard-alert[hidden] { display: none; }
+
 .puredashboard-alert__box {
   display: flex;
   align-items: flex-start;
