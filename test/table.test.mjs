@@ -101,5 +101,26 @@ const trs = (el) => [...el.querySelectorAll("tbody > tr.puredashboard-table__row
   style.remove();
 }
 
+// ---- columns[].wrapHeader: only that column's header may wrap ----
+{
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/table.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const el = mount("puredashboard-table");
+  el.columns = [{ key: "name", label: "Name", sortable: true, wrapHeader: true }, { key: "n", label: "A long header label", wrapHeader: true }, { key: "x", label: "Short" }];
+  el.rows = ROWS; el.selectable = true;
+  await tick();
+  const ths = [...el.querySelectorAll("thead th")];
+  const ws = (th) => w.getComputedStyle(th).whiteSpace;
+  ok(ths[1].classList.contains("puredashboard-table__th--wrap") && ths[2].classList.contains("puredashboard-table__th--wrap"), "wrapHeader adds the --wrap modifier on that <th> (sortable and plain)");
+  ok(ws(ths[1]) === "normal" && ws(ths[2]) === "normal", "wrapHeader columns: header may wrap");
+  // The sort <button> is `all: unset`, so in a browser it inherits white-space from the <th>. jsdom does not resolve
+  // `all` (measured: computed white-space "" on the button), so that inheritance is not observable here.
+  ok(ws(ths[0]) === "nowrap" && ws(ths[3]) === "nowrap" && !ths[3].classList.contains("puredashboard-table__th--wrap"), "other headers stay on one line");
+  el.setAttribute("wrap-headers", ""); await tick();
+  ok(ws(el.querySelectorAll("thead th")[3]) === "normal", "table-level wrap-headers still wraps every header (OR)");
+  style.remove();
+}
+
 console.log(`table.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

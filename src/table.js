@@ -60,7 +60,7 @@ const LABELS = {
  *
  * @element puredashboard-table
  *
- * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row), thAttrs? }` (`thAttrs`: attributes for that column's `<th>` — for NON-sortable columns, e.g. a server-sorted `{ "aria-sort": "ascending" }`; on a `sortable` column it would override the library's own aria-sort).
+ * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row), thAttrs?, wrapHeader? }` (`wrapHeader: true`: that column's header label may wrap, while the others stay on one line — the per-column form of `wrap-headers`) (`thAttrs`: attributes for that column's `<th>` — for NON-sortable columns, e.g. a server-sorted `{ "aria-sort": "ascending" }`; on a `sortable` column it would override the library's own aria-sort).
  * @prop {Array}    rows       - Data rows (array of objects).
  * @prop {Function} [rowKey]   - `(row) => key` identity for selection (falls back to `row.id ?? row.name ?? JSON`).
  * @prop {Function} [rowAttrs] - `(row, index) => object` of attributes for each row's `<tr>` (`index` = position within the current page) (`data-*`, `id`…; `class` is added to the row's classes; `null`/`false` removes). Re-applied after every render.
@@ -225,11 +225,12 @@ class PuredashboardTable extends Reactive {
       ${selectable ? html`<th scope="col" class="puredashboard-table__th puredashboard-table__check-head">
         <input type="checkbox" class="js-puredashboard-table__check-all" aria-label="${this._label("selectAll")}" .checked=${allSel} .indeterminate=${someSel && !allSel}></th>` : ""}
       ${cols.map((c) => {
-        if (!c.sortable) return html`<th scope="col" class="puredashboard-table__th" style="text-align:${c.align || "left"}">${c.label}</th>`;
+        const wrap = c.wrapHeader ? " puredashboard-table__th--wrap" : "";
+        if (!c.sortable) return html`<th scope="col" class="puredashboard-table__th${wrap}" style="text-align:${c.align || "left"}">${c.label}</th>`;
         const active = this.sortKey === c.key;
         const aria = active ? (this.sortDir === "desc" ? "descending" : "ascending") : "none";
         const ic = active ? (this.sortDir === "desc" ? arrowDown : arrowUp) : sortNeutral;
-        return html`<th scope="col" class="puredashboard-table__th puredashboard-table__th--sortable" style="text-align:${c.align || "left"}" aria-sort="${aria}">
+        return html`<th scope="col" class="puredashboard-table__th puredashboard-table__th--sortable${wrap}" style="text-align:${c.align || "left"}" aria-sort="${aria}">
           <button type="button" class="puredashboard-table__sort ${active ? "puredashboard-table__sort--active" : ""}" data-sort="${c.key}">
             <span>${c.label}</span><span class="puredashboard-table__sort-icon">${ic}</span></button></th>`;
       })}

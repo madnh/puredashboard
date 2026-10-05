@@ -220,6 +220,11 @@ the API may still change between minor versions.
   Without `multiple` the DOM, values, events and form value are unchanged (golden replay
   in the tests). `combobox.js` now imports `tag.js`. Upstreamed from model-gateway
   (GW-168).
+- **`<puredashboard-table>` per-column header wrap**: `columns[].wrapHeader: true` lets
+  that column's header label wrap (modifier class `puredashboard-table__th--wrap`) while
+  the other headers stay on one line — for a table where a few long headers would
+  otherwise push it past its container. The table-level `wrap-headers` attribute keeps
+  its meaning; the two combine. Requested by model-gateway.
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

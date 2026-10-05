@@ -433,7 +433,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 ### Data display
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
-| `puredashboard-table` | `columns`(+`thAttrs`), `rows`, `rowKey`, `rowAttrs(row,i)`, `selectable`, `actions`, `bulkActions`, `pageSize`, `getHref`; attr `wrap-headers` | `action`{name,row}, `bulkaction`, `selectionchange` | sort/filter/paginate; `column.render(row)` may return a DOM node |
+| `puredashboard-table` | `columns`(+`thAttrs`, `wrapHeader`), `rows`, `rowKey`, `rowAttrs(row,i)`, `selectable`, `actions`, `bulkActions`, `pageSize`, `getHref`; attr `wrap-headers` | `action`{name,row}, `bulkaction`, `selectionchange` | sort/filter/paginate; `column.render(row)` may return a DOM node |
 | `puredashboard-card` | `title`, `bordered`; attrs `role` (kept if authored), `scroll` | — | body = children; `data-card-footer`/`-extra` children project |
 | `puredashboard-descriptions` | `items`([{label,value,span}]), `columns`, `bordered`, `title` | — | dl/dt/dd |
 | `puredashboard-statistic` | `title`, `value`, `precision`, `prefix`, `suffix`, `trend`(up/down) | — | formats numbers |

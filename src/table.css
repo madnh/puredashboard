@@ -37,6 +37,7 @@ puredashboard-table {
   color: var(--pd-faint); border-bottom: 1px solid var(--pd-border); background: var(--pd-panel-2); white-space: nowrap; }
 .puredashboard-table__th--sortable { padding: 0; }
 puredashboard-table[wrap-headers] .puredashboard-table__th { white-space: normal; }
+.puredashboard-table__th--wrap { white-space: normal; }  /* per column: columns[].wrapHeader */
 .puredashboard-table__sort { all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 9px 13px;
   width: 100%; box-sizing: border-box; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; }
 .puredashboard-table__sort:hover { color: var(--pd-text); }
