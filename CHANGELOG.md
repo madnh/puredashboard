@@ -205,6 +205,11 @@ the API may still change between minor versions.
   even if the app never imported it, and a dialog without `actions` stays
   dependency-free. Without `actions` nothing changes. Upstreamed from model-gateway
   (GW-167).
+- **`<puredashboard-button>` toggle semantics.** Opt-in `role`, `aria-checked` and
+  `aria-pressed` on the host are moved to the inner `<button>` (removed from the host, so
+  a switch or toggle button is one node in the accessibility tree); setting the host
+  attribute again updates the state, an empty string clears it. Without them nothing
+  changes. Upstreamed from model-gateway (GW-167).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs

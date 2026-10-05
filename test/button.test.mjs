@@ -289,5 +289,38 @@ for (const s of ["success", "warning"]) {
   void inner1;
 }
 
+// ---- role / aria-checked / aria-pressed move from the host to the inner <button> ----
+{
+  document.body.innerHTML = `<puredashboard-button role="switch" aria-checked="false">Wi-Fi</puredashboard-button>`;
+  const el = document.body.firstElementChild;
+  await tick();
+  const inner = () => el.querySelector("button");
+  ok(inner().getAttribute("role") === "switch" && inner().getAttribute("aria-checked") === "false", "role and aria-checked land on the inner <button>");
+  ok(!el.hasAttribute("role") && !el.hasAttribute("aria-checked"), "and are removed from the host (one node in the a11y tree)");
+  el.setAttribute("aria-checked", "true");
+  await tick();
+  ok(inner().getAttribute("aria-checked") === "true" && !el.hasAttribute("aria-checked"), "setting the host attribute again updates the inner state");
+  el.setAttribute("role", "");
+  await tick();
+  ok(!inner().hasAttribute("role"), "an empty string clears the moved role");
+  el.variant = "primary"; await tick();
+  ok(inner().getAttribute("aria-checked") === "true", "moved state survives a re-sync for another attribute");
+}
+{
+  document.body.innerHTML = `<puredashboard-button aria-pressed="true">Bold</puredashboard-button>`;
+  const el = document.body.firstElementChild;
+  await tick();
+  ok(el.querySelector("button").getAttribute("aria-pressed") === "true" && !el.hasAttribute("aria-pressed"), "aria-pressed moves to the inner <button>");
+}
+
+// ---- nothing declared: the inner button carries none of them (default unchanged) ----
+{
+  const el = mount("puredashboard-button");
+  el.textContent = "Plain";
+  await tick();
+  const b = el.querySelector("button");
+  ok(b && !b.hasAttribute("role") && !b.hasAttribute("aria-checked") && !b.hasAttribute("aria-pressed"), "default: no role / aria-checked / aria-pressed on the inner button");
+}
+
 console.log(`button.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

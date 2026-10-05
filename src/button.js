@@ -47,6 +47,7 @@ const VARIANTS = new Set(["primary", "default", "dashed", "text", "link"]);
 const SIZES = new Set(["sm", "md", "lg"]);
 const STATUSES = new Set(["success", "warning", "danger"]);
 const SHAPES = new Set(["default", "round", "circle"]);
+const FORWARDED = ["role", "aria-checked", "aria-pressed"];   // opt-in attributes moved to the inner element
 
 /**
  * A themed button — or link — that wraps its author-provided label content in a
@@ -88,6 +89,9 @@ const SHAPES = new Set(["default", "round", "circle"]);
  * @attr {boolean} icon-right  - Declarative form of `iconRight`.
  * @attr {string}  aria-label - Accessible name, mirrored onto the inner `<button>`/`<a>`. REQUIRED for an icon-only button (`icon` + no children — e.g. a kebab `⋯` / hamburger `☰` menu trigger); an author name is never overwritten by the `loading` fallback.
  * @attr {string}  aria-labelledby - IDs naming the button; mirrored onto the inner element like `aria-label`.
+ * @attr {string}  role - Opt-in: a role for the inner `<button>` (e.g. `"switch"`). MOVED to the inner element (removed from the host, so the host never exposes a second node with the role). Set it once; an empty string clears it.
+ * @attr {string}  aria-checked - Opt-in: state for a `role="switch"`/`checkbox` button; moved to the inner element like `role`. Update it by setting the attribute on the host again.
+ * @attr {string}  aria-pressed - Opt-in: state for a toggle button; moved to the inner element like `role`.
  *
  * @fires click - Native, bubbling `click` from the inner `<button>`/`<a>` (suppressed while disabled/loading).
  *
@@ -106,7 +110,7 @@ const SHAPES = new Set(["default", "round", "circle"]);
  */
 class PuredashboardButton extends HTMLElement {
   static get observedAttributes() {
-    return ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right", "aria-label", "aria-labelledby"];
+    return ["variant", "size", "status", "shape", "danger", "disabled", "loading", "block", "type", "href", "icon", "icon-right", "aria-label", "aria-labelledby", "role", "aria-checked", "aria-pressed"];
   }
 
   constructor() {
@@ -115,6 +119,8 @@ class PuredashboardButton extends HTMLElement {
     this._scheduled = false;
     this._el = null;        // the inner <button> or <a>
     this._labelHost = null; // wrapper holding the moved author children
+    this._fwd = {};         // role / aria-checked / aria-pressed moved from the host to the inner element
+    this._moving = false;   // true while we remove a moved attribute from the host (its change callback must not clear it)
     // A template engine may set properties before upgrade, leaving plain
     // own-properties that shadow the accessors. Reconcile them (same pattern as
     // the rest of the library).
@@ -168,6 +174,7 @@ class PuredashboardButton extends HTMLElement {
   _reflectBool(attr, v) { if (v) this.setAttribute(attr, ""); else this.removeAttribute(attr); }
 
   attributeChangedCallback() {
+    if (this._moving) return;
     // Any observed attribute changing re-syncs the inner element (cheap; the
     // element is built once and only its classes/attrs are toggled). `href`
     // changing between set/unset can change WHICH element we need — rebuild then.
@@ -297,6 +304,19 @@ class PuredashboardButton extends HTMLElement {
     else if (this.loading) el.setAttribute("aria-label", this._label("loading"));
     else el.removeAttribute("aria-label");
     if (namedBy) el.setAttribute("aria-labelledby", namedBy); else el.removeAttribute("aria-labelledby");
+
+    // role / aria-checked / aria-pressed: MOVED from the host to the inner element, so a switch/toggle button is one node in
+    // the accessibility tree (a role on the host would nest a second one around the native button). The value lives in
+    // this._fwd; setting the attribute on the host again updates it, an empty string clears it.
+    for (const a of FORWARDED) {
+      const v = this.getAttribute(a);
+      if (v !== null) {
+        if (v === "") delete this._fwd[a]; else this._fwd[a] = v;
+        this._moving = true;
+        try { this.removeAttribute(a); } finally { this._moving = false; }
+      }
+      if (this._fwd[a] != null) el.setAttribute(a, this._fwd[a]); else el.removeAttribute(a);
+    }
 
     // aria-busy while loading (announced on the host). The loading fallback name is
     // only OURS to manage — an author-supplied aria-label is never clobbered.
