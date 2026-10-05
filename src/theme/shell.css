@@ -21,10 +21,16 @@
  *       <div class="card"> … components … </div>
  *     </div></main>
  *   </body>
+ *
+ * An element that has to sit between <body> and the shell (a router outlet, a mount point) takes class="app-frame" so the full-height
+ * column is carried down to it.
  */
 
 /* full-height app frame: fixed top bar, scrollable content */
 body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+/* A wrapper between <body> and the shell (e.g. a router outlet) is sized by its content, so the whole page scrolls and the sider scrolls
+ * with it; as a flex column that fills <body> and scrolls itself it passes the fixed frame down. */
+.app-frame { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: auto; }
 
 /* ── top bar (3 columns so the nav stays centred regardless of side widths) ── */
 header {

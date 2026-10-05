@@ -191,6 +191,11 @@ the API may still change between minor versions.
   connect, and removed again when cleared. Plain `HTMLElement`, light DOM, the control is
   never moved or wrapped; text is set with `textContent` only. Upstreamed from
   model-gateway (GW-163).
+- **`theme/shell.css`: `.app-frame`** for an element that has to sit between `<body>`
+  and the shell (a router outlet, a mount point). `<body>` is a fixed 100vh column that
+  scrolls only `<main>`, but such a wrapper was sized by its content, so the whole page
+  scrolled and the sider scrolled with it. `.app-frame` is a flex column that fills
+  `<body>`, has `min-height: 0` and scrolls itself. Upstreamed from model-gateway (GW-163).
 
 ### Security
 - **Engine URL-scheme guard** (`reactive.js`): attribute bindings for URL attrs
