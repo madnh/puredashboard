@@ -178,7 +178,8 @@ puredashboard-combobox {
   cursor: pointer;
   user-select: none;
 }
-.puredashboard-combobox__option--active { background: var(--pd-panel-2); }
+.puredashboard-combobox__option--active,
+.puredashboard-combobox__option:hover:not(.puredashboard-combobox__option--disabled) { background: var(--pd-panel-2); }
 .puredashboard-combobox__option--selected { color: var(--pd-accent); font-weight: var(--weight-medium, 500); }
 .puredashboard-combobox__option--selected.puredashboard-combobox__option--active { background: var(--pd-panel-3); }
 .puredashboard-combobox__option--disabled { opacity: var(--pd-disabled-opacity); cursor: default; }

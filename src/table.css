@@ -64,7 +64,7 @@ puredashboard-table[wrap-headers] .puredashboard-table__th { white-space: normal
 .puredashboard-table__range { flex: none; color: var(--pd-muted); }
 .puredashboard-table__pages { display: flex; align-items: center; gap: 8px; }
 .puredashboard-table__page-btn { all: unset; cursor: pointer; display: inline-flex; padding: 4px; border-radius: 6px; color: var(--pd-text); }
-.puredashboard-table__page-btn:hover { background: var(--pd-panel-2); }
+.puredashboard-table__page-btn:hover:not([disabled]) { background: var(--pd-panel-2); }
 .puredashboard-table__page-btn[disabled] { opacity: .3; cursor: default; }
 .puredashboard-table__page-no { color: var(--pd-muted); font-variant-numeric: tabular-nums; }
 .puredashboard-table__page-size { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: var(--pd-muted); }

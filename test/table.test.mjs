@@ -122,5 +122,17 @@ const trs = (el) => [...el.querySelectorAll("tbody > tr.puredashboard-table__row
   style.remove();
 }
 
+// ---- rows-per-page select always offers the current pageSize ----
+{
+  const el = mount("puredashboard-table");
+  el.columns = COLS; el.rows = ROWS; el.pageSize = 4;
+  await tick();
+  const sel = el.querySelector(".js-puredashboard-table__page-size");
+  ok([...sel.options].map((o) => o.value).join() === "4,10,25,50", "pageSize 4 is added to the default options, sorted");
+  ok(sel.value === "4", "the select shows the current pageSize instead of blank");
+  el.pageSizes = [5, 20]; el.pageSize = 20; await tick();
+  ok([...el.querySelector(".js-puredashboard-table__page-size").options].map((o) => o.value).join() === "5,20", "a pageSize already in pageSizes is not duplicated");
+}
+
 console.log(`table.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

@@ -22,7 +22,7 @@
   --pd-menu-shadow:   var(--shadow-3, 0 12px 32px rgba(0, 0, 0, .28));
   --pd-menu-pad:      var(--sp-1,    4px);
   --pd-menu-gutter:   16px;                    /* icon slot */
-  --pd-menu-indicator: 14px;                   /* check / radio-dot slot */
+  --pd-menu-indicator: var(--pd-menu-gutter);  /* check / radio-dot slot — as wide as the icon slot so labels line up */
 
   /* legacy aliases — the previous release themed these; keep them working */
   --pd-accent: var(--pd-menu-accent);

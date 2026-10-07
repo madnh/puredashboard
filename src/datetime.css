@@ -42,7 +42,9 @@ puredashboard-datetime {
   outline: none;
   /* Adopt the theme colour scheme so the browser renders the native date/time UI (text, spinners, picker popup) in the matching
    * light/dark palette. */
-  color-scheme: light dark;
+  /* No color-scheme here: it is inherited from the page (tokens.css sets it per theme), so the native
+   * calendar icon and popup follow a forced light/dark theme. Forcing "light dark" followed the OS instead:
+   * a dark-OS user on the light theme got a white icon on a white field. */
   transition: border-color var(--pd-duration) var(--pd-ease), box-shadow var(--pd-duration) var(--pd-ease);
 }
 .puredashboard-datetime__field:hover:not(:disabled):not([readonly]) { border-color: var(--pd-border-2); }

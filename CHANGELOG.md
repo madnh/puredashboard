@@ -488,6 +488,15 @@ the API may still change between minor versions.
   segments were squeezed to their minimum ("We…", "Mo…"). `block` now also puts
   `puredashboard-segmented--block` on the host, which makes it `display: block` — the
   same pattern as `<puredashboard-button block>`.
+- **Interaction fixes across controls** (found by a full gallery review in both themes, all
+  measured in Chromium): `<puredashboard-tabs>` has its own hover fill, in button and link
+  mode alike and never on a disabled tab (it came only from the optional theme before);
+  `<puredashboard-table>` pager buttons no longer light up while disabled, and the
+  rows-per-page select always offers the current `pageSize` (it showed blank for a size
+  outside `pageSizes`); `<puredashboard-combobox>` options get a hover fill under the mouse;
+  `<puredashboard-menu>` check/radio slots are as wide as the icon slot, so labels line up;
+  `<puredashboard-date>` / `<puredashboard-datetime>` follow the page's colour scheme instead
+  of the OS (a dark-OS user on the light theme got a white calendar icon on a white field).
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

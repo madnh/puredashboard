@@ -20,6 +20,7 @@ puredashboard-tabs {
   --pd-tabs-gap:  var(--sp-1, 4px);
   --pd-tabs-indicator: 2px;
   --pd-tabs-radius: var(--radius-sm, 6px);
+  --pd-tabs-hover:  var(--panel-3, color-mix(in srgb, CanvasText 6%, Canvas));
 }
 
 .puredashboard-tabs__list {
@@ -45,7 +46,9 @@ puredashboard-tabs {
   cursor: pointer;
   transition: color var(--pd-duration) var(--pd-ease);
 }
-.puredashboard-tabs__tab:hover:not(:disabled) { color: var(--pd-text); }
+/* own hover fill (button and link mode alike, never on a disabled tab) — it used to come only from the optional
+ * theme's button:hover, so link-mode tabs and theme-less pages had none */
+.puredashboard-tabs__tab:hover:not(:disabled):not(.puredashboard-tabs__tab--disabled) { color: var(--pd-text); background: var(--pd-tabs-hover); }
 
 /* link mode: a <nav> of real <a> links styled as the same tabs; wraps instead of overflowing */
 .puredashboard-tabs__list--links { flex-wrap: wrap; }

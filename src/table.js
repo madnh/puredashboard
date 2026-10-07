@@ -217,7 +217,8 @@ class PuredashboardTable extends Reactive {
     const someSel = selectable && all.some((r) => sel.has(this._key(r)));
     const hasActions = (this.actions && this.actions.length) || typeof this.getHref === "function";
     const openLabel = this._label("open");
-    const sizes = this.pageSizes || [10, 25, 50];
+    // The current pageSize is always one of the options, or the select shows blank (e.g. pageSize 4 with the defaults).
+    const sizes = [...new Set([...(this.pageSizes || [10, 25, 50]), ...(pageSize > 0 ? [pageSize] : [])])].sort((a, b) => a - b);
     const bulk = this.bulkActions || [];
     const span = cols.length + (hasActions ? 1 : 0) + (selectable ? 1 : 0);
 
