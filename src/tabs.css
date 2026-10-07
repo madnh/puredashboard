@@ -19,6 +19,7 @@ puredashboard-tabs {
   --pd-disabled-opacity: var(--disabled-opacity, 0.55);
   --pd-tabs-gap:  var(--sp-1, 4px);
   --pd-tabs-indicator: 2px;
+  --pd-tabs-radius: var(--radius-sm, 6px);
 }
 
 .puredashboard-tabs__list {
@@ -38,6 +39,9 @@ puredashboard-tabs {
   color: var(--pd-muted);
   background: transparent;
   border: none;
+  /* Top corners only: a hover/focus background (e.g. the optional theme's button:hover) sits ON the list's
+   * bottom border, so rounded bottom corners would lift it off the underline. */
+  border-radius: var(--pd-tabs-radius) var(--pd-tabs-radius) 0 0;
   cursor: pointer;
   transition: color var(--pd-duration) var(--pd-ease);
 }

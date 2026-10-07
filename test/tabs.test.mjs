@@ -246,5 +246,14 @@ const key = (el, k) => el.dispatchEvent(new w.KeyboardEvent("keydown", { key: k,
   ok(el.querySelector('[role="tablist"]') && !el.querySelector("nav"), "no href: back to the APG tablist");
 }
 
+// ---- tab corners: rounded on top, square at the bottom (sits on the underline) ----
+// CSS contract only: jsdom does not resolve var() inside border-radius (measured: it reports "0" for the
+// corners with and without this rule), so the computed outcome is checked in a real browser instead.
+{
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/tabs.css", import.meta.url), "utf8");
+  ok(/\.puredashboard-tabs__tab\s*\{[^}]*border-radius:\s*var\(--pd-tabs-radius\)\s+var\(--pd-tabs-radius\)\s+0\s+0\s*;/.test(css), "tab: top corners rounded, bottom corners 0");
+}
+
 console.log(`tabs.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

@@ -468,6 +468,11 @@ the API may still change between minor versions.
   visible in a `shape="circle"` button. With an icon and no label content (whitespace
   aside) the inner element gets `puredashboard-button__el--icon-only` and the slot is
   hidden.
+- **`<puredashboard-tabs>` hover background keeps square bottom corners.** With the
+  optional theme, `button` gets `border-radius` and a `:hover` background, so a hovered
+  tab showed a fully rounded pill floating above the underline. Tabs now round only their
+  top corners (`--pd-tabs-radius`, default `--radius-sm`); the bottom corners are 0, so
+  the hover/focus background sits on the list's bottom border.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

@@ -51,6 +51,7 @@ let uid = 0;
  *
  * @cssprop [--pd-tabs-gap]      - Gap between tabs (defaults to `--sp-1`).
  * @cssprop [--pd-tabs-indicator] - Active-tab indicator thickness (defaults to `2px`).
+ * @cssprop [--pd-tabs-radius]   - Top-corner radius of a tab's hover/focus background; the bottom corners stay square (defaults to `--radius-sm`).
  *
  * @example
  * const tabs = document.createElement("puredashboard-tabs");
