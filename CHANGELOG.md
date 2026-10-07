@@ -288,6 +288,16 @@ the API may still change between minor versions.
   (it used to write `aria-label=""`). A `scroll` host attribute lets a body wider than
   the card scroll horizontally instead of being clipped. Upstreamed from model-gateway
   (GW-161).
+- **Optional theme: `button` / `a` base rules no longer override component internals.**
+  `src/theme/base.css` styled `button`, `button:hover`, `a:hover` … at specificity
+  (0,1,1), which beat every component's single-class rule (0,1,0). It leaked into
+  components: the current page of `<puredashboard-pagination>` turned dark-on-dark on
+  hover, disabled steppers / tabs / pagination buttons lit up, `<puredashboard-nav>` links
+  got underlined, `<puredashboard-steps>`, `<puredashboard-collapse>` headers and
+  `<puredashboard-json-view>`'s copy button got a grey rounded hover box. These rules are
+  now wrapped in `:where()` (zero specificity), as the input rules already were; hover and
+  press effects also skip `:disabled`. Plain app buttons and links look the same; an app
+  class now overrides them without needing extra specificity.
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the

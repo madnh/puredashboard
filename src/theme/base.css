@@ -16,8 +16,12 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* Links and buttons are wrapped in :where() for the same reason as the inputs below: zero specificity, so a
+ * component's own single-class rule always wins. Without it `a:hover` / `button:hover` (0,1,1) outranked component
+ * classes (0,1,0) and leaked into their internals: underlined nav rows, a grey hover fill on the current page button
+ * of pagination, on disabled steppers and tabs, on json-view's copy button, etc. */
+:where(a) { color: var(--accent); text-decoration: none; }
+:where(a:hover) { text-decoration: underline; }
 h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
 
 /* stroke-based icon class (follows currentColor; 1em → scales with font) */
@@ -27,20 +31,21 @@ h1, h2, h3 { margin: 0; letter-spacing: -0.01em; }
 }
 
 /* ── buttons ── */
-button {
+/* Zero specificity (see the links above); order within this block still decides between these rules. */
+:where(button) {
   font: inherit; cursor: pointer; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
   padding: 7px 13px; transition: background .12s, border-color .12s, transform .04s;
 }
-button:hover { background: var(--panel-3); }
-button:active { transform: translateY(1px); }
-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-button.primary:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
-button.secondary { background: var(--panel-2); }
-button.danger { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, var(--border)); background: var(--panel-2); }
-button.danger:hover { background: color-mix(in srgb, var(--red) 14%, transparent); }
-button:disabled { opacity: .55; cursor: not-allowed; }
+:where(button:hover:not(:disabled)) { background: var(--panel-3); }
+:where(button:active:not(:disabled)) { transform: translateY(1px); }
+:where(button:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+:where(button.primary) { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+:where(button.primary:hover:not(:disabled)) { background: color-mix(in srgb, var(--accent) 88%, #000); }
+:where(button.secondary) { background: var(--panel-2); }
+:where(button.danger) { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, var(--border)); background: var(--panel-2); }
+:where(button.danger:hover:not(:disabled)) { background: color-mix(in srgb, var(--red) 14%, transparent); }
+:where(button:disabled) { opacity: .55; cursor: not-allowed; }
 
 /* ── inputs ── */
 /* Wrapped in :where() so this base layer has ZERO specificity — every component's
