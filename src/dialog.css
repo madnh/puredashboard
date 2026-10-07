@@ -11,7 +11,10 @@
  *     okClass/cancelClass/className to reuse your own button/dialog classes.
  */
 
-.puredashboard-dialog {
+/* The colour tokens are declared on the button class too, so a .puredashboard-dialog__button used OUTSIDE a
+ * dialog (a trigger, an app's own footer) is complete on its own. Without it, --pd-accent-ink was undefined there and
+ * a primary button got the inherited text colour: dark text on the accent fill in the light theme. */
+.puredashboard-dialog, .puredashboard-dialog__button {
   --pd-accent:     var(--accent,     #3b82f6);
   --pd-accent-ink: var(--accent-ink, #fff);
   --pd-text:       var(--text,       CanvasText);
@@ -19,6 +22,8 @@
   --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 5%, Canvas));
   --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
   --pd-red:        var(--red,        #dc2626);
+}
+.puredashboard-dialog {
   --pd-radius:     var(--radius,     12px);
   --puredashboard-dialog-pad:      16px 18px;
   --puredashboard-dialog-gap:      14px;

@@ -532,6 +532,11 @@ the API may still change between minor versions.
   track in dark); `<puredashboard-skeleton>` blocks are tinted from the text colour so they
   show on the theme panels; an invalid `<puredashboard-checkbox>` gets one red ring hugging
   the box instead of a second ring outside it.
+- **`.puredashboard-dialog__button` works outside a dialog.** Its colour tokens were
+  declared only on `.puredashboard-dialog`, so a primary dialog button used elsewhere (the
+  gallery's "Open dialog" trigger, an app's own footer) had no `--pd-accent-ink` and took
+  the inherited text colour — dark text on the accent fill in the light theme. The tokens
+  are now declared on the button class as well.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`
