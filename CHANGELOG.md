@@ -473,6 +473,11 @@ the API may still change between minor versions.
   tab showed a fully rounded pill floating above the underline. Tabs now round only their
   top corners (`--pd-tabs-radius`, default `--radius-sm`); the bottom corners are 0, so
   the hover/focus background sits on the list's bottom border.
+- **`<puredashboard-segmented block>` fills its container again.** The host stayed
+  `inline-block`, so the 100%-wide track sized to its own content and the equal-width
+  segments were squeezed to their minimum ("We…", "Mo…"). `block` now also puts
+  `puredashboard-segmented--block` on the host, which makes it `display: block` — the
+  same pattern as `<puredashboard-button block>`.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

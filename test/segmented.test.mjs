@@ -180,5 +180,23 @@ void PuredashboardSegmented;
   ok(el2._label("group") === "Segmented control", "default label kept when not overridden");
 }
 
+// ---- block: the HOST fills its container, so the equal-width segments are not squeezed ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/segmented.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const a = mount("puredashboard-segmented");
+  a.options = ["Day", "Week", "Month"];
+  const b = mount("puredashboard-segmented");
+  b.options = ["Day", "Week", "Month"]; b.block = true;
+  await tick();
+  ok(w.getComputedStyle(a).display === "inline-block" && !a.classList.contains("puredashboard-segmented--block"), "default: host stays inline-block");
+  ok(b.classList.contains("puredashboard-segmented--block") && w.getComputedStyle(b).display === "block", "block: host gets the --block modifier and is display:block");
+  b.block = false; await tick();
+  ok(!b.classList.contains("puredashboard-segmented--block"), "block off: modifier removed");
+  style.remove();
+}
+
 console.log(`segmented.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

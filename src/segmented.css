@@ -44,7 +44,8 @@ puredashboard-segmented {
 .puredashboard-segmented__track--sm { --pd-height: var(--control-height-sm, 28px); font-size: var(--font-size-sm, 12px); }
 .puredashboard-segmented__track--lg { --pd-height: var(--control-height-lg, 42px); font-size: var(--font-size-lg, 15px); }
 
-/* block — full width, equal segments */
+/* block — full width, equal segments (the host modifier makes the host itself fill its container) */
+puredashboard-segmented.puredashboard-segmented--block { display: block; }
 .puredashboard-segmented__track--block { display: flex; width: 100%; }
 .puredashboard-segmented__track--block .puredashboard-segmented__segment { flex: 1 1 0; }
 

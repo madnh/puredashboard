@@ -89,6 +89,10 @@ class PuredashboardSegmented extends Reactive {
   // _label(key, …args) → localised string: this.labels override, else the default.
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
 
+  // Host-level block modifier: the host is inline-block, so a 100%-wide track inside it would size to its own
+  // content and squeeze the equal-width segments down to their minimum (labels truncated). Same pattern as button.
+  updated() { this.classList.toggle("puredashboard-segmented--block", !!this.block); }
+
   setup() {
     this._explicit = this.getAttribute("value") ?? "";   // explicit initial value, if any
     if (this.options == null) this.options = [];
