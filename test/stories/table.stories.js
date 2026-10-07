@@ -37,5 +37,23 @@ export default {
         { name: "restart-all", label: "Restart selected" },
       ],
     }) },
+    { name: "Per-column header wrap", notes: "columns[].wrapHeader: only the two long headers wrap (one of them sortable); the others stay on one line", render: () => {
+      const nowrap = (text) => el("span", { style: "white-space:nowrap" }, [text]); // keep short cells on one line in the narrow box
+      return el("div", { style: "max-width:600px" }, [el("puredashboard-table", {
+        columns: [
+          { key: "name", label: "Service", sortable: true, render: (row) => nowrap(row.name) },
+          { key: "reqs", label: "Requests in the last 24 hours", align: "right", sortable: true, wrapHeader: true },
+          { key: "region", label: "Primary deployment region", wrapHeader: true },
+          { key: "status", label: "Status", render: (row) => nowrap(row.up ? "● up" : "● down") },
+        ],
+        rows,
+        filterable: false,
+      })]);
+    } },
+    { name: "Row attributes", notes: "rowAttrs(row, i) stamps attributes on each <tr>; here down services get data-state=down and a dimmed style", render: () => el("puredashboard-table", {
+      columns,
+      rows,
+      rowAttrs: (row) => ({ "data-state": row.up ? "up" : "down", style: row.up ? null : "opacity:.5" }),
+    }) },
   ],
 };

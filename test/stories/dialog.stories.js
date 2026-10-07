@@ -64,5 +64,12 @@ export default {
       );
       return wrap;
     } },
+    { name: "Footer actions", notes: "actions: library-rendered <puredashboard-button>s; a click closes with that value, or runs onclick", render: () =>
+      trigger("Open with actions", () => {
+        dialog({ title: "Delete service?", content: "billing-cron will stop and its history is removed.", actions: [
+          { label: "Cancel", value: "cancel" },
+          { label: "Delete", value: "ok", variant: "primary", danger: true },
+        ] }).show();
+      }) },
   ],
 };

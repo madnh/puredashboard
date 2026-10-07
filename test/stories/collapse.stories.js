@@ -22,5 +22,11 @@ export default {
         { key: "two", header: "Also enabled", content: "So does this one." },
         { key: "locked", header: "Locked (disabled)", content: "You can't open me.", disabled: true },
       ] }) },
+    { name: "Heading level + no regions", notes: "headingLevel=4 (aria-level) and regions=false: a long FAQ adds no landmarks", render: () =>
+      el("puredashboard-collapse", { headingLevel: 4, regions: false, multiple: true, items: [
+        { key: "q1", header: "Can I export data?", content: "Yes, as CSV or JSON." },
+        { key: "q2", header: "Is there an API?", content: "Every page is backed by one." },
+        { key: "q3", header: "Where is it hosted?", content: "Wherever you run the binary." },
+      ] }) },
   ],
 };

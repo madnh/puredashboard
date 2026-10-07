@@ -15,5 +15,12 @@ export default {
     { name: "Flat (no border)", render: () => el("puredashboard-card", { title: "Notes", bordered: false }, [
       el("p", {}, [t("A borderless surface for embedding inside another panel.")]),
     ]) },
+    { name: "Scrolling body", notes: "scroll attribute: a body wider than the card scrolls instead of being clipped", render: () => {
+      const card = el("puredashboard-card", { title: "Wide content" }, [
+        el("pre", { style: "margin:0" }, [t("2026-10-07T09:30:00Z  api-gateway  GET /v1/models?limit=100&cursor=eyJpZCI6MTIzNDU2fQ  200  12ms")]),
+      ]);
+      card.setAttribute("scroll", ""); // an attribute, not the element's scroll() method
+      return el("div", { style: "max-width:360px" }, [card]);
+    } },
   ],
 };

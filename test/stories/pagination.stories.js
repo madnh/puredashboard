@@ -12,5 +12,7 @@ export default {
       el("puredashboard-pagination", { page: 1, total: 200, pageSize: 10 }) },
     { name: "Last page", render: () =>
       el("puredashboard-pagination", { page: 20, total: 200, pageSize: 10 }) },
+    { name: "Cursor paging (hasMore)", notes: "total unknown: 3 pages reached, one more offered, a trailing … while more may follow", render: () =>
+      el("puredashboard-pagination", { page: 3, pageCount: 3, hasMore: true }) },
   ],
 };

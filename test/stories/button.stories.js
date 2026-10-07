@@ -27,5 +27,13 @@ export default {
     { name: "Sizes", render: () => hstack([
       b({ size: "sm" }, "Small"), b({ size: "md" }, "Medium"), b({ size: "lg" }, "Large"),
     ]) },
+    { name: "Switch / toggle", notes: "role, aria-checked, aria-pressed move to the inner <button>; click to toggle", render: () => {
+      const sw = el("puredashboard-button", { "aria-checked": "false" }, [t("Maintenance mode")]);
+      sw.setAttribute("role", "switch");
+      sw.addEventListener("click", () => sw.setAttribute("aria-checked", sw.querySelector("button").getAttribute("aria-checked") === "true" ? "false" : "true"));
+      const tg = el("puredashboard-button", { "aria-pressed": "true" }, [t("Bold")]);
+      tg.addEventListener("click", () => tg.setAttribute("aria-pressed", tg.querySelector("button").getAttribute("aria-pressed") === "true" ? "false" : "true"));
+      return hstack([sw, tg]);
+    } },
   ],
 };

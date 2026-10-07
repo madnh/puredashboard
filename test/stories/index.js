@@ -26,9 +26,11 @@ import radioGroup from "./radio-group.stories.js";
 import slider from "./slider.stories.js";
 import date from "./date.stories.js";
 import time from "./time.stories.js";
+import datetime from "./datetime.stories.js";
 import color from "./color.stories.js";
 import rate from "./rate.stories.js";
 import form from "./form.stories.js";
+import field from "./field.stories.js";
 // Navigation
 import tabs from "./tabs.stories.js";
 import breadcrumb from "./breadcrumb.stories.js";
@@ -70,7 +72,7 @@ import result from "./result.stories.js";
 export const STORIES = [
   button, copy, segmented, toggle, toggleGroup,
   divider, space, flex, grid, layout, splitter, titlebar,
-  input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, color, rate, form,
+  input, textarea, number, select, combobox, checkbox, switchStory, radioGroup, slider, date, time, datetime, color, rate, form, field,
   tabs, breadcrumb, pagination, steps, nav, menubar,
   table, card, descriptions, statistic, tag, badge, avatar, list, tree, collapse, jsonView, lazy, timeline, empty, md, upload,
   dialogStory, menuStory, tooltip, popover, popconfirm,
