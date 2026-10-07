@@ -130,6 +130,8 @@ puredashboard-progress[inline] {
 }
 .puredashboard-progress--line .puredashboard-progress__info { flex: none; min-width: 5ch; justify-content: flex-end; }  /* "100%" fits, so stacked tracks end at the same x */
 .puredashboard-progress__glyph { display: inline-flex; font-size: 1.1em; }
+/* circle: the read-out scales with the ring (a fixed 12px label looked lost inside 96-128px rings) */
+.puredashboard-progress--circle .puredashboard-progress__info { font-size: calc(var(--pd-progress-circle) * 0.17); }
 .puredashboard-progress__glyph--success { color: var(--pd-green); }
 .puredashboard-progress__glyph--error   { color: var(--pd-red); }
 

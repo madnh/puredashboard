@@ -303,6 +303,12 @@ the API may still change between minor versions.
   the `#4f9cf9` accent was 2.82:1 (and the hover went *lighter*, 2.34:1), red text on white
   3.35:1. Now primary buttons, the current page, `alert()` OK are 5.17:1 and red text
   4.83:1. The dark theme is unchanged. Green and amber are unchanged.
+- **Controls share one size scale:** `<puredashboard-toggle>` and `<puredashboard-copy>`
+  use the button type scale (13px, 15px at `lg`, was an inherited 14px) and corner
+  (`--radius-sm`, was `--radius`), and the built-in `confirm()` / `prompt()` / `alert()`
+  buttons take `<puredashboard-button>`'s height, type and corner (were 39px / 14px), so
+  any mix of them lines up in one toolbar or footer. Message dialogs get a 320px minimum
+  width; the circular `<puredashboard-progress>` read-out scales with the ring.
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the

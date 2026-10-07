@@ -71,9 +71,14 @@
 }
 .puredashboard-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
 .puredashboard-dialog__button {
-  font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;
+  /* metrics of <puredashboard-button> (height, type, radius), so confirm()/prompt()/alert() match a footer of actions */
+  font: inherit; font-size: var(--font-size-md, 13px); font-weight: var(--weight-medium, 500); cursor: pointer;
+  box-sizing: border-box; height: var(--control-height-md, 34px); padding: 0 var(--control-pad-x, 14px);
+  border-radius: var(--radius-sm, 8px);
   border: 1px solid var(--pd-border); background: transparent; color: var(--pd-text);
 }
+/* alert / confirm / prompt: a readable minimum width (a one-word alert was ~88px wide) */
+.puredashboard-dialog--alert, .puredashboard-dialog--confirm, .puredashboard-dialog--prompt { min-width: min(320px, calc(100vw - 32px)); }
 .puredashboard-dialog__button:hover:not(.puredashboard-dialog__button--primary):not(.puredashboard-dialog__button--danger) { background: var(--pd-panel-2); }
 .puredashboard-dialog__button--primary { background: var(--pd-accent); color: var(--pd-accent-ink); border-color: transparent; }
 .puredashboard-dialog__button--danger  { background: var(--pd-red);    color: #fff;                 border-color: transparent; }

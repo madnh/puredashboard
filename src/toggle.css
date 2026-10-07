@@ -18,7 +18,7 @@ puredashboard-toggle {
   --pd-panel-2:   var(--panel-2,  color-mix(in srgb, CanvasText 5%, Canvas));
   --pd-panel-3:   var(--panel-3,  color-mix(in srgb, CanvasText 12%, Canvas));
   --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
-  --pd-radius:    var(--radius,   8px);
+  --pd-radius:    var(--radius-sm, var(--radius, 8px));   /* same corner as <puredashboard-button> */
   --pd-duration:  var(--duration-fast, 120ms);
   --pd-ease:      var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
 
@@ -37,7 +37,8 @@ puredashboard-toggle {
   border-radius: var(--pd-radius);
   background: var(--pd-panel);
   color: var(--pd-text);
-  font: inherit; cursor: pointer; user-select: none; white-space: nowrap;
+  font: inherit; font-size: var(--font-size-md, 13px);   /* the button type scale (was inherited 14px) */
+  cursor: pointer; user-select: none; white-space: nowrap;
   transition: background var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease), border-color var(--pd-duration) var(--pd-ease);
 }
 .puredashboard-toggle__btn:hover { background: var(--pd-panel-2); }
@@ -66,7 +67,7 @@ puredashboard-toggle {
 
 /* sizes */
 .puredashboard-toggle__btn--sm { --pd-toggle-h: var(--control-height-sm, 28px); --pd-toggle-pad: var(--sp-2, 8px); font-size: var(--font-size-sm, 12px); }
-.puredashboard-toggle__btn--lg { --pd-toggle-h: var(--control-height-lg, 40px); --pd-toggle-pad: var(--sp-4, 16px); }
+.puredashboard-toggle__btn--lg { --pd-toggle-h: var(--control-height-lg, 42px); --pd-toggle-pad: var(--sp-4, 16px); font-size: var(--font-size-lg, 15px); }
 
 /* an icon-only toggle is square, so a toolbar of them lines up on both axes */
 .puredashboard-toggle__btn--icon-only { padding: 0; width: var(--pd-toggle-h); }
