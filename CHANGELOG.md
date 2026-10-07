@@ -298,6 +298,11 @@ the API may still change between minor versions.
   now wrapped in `:where()` (zero specificity), as the input rules already were; hover and
   press effects also skip `:disabled`. Plain app buttons and links look the same; an app
   class now overrides them without needing extra specificity.
+- **Light theme accent and red are darker** (`--accent #2563eb`, hover `#1d4ed8`, active
+  `#1e40af`, `--red #dc2626`). The light palette reused the dark-mode hues: white text on
+  the `#4f9cf9` accent was 2.82:1 (and the hover went *lighter*, 2.34:1), red text on white
+  3.35:1. Now primary buttons, the current page, `alert()` OK are 5.17:1 and red text
+  4.83:1. The dark theme is unchanged. Green and amber are unchanged.
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
