@@ -63,6 +63,7 @@ const LABELS = {
  * @method focus - `focus() => void` — focus the current roving-tabindex segment.
  *
  * @cssprop [--pd-segmented-gap] - Padding around the thumb inside the track (defaults to `2px`).
+ * @cssprop [--pd-segmented-item-gap] - Space between segments, so a hover fill or the thumb never touches its neighbour (defaults to `--sp-1`).
  *
  * @example
  * const seg = document.createElement("puredashboard-segmented");

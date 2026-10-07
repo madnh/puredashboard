@@ -24,13 +24,15 @@ puredashboard-segmented {
   --pd-disabled-opacity: var(--disabled-opacity, 0.55);
   /* padding around the thumb inside the track */
   --pd-segmented-gap: 2px;
+  --pd-segmented-item-gap: var(--sp-1, 4px);
 }
 
 /* The rounded track that holds the segments; the selected segment IS the thumb. */
 .puredashboard-segmented__track {
   display: inline-flex;
   align-items: stretch;
-  gap: 0;
+  /* space between segments = the track's inner padding, so a hover fill or the thumb never touches its neighbour */
+  gap: var(--pd-segmented-item-gap);
   box-sizing: border-box;
   height: var(--pd-height);
   padding: var(--pd-segmented-gap);

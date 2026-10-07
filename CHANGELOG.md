@@ -309,6 +309,9 @@ the API may still change between minor versions.
   buttons take `<puredashboard-button>`'s height, type and corner (were 39px / 14px), so
   any mix of them lines up in one toolbar or footer. Message dialogs get a 320px minimum
   width; the circular `<puredashboard-progress>` read-out scales with the ring.
+- **`<puredashboard-segmented>` segments are spaced apart** (`--pd-segmented-item-gap`,
+  default `--sp-1` = 4px), so a hover fill and the selected thumb no longer butt against
+  each other.
 
 ### Fixed
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
