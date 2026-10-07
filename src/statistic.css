@@ -67,7 +67,8 @@ puredashboard-statistic {
 .puredashboard-statistic__skeleton {
   display: inline-block;
   width: 6ch;
-  height: 1em;
+  height: 1.25em;   /* fallback for 1lh */
+  height: 1lh;      /* one value line, so the card does not change height when the value arrives */
   border-radius: var(--radius-sm, 8px);
   background: color-mix(in srgb, var(--pd-muted) 22%, transparent);
   animation: puredashboard-statistic__pulse var(--duration-slow, 320ms) var(--ease-standard, ease) infinite alternate;

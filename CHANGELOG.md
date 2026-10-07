@@ -502,6 +502,16 @@ the API may still change between minor versions.
   bubble rendered as bare text; they now sit on the tag. `dialog()` primary / danger
   buttons keep their fill on hover (the generic hover repainted them, leaving dark or white
   text on a near-page background, ~1.1:1); the close × has a square hit box.
+- **Layout and alignment:** `<puredashboard-titlebar>` window controls are square (the
+  hover fill had rounded corners floating above the bar's edge) and the macOS trailing
+  toolbar keeps an 8px edge gap; the `<puredashboard-sider>` collapse trigger is square and
+  does not shift on press; vertical attached `<puredashboard-toggle-group>` rounds exactly
+  its outer corners; the alternate `<puredashboard-timeline>` keeps left-side entries on
+  their dot's row; stacked line `<puredashboard-progress>` bars end at the same x with a
+  right-aligned read-out; the `<puredashboard-statistic>` loading block is one value line
+  tall (the card no longer jumps when data arrives); the `<puredashboard-slider>` value
+  bubble holds 3 digits (the track no longer jumps at 9→10); the dark-theme
+  `<puredashboard-segmented>` thumb is raised above the track instead of sinking below it.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

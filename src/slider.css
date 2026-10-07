@@ -113,6 +113,7 @@ puredashboard-slider {
  * range's aria-valuenow, hence aria-hidden on the element). */
 .puredashboard-slider__value {
   flex: none;
+  box-sizing: content-box;   /* min-width = 3 digits; with border-box the padding ate it and the track jumped at 9→10 */
   min-width: 3ch;
   padding: var(--sp-1, 4px) var(--sp-2, 8px);
   font: inherit;

@@ -30,14 +30,16 @@ puredashboard-toggle-group[detached] { gap: var(--pd-toggle-group-gap); }
 puredashboard-toggle-group:not([detached]) > puredashboard-toggle + puredashboard-toggle { margin-left: -1px; }
 puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle + puredashboard-toggle { margin-left: 0; margin-top: -1px; }
 
-puredashboard-toggle-group:not([detached]) > puredashboard-toggle:not(:first-child) .puredashboard-toggle__btn {
+puredashboard-toggle-group:not([detached]):not([orientation="vertical"]) > puredashboard-toggle:not(:first-child) .puredashboard-toggle__btn {
   border-top-left-radius: 0; border-bottom-left-radius: 0;
 }
-puredashboard-toggle-group:not([detached]) > puredashboard-toggle:not(:last-child) .puredashboard-toggle__btn {
+puredashboard-toggle-group:not([detached]):not([orientation="vertical"]) > puredashboard-toggle:not(:last-child) .puredashboard-toggle__btn {
   border-top-right-radius: 0; border-bottom-right-radius: 0;
 }
+/* vertical: square the TOP corners of every item but the first and the BOTTOM corners of every item but the last,
+ * so only the group's outer corners stay rounded */
 puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle:not(:first-child) .puredashboard-toggle__btn {
-  border-radius: 0; border-top-left-radius: 0; border-top-right-radius: 0;
+  border-top-left-radius: 0; border-top-right-radius: 0;
 }
 puredashboard-toggle-group:not([detached])[orientation="vertical"] > puredashboard-toggle:not(:last-child) .puredashboard-toggle__btn {
   border-bottom-left-radius: 0; border-bottom-right-radius: 0;

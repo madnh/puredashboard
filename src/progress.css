@@ -128,7 +128,7 @@ puredashboard-progress[inline] {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.puredashboard-progress--line .puredashboard-progress__info { flex: none; min-width: 4ch; text-align: right; }
+.puredashboard-progress--line .puredashboard-progress__info { flex: none; min-width: 5ch; justify-content: flex-end; }  /* "100%" fits, so stacked tracks end at the same x */
 .puredashboard-progress__glyph { display: inline-flex; font-size: 1.1em; }
 .puredashboard-progress__glyph--success { color: var(--pd-green); }
 .puredashboard-progress__glyph--error   { color: var(--pd-red); }

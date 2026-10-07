@@ -67,6 +67,8 @@ puredashboard-titlebar textarea {
 .puredashboard-titlebar__region--leading  { flex: 0 0 auto; padding-inline-start: var(--sp-2, 8px); }
 .puredashboard-titlebar__region--center   { flex: 1 1 auto; justify-content: flex-start; padding-inline: var(--sp-2, 8px); overflow: hidden; }
 .puredashboard-titlebar__region--trailing { flex: 0 0 auto; justify-content: flex-end; margin-inline-start: auto; }
+/* mac: no window controls on the right, so the trailing toolbar needs the same edge gap as the leading one */
+.puredashboard-titlebar--mac .puredashboard-titlebar__region--trailing { padding-inline-end: var(--sp-2, 8px); }
 
 /* title label — truncates rather than pushing the layout around */
 .puredashboard-titlebar__title {
@@ -109,6 +111,7 @@ puredashboard-titlebar textarea {
   padding: 0;
   margin: 0;
   border: 0;
+  border-radius: 0;   /* flush window controls: the hover fill fills the bar, no rounded corners */
   background: transparent;
   color: var(--pd-titlebar-muted);
   font-size: var(--font-size-md, 13px);

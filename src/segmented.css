@@ -85,10 +85,13 @@ puredashboard-segmented.puredashboard-segmented--block { display: block; }
   background: var(--pd-track-2);
 }
 
-/* the checked segment IS the sliding thumb: raised --panel surface */
+/* the checked segment IS the sliding thumb: a raised surface. Light: the --panel surface (white on a grey track).
+ * Dark: --panel is DARKER than the --panel-2 track, so the thumb sank below it and below the hover fill; there it
+ * is the hover surface lifted toward the text colour instead. */
 .puredashboard-segmented__segment--checked {
   color: var(--pd-text);
   background: var(--pd-panel);
+  background: light-dark(var(--pd-panel), color-mix(in srgb, var(--pd-track-2) 85%, var(--pd-text)));
   box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.15));
   font-weight: var(--weight-medium, 500);
 }

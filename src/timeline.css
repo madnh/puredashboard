@@ -61,6 +61,10 @@ puredashboard-timeline {
 /* mode=alternate — a CENTRED rail (line down the middle); content alternates side */
 .puredashboard-timeline__list--alternate > .puredashboard-timeline__item { grid-template-columns: 1fr var(--pd-timeline-rail) 1fr; }
 .puredashboard-timeline__list--alternate > .puredashboard-timeline__item > .puredashboard-timeline__dot { grid-column: 2; }
+/* pin dot and body to the first row: a body placed in a column BEFORE the dot (left side) would otherwise be
+ * auto-placed onto a second row, below its dot */
+.puredashboard-timeline__item > .puredashboard-timeline__dot,
+.puredashboard-timeline__item > .puredashboard-timeline__body { grid-row: 1; }
 .puredashboard-timeline__list--alternate > .puredashboard-timeline__item--left  > .puredashboard-timeline__body { grid-column: 1; text-align: right; }
 .puredashboard-timeline__list--alternate > .puredashboard-timeline__item--right > .puredashboard-timeline__body { grid-column: 3; text-align: left; }
 
