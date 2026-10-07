@@ -18,4 +18,5 @@ export const vstack = (kids, gap = "12px") => {
   const g = { sm: "8px", md: "12px", lg: "16px" }[gap] || gap;
   return el("div", { style: `display:grid; gap:${g}` }, kids);
 };
-export const hstack = (kids, size = "sm") => el("puredashboard-space", { direction: "horizontal", size }, kids);
+// centred on the cross axis: controls of different heights (sizes, a hint next to a button) line up on their middles
+export const hstack = (kids, size = "sm") => el("puredashboard-space", { direction: "horizontal", size, align: "center" }, kids);
