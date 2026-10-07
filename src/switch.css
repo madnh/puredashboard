@@ -18,7 +18,7 @@ puredashboard-switch {
   --pd-panel:     var(--panel,    Canvas);
   --pd-border:    var(--border,   color-mix(in srgb, CanvasText 16%, Canvas));
   --pd-border-2:  var(--border-2, color-mix(in srgb, CanvasText 26%, Canvas));
-  --pd-knob:      var(--panel,    #ffffff);
+  --pd-knob:      #ffffff;   /* light in both themes: the dark --panel knob nearly vanished on the off track */
   --pd-red:       var(--red,      #dc2626);
   --pd-radius:    var(--radius,   10px);
   --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));

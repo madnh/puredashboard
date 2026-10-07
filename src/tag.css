@@ -65,27 +65,27 @@ puredashboard-tag {
 }
 .puredashboard-tag--accent {
   --pd-tag-bg: var(--pd-info-bg);
-  --pd-tag-fg: var(--pd-accent);
+  --pd-tag-fg: color-mix(in srgb, var(--pd-accent) 60%, var(--pd-text));
   --pd-tag-border: color-mix(in srgb, var(--pd-accent) 40%, transparent);
 }
 .puredashboard-tag--info {
   --pd-tag-bg: var(--pd-info-bg);
-  --pd-tag-fg: var(--pd-accent);
+  --pd-tag-fg: color-mix(in srgb, var(--pd-accent) 60%, var(--pd-text));
   --pd-tag-border: color-mix(in srgb, var(--pd-accent) 40%, transparent);
 }
 .puredashboard-tag--success {
   --pd-tag-bg: var(--pd-success-bg);
-  --pd-tag-fg: var(--pd-green);
+  --pd-tag-fg: color-mix(in srgb, var(--pd-green) 60%, var(--pd-text));
   --pd-tag-border: color-mix(in srgb, var(--pd-green) 40%, transparent);
 }
 .puredashboard-tag--warning {
   --pd-tag-bg: var(--pd-warning-bg);
-  --pd-tag-fg: var(--pd-amber);
+  --pd-tag-fg: color-mix(in srgb, var(--pd-amber) 60%, var(--pd-text));
   --pd-tag-border: color-mix(in srgb, var(--pd-amber) 40%, transparent);
 }
 .puredashboard-tag--danger {
   --pd-tag-bg: var(--pd-danger-bg);
-  --pd-tag-fg: var(--pd-red);
+  --pd-tag-fg: color-mix(in srgb, var(--pd-red) 60%, var(--pd-text));
   --pd-tag-border: color-mix(in srgb, var(--pd-red) 40%, transparent);
 }
 

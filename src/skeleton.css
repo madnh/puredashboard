@@ -11,8 +11,9 @@
  */
 puredashboard-skeleton {
   display: block;
-  --pd-skeleton-base:      var(--panel-2, color-mix(in srgb, CanvasText 8%, Canvas));
-  --pd-skeleton-highlight: var(--panel-3, color-mix(in srgb, CanvasText 16%, Canvas));
+  /* tinted from the text colour, not --panel-2/3: the theme panels sit ~1.1:1 on the page, so the block vanished */
+  --pd-skeleton-base:      color-mix(in srgb, var(--text, CanvasText) 12%, transparent);
+  --pd-skeleton-highlight: color-mix(in srgb, var(--text, CanvasText) 20%, transparent);
   --pd-skeleton-radius:    var(--radius, 10px);
   --pd-skeleton-radius-full: var(--radius-full, 999px);
   --pd-skeleton-gap:       var(--sp-2, 8px);

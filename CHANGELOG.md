@@ -512,6 +512,15 @@ the API may still change between minor versions.
   tall (the card no longer jumps when data arrives); the `<puredashboard-slider>` value
   bubble holds 3 digits (the track no longer jumps at 9→10); the dark-theme
   `<puredashboard-segmented>` thumb is raised above the track instead of sinking below it.
+- **Contrast:** coloured `<puredashboard-tag>` text is mixed toward the text colour
+  (light theme was 2.3–2.9:1, now 4.7–5.7:1); `<puredashboard-badge>` success / warning
+  use dark digits (white was ~2.5:1, now ~7.5:1) and a standalone dot is centred on the
+  line; `<puredashboard-descriptions>` terms use the muted colour (≈3–3.6:1, now ≈6:1);
+  `<puredashboard-rate>` empty stars are visible (≈1.3:1, now 3.8–4.7:1); the
+  `<puredashboard-switch>` knob is light in both themes (the off knob was 1.55:1 on its
+  track in dark); `<puredashboard-skeleton>` blocks are tinted from the text colour so they
+  show on the theme panels; an invalid `<puredashboard-checkbox>` gets one red ring hugging
+  the box instead of a second ring outside it.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

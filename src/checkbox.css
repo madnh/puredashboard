@@ -63,7 +63,9 @@ puredashboard-checkbox {
 .puredashboard-checkbox__text { user-select: none; }
 
 /* invalid — driven by the aria-invalid state the component sets (a11y hook = style hook) */
-.puredashboard-checkbox__box[aria-invalid="true"] { outline: 1px solid var(--pd-red); outline-offset: 1px; }
+/* The box is the NATIVE checkbox, so border-color does nothing; the red ring is an outline hugging the box
+ * (offset 0) — offset 1px read as a second ring outside the grey native border. */
+.puredashboard-checkbox__box[aria-invalid="true"] { outline: 1px solid var(--pd-red); outline-offset: 0; }
 .puredashboard-checkbox__box[aria-invalid="true"]:focus-visible { box-shadow: 0 0 0 var(--ring-width, 3px) var(--pd-danger-bg); }
 
 .puredashboard-checkbox__error {

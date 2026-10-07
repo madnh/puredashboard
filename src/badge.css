@@ -59,7 +59,8 @@ puredashboard-badge {
   white-space: nowrap;
 }
 
-/* standalone (no wrapped child): render the badge inline in normal flow */
+/* standalone (no wrapped child): render the badge inline in normal flow, centred on the line (a dot sat at the top) */
+puredashboard-badge[standalone] { align-items: center; vertical-align: middle; }
 puredashboard-badge[standalone] .puredashboard-badge__indicator {
   position: static;
   transform: none;
@@ -76,8 +77,9 @@ puredashboard-badge[standalone] .puredashboard-badge__indicator {
 
 /* colour variants — remap the fill token (default red carries no modifier) */
 .puredashboard-badge__indicator--accent  { --pd-badge-bg: var(--pd-accent);  --pd-badge-ink: var(--accent-ink, #fff); }
-.puredashboard-badge__indicator--success { --pd-badge-bg: var(--pd-green);   --pd-badge-ink: #fff; }
-.puredashboard-badge__indicator--warning { --pd-badge-bg: var(--pd-amber);   --pd-badge-ink: #fff; }
+/* dark ink on the light green / amber fills (white was ~2.5:1) */
+.puredashboard-badge__indicator--success { --pd-badge-bg: var(--pd-green);   --pd-badge-ink: #07101f; }
+.puredashboard-badge__indicator--warning { --pd-badge-bg: var(--pd-amber);   --pd-badge-ink: #07101f; }
 .puredashboard-badge__indicator--neutral { --pd-badge-bg: var(--pd-neutral); --pd-badge-ink: var(--panel, #fff); }
 
 /* hidden — count 0 (and not showZero / not dot) */
