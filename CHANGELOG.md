@@ -9,7 +9,69 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-07
+
+From three components to a full admin-UI set. 0.1.0 shipped the table, the uploader, the
+Markdown viewer, the overlays, the router and the optional theme; 0.2.0 adds about sixty
+components across forms, navigation, data display, feedback and layout, a desktop-native
+layer, a component gallery, a landing page and machine-readable docs for AI agents — still
+zero-dependency, no-build and CSP-safe. It also takes in the 19 local patches a production
+consumer (model-gateway) was carrying, plus one option it asked for, and fixes the UI
+defects a full review of the gallery found in both themes.
+
+### Upgrade notes (from 0.1.0)
+- **Light theme colours are darker.** `--accent` is `#2563eb` (hover `#1d4ed8`, active
+  `#1e40af`) and `--red` is `#dc2626` in the light palette, for readable white-on-accent
+  text. Pages pinned to the old hues should override these tokens.
+- **The optional theme's `button` / `a` / form-control rules have zero specificity**
+  (`:where()`). Any class in your app now beats them; if you relied on the theme winning
+  over a single class of yours, raise that rule.
+- **`<puredashboard-table>` markup:** every `<th>` carries `scope="col"`, and the
+  rows-per-page select always lists the current `pageSize`. Tests that snapshot the table
+  header may need updating.
+- **`components.css`** is the new one-link bundle for every component stylesheet; linking
+  files one by one still works.
+
 ### Added
+- **Design tokens in three tiers** (`theme/tokens.css`): primitive `--pd-ref-*`, semantic
+  app tokens, per-component `--pd-<name>-*` knobs — plus focus ring, elevation, z-index,
+  motion (honours reduced motion), control sizing with a compact density
+  (`[data-density="compact"]`), a type scale and status backgrounds. Every 0.1.0 token
+  name is kept, and every value except the light palette's accent and red (see the
+  upgrade notes). `components.css` `@import`s every component stylesheet.
+- **Forms** — `<puredashboard-input>`, `-textarea`, `-number` (± steppers), `-select`,
+  `-combobox` (searchable, APG), `-checkbox`, `-switch`, `-radio-group`, `-slider`, `-date`,
+  `-time`, `-datetime`, `-color`, `-rate`, the `<puredashboard-form>` wrapper (real
+  `<form>`, values + validity) and the `<puredashboard-field>` label/hint/error wrapper.
+  All form-associated through `ElementInternals`.
+- **Navigation** — `<puredashboard-tabs>` (APG tabs, or a nav of real links),
+  `-breadcrumb`, `-pagination` (windowed; cursor paging with `hasMore`), `-steps`,
+  `-nav` (collapsible sidebar tree), `-menubar` (desktop application menu bar).
+- **Data display** — `<puredashboard-card>`, `-descriptions`, `-statistic`, `-tag`,
+  `-badge`, `-avatar`, `-list`, `-tree`, `-collapse`, `-timeline`, `-empty`, `-json-view`,
+  `-lazy`, `-copy`, `-toggle`, `-toggle-group`, `-segmented`.
+- **Feedback and overlays** — `<puredashboard-alert>`, `-progress` (line / circle),
+  `-meter`, `-spinner`, `-skeleton`, `-result`, `-tooltip`, `-popover`, `-popconfirm`.
+- **General and layout** — `<puredashboard-button>` (variants, sizes, `status`
+  success/warning/danger, `shape` round/circle, loading, link mode), `-divider`, `-space`,
+  `-flex`, `-row` / `-col` grid, `<puredashboard-layout>` with `-header` / `-content` /
+  `-footer` / `-sider` (collapsible), `-splitter` (resizable panes, APG keyboard).
+- **Desktop-native layer** — `<puredashboard-titlebar>` for frameless Tauri / Wails /
+  Electron windows (mac / windows / linux control layouts, drag region), an opt-in macOS
+  skin `theme/native.css` (`[data-skin="macos"]`: vibrancy, hairlines, compact radii) and a
+  frameless-window recipe in `docs/DESKTOP.md`.
+- **`dialog()` layout** — a flex column whose header and new `footer` option stay put while
+  the body scrolls; `alert` / `confirm` / `prompt` put their buttons in that footer.
+- **`<puredashboard-gallery>`** — a reusable, zero-dependency component explorer (sidebar,
+  theme / lang / density toolbar, overview grid, URL state) with a story for every
+  component (`test/gallery.html`), a demo dashboard (`test/dashboard.html`) and a desktop
+  demo (`test/desktop.html`).
+- **Landing page** (`index.html`) for GitHub Pages, built with the library itself, with a
+  live demo section.
+- **Docs for AI agents that consume the library** — `src/_agents.md` (rules, recipes,
+  component index) and `src/_components.jsonl` (one JSON line per component, generated
+  from the JSDoc by `tools/api-reference`).
+
 - **`<puredashboard-copy>`** (`copy.js`): a copy-to-clipboard button — one click writes a
   value to the system clipboard and the button reports the result (the Lucide `copy`
   icon swaps to a check, or a cross on failure, for `feedback` ms, while an off-screen
@@ -314,6 +376,11 @@ the API may still change between minor versions.
   each other.
 
 ### Fixed
+- **`drawer()` sticks to the edge it names.** A modal `<dialog>` has a UA `inset: 0`, so a
+  right or bottom drawer was pinned to the left or top; the opposite inset is now reset.
+- **The optional theme no longer restyles component fields.** `base.css` matched
+  `input[type=…]` with more specificity than a component class (e.g. a rounded box inside
+  `<puredashboard-number>`); those rules are wrapped in `:where()`.
 - **`<puredashboard-upload>` gains `removeFile(id)`**, the name that cannot collide with the
   DOM's own `Element.remove()`. `remove(id)` keeps working, and the kept overload now
   discriminates on `arguments.length` rather than on the VALUE being `undefined` — the value
@@ -618,5 +685,6 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/madnh/puredashboard/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/madnh/puredashboard/releases/tag/v0.1.0
