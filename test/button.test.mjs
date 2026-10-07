@@ -322,5 +322,27 @@ for (const s of ["success", "warning"]) {
   ok(b && !b.hasAttribute("role") && !b.hasAttribute("aria-checked") && !b.hasAttribute("aria-pressed"), "default: no role / aria-checked / aria-pressed on the inner button");
 }
 
+// ---- icon-only: the empty label slot is hidden so the icon is centred ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/button.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>';
+  document.body.innerHTML = `<puredashboard-button shape="circle" aria-label="Help"></puredashboard-button><puredashboard-button aria-label="More">  </puredashboard-button><puredashboard-button>Save</puredashboard-button>`;
+  const [circle, ws, text] = document.body.querySelectorAll("puredashboard-button");
+  circle.icon = ICON; ws.icon = ICON; text.icon = ICON;
+  await tick();
+  const inner = (b) => b.querySelector(".puredashboard-button__el");
+  const labelDisplay = (b) => w.getComputedStyle(b.querySelector(".puredashboard-button__label")).display;
+  ok(inner(circle).classList.contains("puredashboard-button__el--icon-only") && labelDisplay(circle) === "none", "icon + no label: --icon-only, empty label slot hidden");
+  ok(inner(ws).classList.contains("puredashboard-button__el--icon-only"), "whitespace-only content counts as no label");
+  ok(!inner(text).classList.contains("puredashboard-button__el--icon-only") && labelDisplay(text) !== "none", "icon + text: label shown, no --icon-only");
+  const plain = mount("puredashboard-button");
+  await tick();
+  ok(!inner(plain).classList.contains("puredashboard-button__el--icon-only"), "no icon: never icon-only");
+  style.remove();
+}
+
 console.log(`button.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

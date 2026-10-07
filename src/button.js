@@ -271,6 +271,10 @@ class PuredashboardButton extends HTMLElement {
     if (shape !== "default") cls.push(`puredashboard-button__el--${shape}`);
     if (this.block) cls.push("puredashboard-button__el--block");
     if (this.loading) cls.push("puredashboard-button__el--loading");
+    // Icon-only (an icon and no label content, whitespace aside): the empty label slot would still be a flex item, and the
+    // gap before it pushed the icon off-centre by half a gap — visible in a circle button. The modifier hides the slot.
+    const label = this._labelHost;
+    if (this.icon && label && !label.children.length && !label.textContent.trim()) cls.push("puredashboard-button__el--icon-only");
     el.className = cls.join(" ");
 
     // Host-level block modifier (so the host itself can fill its container).

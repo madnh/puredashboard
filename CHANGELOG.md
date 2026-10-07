@@ -463,6 +463,11 @@ the API may still change between minor versions.
   the transition before calling the DOM update, the router runs it itself — unless a
   newer navigation has started since. An error thrown by the page's own mount still
   surfaces, once (it was reported three times). Upstreamed from model-gateway (GW-166).
+- **Icon-only `<puredashboard-button>` icons are centred again.** The empty label slot was
+  still a flex item, so the gap before it pushed the icon left by half a gap (4px) — most
+  visible in a `shape="circle"` button. With an icon and no label content (whitespace
+  aside) the inner element gets `puredashboard-button__el--icon-only` and the slot is
+  hidden.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`

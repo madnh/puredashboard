@@ -74,6 +74,8 @@ puredashboard-button.puredashboard-button--block { display: flex; width: 100%; }
 
 /* the label never wraps mid-flow; it truncates when the button is width-limited */
 .puredashboard-button__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* icon-only: no empty label slot, so the gap does not push the icon off-centre (set by the script). */
+.puredashboard-button__el--icon-only .puredashboard-button__label { display: none; }
 
 /* ── variant: primary (accent fill) ── */
 .puredashboard-button__el--primary {
