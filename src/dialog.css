@@ -49,7 +49,9 @@
   border-bottom: 1px solid var(--pd-border);
 }
 .puredashboard-dialog__title { margin: 0; font-size: 1.05rem; font-weight: 600; }
-.puredashboard-dialog__close { all: unset; cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0 6px; border-radius: 6px; }
+.puredashboard-dialog__close { all: unset; cursor: pointer; font-size: 1.4rem; line-height: 1; border-radius: 6px;
+  /* square hit/hover box around the × glyph (was a wider-than-tall padded text box) */
+  display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; }
 .puredashboard-dialog__close:hover { background: var(--pd-panel-2); }
 
 /* the body takes the leftover height and scrolls only when it overflows
@@ -72,9 +74,12 @@
   font: inherit; cursor: pointer; padding: 8px 14px; border-radius: 8px;
   border: 1px solid var(--pd-border); background: transparent; color: var(--pd-text);
 }
-.puredashboard-dialog__button:hover { background: var(--pd-panel-2); }
+.puredashboard-dialog__button:hover:not(.puredashboard-dialog__button--primary):not(.puredashboard-dialog__button--danger) { background: var(--pd-panel-2); }
 .puredashboard-dialog__button--primary { background: var(--pd-accent); color: var(--pd-accent-ink); border-color: transparent; }
 .puredashboard-dialog__button--danger  { background: var(--pd-red);    color: #fff;                 border-color: transparent; }
+/* primary / danger keep their fill on hover (a plain :hover repaint made their text unreadable) — just darken it */
+.puredashboard-dialog__button--primary:hover { background: color-mix(in srgb, var(--pd-accent) 88%, #000); }
+.puredashboard-dialog__button--danger:hover  { background: color-mix(in srgb, var(--pd-red) 88%, #000); }
 
 /* drawers: size + slide come from JS inline styles (themed via --puredashboard-dialog-drawer-*);
  * here we only square off the side that meets the viewport edge. */

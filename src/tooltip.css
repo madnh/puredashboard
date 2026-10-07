@@ -1,12 +1,12 @@
 /* puredashboard-tooltip — styles for <puredashboard-tooltip> (tooltip.js).
- * BEM, block = .puredashboard-tooltip.
+ * BEM, block = the tag.
  *
  * The component works with NO theme linked: every colour resolves through a
  * --pd-* chain that defaults to the shared app tokens, then to neutral
  * system-colour fallbacks (Canvas / CanvasText / color-mix). Per-component knobs
  * (--pd-tooltip-*) are declared here on the component root — never in tokens.css.
  */
-.puredashboard-tooltip {
+puredashboard-tooltip {
   /* per-component knobs (component tier) */
   --pd-tooltip-bg:     var(--panel-3, color-mix(in srgb, CanvasText 8%, Canvas));
   --pd-tooltip-text:   var(--text,    CanvasText);

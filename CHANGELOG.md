@@ -497,6 +497,11 @@ the API may still change between minor versions.
   `<puredashboard-menu>` check/radio slots are as wide as the icon slot, so labels line up;
   `<puredashboard-date>` / `<puredashboard-datetime>` follow the page's colour scheme instead
   of the OS (a dark-OS user on the light theme got a white calendar icon on a white field).
+- **Overlays:** `<puredashboard-tooltip>` bubbles are styled again — the `--pd-tooltip-*`
+  knobs were declared on a `.puredashboard-tooltip` class the host never carries, so the
+  bubble rendered as bare text; they now sit on the tag. `dialog()` primary / danger
+  buttons keep their fill on hover (the generic hover repainted them, leaving dark or white
+  text on a near-page background, ~1.1:1); the close × has a square hit box.
 
 ### Docs
 - **A source file git would call binary now fails the suite.** `test/no-binary-sources.test.mjs`
