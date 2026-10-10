@@ -98,6 +98,26 @@ puredashboard-sider {
 .puredashboard-sider__inner > puredashboard-nav {
   padding: var(--pd-sider-nav-inset, var(--sp-2, 8px));
 }
+/* Collapsed rail: that nav shows icons only. The label is hidden visually but stays the
+ * link's accessible name (clipped, not display:none); badges and group chevrons are
+ * hidden; the icon is centred in the row. */
+puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__link {
+  position: relative;
+  justify-content: center;
+}
+puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__badge,
+puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__toggle {
+  display: none;
+}
 
 /* Collapse trigger pinned to the bottom. */
 .puredashboard-sider__trigger {

@@ -184,7 +184,7 @@ class PuredashboardFooter extends HTMLElement {}
  *
  * @cssprop [--pd-sider-w]   - Current width (set inline by the element; do not override).
  * @cssprop [--pd-sider-bg]  - Background (defaults to `--panel`).
- * @cssprop [--pd-sider-nav-inset] - Padding around a `<puredashboard-nav>` child (defaults to `--sp-2`; `0` = edge to edge).
+ * @cssprop [--pd-sider-nav-inset] - Padding around a `<puredashboard-nav>` child (defaults to `--sp-2`; `0` = edge to edge). While `collapsed`, that nav shows icons only: labels are visually hidden (still the links' accessible names), badges and group chevrons hidden, icons centred.
  *
  * @example
  * const sider = document.createElement("puredashboard-sider");
