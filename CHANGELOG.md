@@ -9,6 +9,47 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-10-10
+
+Ten small changes a production consumer (model-gateway) was carrying as local patches
+against 0.2.0. No default changes: every option is opt-in, and the CSS fixes only affect
+an element that is hidden or placed where the rule names.
+
+### Added
+- **`<puredashboard-table>` `columns[].nowrap`.** `nowrap: true` keeps that column's body
+  cells on one line (`puredashboard-table__td--nowrap`, `white-space: nowrap`) — a number
+  with its unit, a date, a short code; headers are untouched.
+- **`<puredashboard-nav>` `subtle` attribute.** The active row keeps the text colour on a
+  panel fill with a 3px accent bar at its start edge (accent icon, neutral badge, focus
+  ring kept) instead of the solid accent block, which stays the default.
+- **`<puredashboard-nav>` `--pd-nav-icon-size`** (default `16px`) sizes an item's icon SVG,
+  so an author icon sized `1em` no longer renders at the 13px label size.
+- **A nav in `<puredashboard-sider>` is inset** from the sider edges
+  (`--pd-sider-nav-inset`, default `--sp-2`; `0` = edge to edge), so rounded rows do not
+  touch the border and stay centred in the collapsed rail.
+- **A collapsed `<puredashboard-sider>` shows its nav icon-only.** Labels are clipped (still
+  the links' accessible names), badges and group chevrons hidden, icons centred. Nothing
+  changes while expanded.
+- **`<puredashboard-json-view>` `maxDepth`** (attribute `max-depth`, default 64). An
+  object/array at that depth renders as one placeholder row (braces, ellipsis, item/key
+  count, `puredashboard-json-view__row--depth-cap`) and is not walked; the `level` seed walk
+  stops there too. Values shallower than the cap render as before.
+
+### Fixed
+- **`<puredashboard-json-view>` no longer overflows the call stack on deep input.** JSON
+  nested about 2000 deep (4 KB) threw `RangeError: Maximum call stack size exceeded` and
+  rendered an empty panel; rendering is now bounded by `maxDepth`.
+- **`[hidden]` hides `<puredashboard-space>`, `<puredashboard-pagination>` and
+  `<puredashboard-collapse>`.** Their host `display` rule overrode the UA rule for
+  `[hidden]`, so a hidden one stayed visible; the same guard `<puredashboard-alert>` has.
+- **A `<puredashboard-pagination>` right after a `<puredashboard-table>`** (server or cursor
+  paging, the table's pager off) sits 10px below it, like the table's built-in pager; it
+  was flush against the table.
+
+### Docs
+- `_components.jsonl` and `_agents.md` cover the new options; the gallery has a Nav
+  "In a sider" story.
+
 ## [0.2.0] - 2026-10-07
 
 From three components to a full admin-UI set. 0.1.0 shipped the table, the uploader, the
@@ -685,6 +726,7 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/madnh/puredashboard/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/madnh/puredashboard/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/madnh/puredashboard/releases/tag/v0.1.0
