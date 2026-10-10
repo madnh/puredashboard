@@ -92,6 +92,12 @@ puredashboard-sider {
   min-height: 0;
   overflow: auto;
 }
+/* A nav in the sider is inset from its edges, so the rounded rows (and the active one)
+ * don't run into the sider border; the inset is the same on both sides, so a row in the
+ * collapsed rail stays centred. Override with --pd-sider-nav-inset (0 = edge to edge). */
+.puredashboard-sider__inner > puredashboard-nav {
+  padding: var(--pd-sider-nav-inset, var(--sp-2, 8px));
+}
 
 /* Collapse trigger pinned to the bottom. */
 .puredashboard-sider__trigger {

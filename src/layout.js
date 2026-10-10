@@ -184,6 +184,7 @@ class PuredashboardFooter extends HTMLElement {}
  *
  * @cssprop [--pd-sider-w]   - Current width (set inline by the element; do not override).
  * @cssprop [--pd-sider-bg]  - Background (defaults to `--panel`).
+ * @cssprop [--pd-sider-nav-inset] - Padding around a `<puredashboard-nav>` child (defaults to `--sp-2`; `0` = edge to edge).
  *
  * @example
  * const sider = document.createElement("puredashboard-sider");
