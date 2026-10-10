@@ -36,6 +36,9 @@ puredashboard-table + puredashboard-pagination { margin-top: 10px; }
   padding: 0;
 }
 
+/* display:block on the host rule above would override the UA rule for [hidden], so a hidden pagination would stay visible. */
+puredashboard-pagination[hidden] { display: none; }
+
 .puredashboard-pagination__list {
   display: flex;
   align-items: center;
