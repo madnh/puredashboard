@@ -24,6 +24,10 @@ puredashboard-pagination {
   --pd-disabled-opacity: var(--disabled-opacity, 0.55);
 }
 
+/* a standalone pagination right after a table (server/cursor paging, the table's
+ * own pager off) sits as far below it as the table's built-in pager does */
+puredashboard-table + puredashboard-pagination { margin-top: 10px; }
+
 .puredashboard-pagination {
   display: flex;
   align-items: center;
