@@ -83,6 +83,22 @@ puredashboard-nav {
   background: var(--pd-accent);
 }
 
+/* `subtle`: the active row keeps the text colour on a panel fill and is marked by an
+ * accent bar at its start edge instead of a solid accent block (the default above). */
+puredashboard-nav[subtle] .puredashboard-nav__link--active,
+puredashboard-nav[subtle] .puredashboard-nav__link[aria-current="page"],
+puredashboard-nav[subtle] .puredashboard-nav__link--active:hover,
+puredashboard-nav[subtle] .puredashboard-nav__link[aria-current="page"]:hover {
+  color: var(--pd-text);
+  background: var(--pd-panel-3);
+  box-shadow: inset 3px 0 0 var(--pd-accent);
+}
+puredashboard-nav[subtle] .puredashboard-nav__link--active:focus-visible,
+puredashboard-nav[subtle] .puredashboard-nav__link[aria-current="page"]:focus-visible {
+  box-shadow: inset 3px 0 0 var(--pd-accent), var(--pd-focus-ring);
+}
+puredashboard-nav[subtle] .puredashboard-nav__link--active .puredashboard-nav__icon { color: var(--pd-accent); }
+
 .puredashboard-nav__icon {
   display: inline-flex;
   flex: none;
@@ -117,6 +133,10 @@ puredashboard-nav {
 .puredashboard-nav__link--active .puredashboard-nav__badge {
   color: var(--pd-accent);
   background: var(--pd-accent-ink);
+}
+puredashboard-nav[subtle] .puredashboard-nav__link--active .puredashboard-nav__badge {
+  color: var(--pd-text);
+  background: var(--pd-panel-2);
 }
 
 /* Group toggle chevron — rotates when the group is open. */

@@ -55,6 +55,7 @@ let uid = 0;
  * @prop {string} current - The `href` (or id) of the active item; the matching leaf gets `aria-current="page"`. Default `""`.
  * @prop {Object} [labels] - Override UI strings (English defaults). Keys: `ariaLabel`, `expand(group)`, `collapse(group)`.
  *
+ * @attr {boolean} subtle     - Subtle active style: the current item keeps the text colour on a panel fill with an accent bar at its start edge, instead of the solid accent block.
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires puredashboard-nav#toggle - When a group is expanded/collapsed. `detail`: `{ label, expanded }`.
  *
