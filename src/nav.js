@@ -60,6 +60,7 @@ let uid = 0;
  *
  * @cssprop [--pd-nav-item-height] - Row height (defaults to `--control-height-md`).
  * @cssprop [--pd-nav-indent]      - Nested-level indent (defaults to `--sp-4`).
+ * @cssprop [--pd-nav-icon-size]   - Width and height of an item's icon SVG (defaults to `16px`).
  *
  * @example
  * const nav = document.createElement("puredashboard-nav");

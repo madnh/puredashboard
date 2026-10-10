@@ -21,6 +21,7 @@ puredashboard-nav {
   --pd-ease:       var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
   --pd-nav-item-height: var(--control-height-md, 34px);
   --pd-nav-indent:      var(--sp-4, 16px);
+  --pd-nav-icon-size:   16px;
 }
 
 .puredashboard-nav__nav { display: block; }
@@ -86,6 +87,11 @@ puredashboard-nav {
   display: inline-flex;
   flex: none;
   color: var(--pd-muted);
+}
+/* Icons are author SVGs, often sized 1em (= the 13px label); give them a row-scale size. */
+.puredashboard-nav__icon svg {
+  width: var(--pd-nav-icon-size);
+  height: var(--pd-nav-icon-size);
 }
 .puredashboard-nav__link--active .puredashboard-nav__icon { color: inherit; }
 
