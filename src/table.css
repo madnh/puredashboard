@@ -46,6 +46,7 @@ puredashboard-table[wrap-headers] .puredashboard-table__th { white-space: normal
 .puredashboard-table__sort--active .puredashboard-table__sort-icon { color: var(--pd-accent); opacity: 1; }
 .puredashboard-table__th[aria-sort]:not([aria-sort="none"]) { color: var(--pd-accent); }
 .puredashboard-table__td { padding: 9px 13px; border-bottom: 1px solid var(--pd-border); vertical-align: middle; }
+.puredashboard-table__td--nowrap { white-space: nowrap; }  /* per column: columns[].nowrap */
 .puredashboard-table__row:hover td { background: var(--pd-panel-2); }
 .puredashboard-table__row:last-child td { border-bottom: none; }
 .puredashboard-table__row--selected td { background: color-mix(in srgb, var(--pd-accent) 12%, transparent); }

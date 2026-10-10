@@ -60,7 +60,7 @@ const LABELS = {
  *
  * @element puredashboard-table
  *
- * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row), thAttrs?, wrapHeader? }` (`wrapHeader: true`: that column's header label may wrap, while the others stay on one line — the per-column form of `wrap-headers`) (`thAttrs`: attributes for that column's `<th>` — for NON-sortable columns, e.g. a server-sorted `{ "aria-sort": "ascending" }`; on a `sortable` column it would override the library's own aria-sort).
+ * @prop {Array}    columns    - Column defs: `{ key, label, sortable?, align?, render?(row), thAttrs?, wrapHeader?, nowrap? }` (`wrapHeader: true`: that column's header label may wrap, while the others stay on one line — the per-column form of `wrap-headers`) (`nowrap: true`: that column's body cells stay on one line — a number with its unit, a date, a short code — and a table wider than its container scrolls instead) (`thAttrs`: attributes for that column's `<th>` — for NON-sortable columns, e.g. a server-sorted `{ "aria-sort": "ascending" }`; on a `sortable` column it would override the library's own aria-sort).
  * @prop {Array}    rows       - Data rows (array of objects).
  * @prop {Function} [rowKey]   - `(row) => key` identity for selection (falls back to `row.id ?? row.name ?? JSON`).
  * @prop {Function} [rowAttrs] - `(row, index) => object` of attributes for each row's `<tr>` (`index` = position within the current page) (`data-*`, `id`…; `class` is added to the row's classes; `null`/`false` removes). Re-applied after every render.
@@ -244,7 +244,7 @@ class PuredashboardTable extends Reactive {
           return html`<tr class="puredashboard-table__row ${isSel ? "puredashboard-table__row--selected" : ""}">
           ${selectable ? html`<td class="puredashboard-table__td puredashboard-table__check-cell">
             <input type="checkbox" class="js-puredashboard-table__check" data-i="${i}" aria-label="${this._label("selectRow")}" .checked=${isSel}></td>` : ""}
-          ${cols.map((c) => html`<td class="puredashboard-table__td" style="text-align:${c.align || "left"}">${c.render ? c.render(r) : (r[c.key] ?? "")}</td>`)}
+          ${cols.map((c) => html`<td class="puredashboard-table__td${c.nowrap ? " puredashboard-table__td--nowrap" : ""}" style="text-align:${c.align || "left"}">${c.render ? c.render(r) : (r[c.key] ?? "")}</td>`)}
           ${hasActions ? html`<td class="puredashboard-table__td puredashboard-table__actions">
             ${typeof this.getHref === "function" ? html`<a class="puredashboard-table__open" href="${this.getHref(r)}">${openLabel}</a>` : ""}
             ${(this.actions || []).map((a) => html`<button type="button" class="puredashboard-table__action ${a.danger ? "puredashboard-table__action--danger" : ""}" data-act="${a.name}" data-i="${i}">${a.label}</button>`)}
