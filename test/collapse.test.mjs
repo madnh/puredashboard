@@ -201,5 +201,13 @@ const ITEMS = [
   ok(panels().every((p) => p.getAttribute("role") === "region"), "regions back to true restores the regions");
 }
 
+// ---- [hidden] hides the host (display:block would otherwise override the UA rule) ----
+// CSS contract only, as in alert.test.mjs: jsdom reports display:none for any [hidden] element.
+{
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/collapse.css", import.meta.url), "utf8");
+  ok(/puredashboard-collapse\[hidden\]\s*\{\s*display:\s*none/.test(css), "puredashboard-collapse[hidden] { display: none } restores hiding");
+}
+
 console.log(`collapse.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

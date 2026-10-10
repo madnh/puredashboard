@@ -136,5 +136,13 @@ void PuredashboardSpace;
   ok(el._label("missing") === undefined, "unset label key resolves to undefined");
 }
 
+// ---- [hidden] hides the host (display:flex would otherwise override the UA rule) ----
+// CSS contract only, as in alert.test.mjs: jsdom reports display:none for any [hidden] element.
+{
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/space.css", import.meta.url), "utf8");
+  ok(/puredashboard-space\[hidden\]\s*\{\s*display:\s*none/.test(css), "puredashboard-space[hidden] { display: none } restores hiding");
+}
+
 console.log(`space.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

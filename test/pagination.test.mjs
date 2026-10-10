@@ -205,5 +205,29 @@ const nextBtn = (el) => el.querySelector(".puredashboard-pagination__btn--next")
   ok(d && d.page === 4 && d.direction === "prev", "number click backwards: direction prev");
 }
 
+// ---- [hidden] hides the host (display:block would otherwise override the UA rule) ----
+// CSS contract only, as in alert.test.mjs: jsdom reports display:none for any [hidden] element.
+{
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/pagination.css", import.meta.url), "utf8");
+  ok(/puredashboard-pagination\[hidden\]\s*\{\s*display:\s*none/.test(css), "puredashboard-pagination[hidden] { display: none } restores hiding");
+}
+
+// ---- a pagination right after a table sits 10px below it, like the table's own pager ----
+{
+  const { readFileSync } = await import("node:fs");
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/pagination.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const wrap = document.createElement("div");
+  wrap.appendChild(document.createElement("puredashboard-table"));
+  const after = wrap.appendChild(document.createElement("puredashboard-pagination"));
+  const alone = wrap.appendChild(document.createElement("puredashboard-pagination"));
+  document.body.appendChild(wrap);
+  ok(w.getComputedStyle(after).marginTop === "10px", "pagination right after a table: margin-top 10px");
+  ok(w.getComputedStyle(alone).marginTop !== "10px", "pagination elsewhere: no added margin");
+  wrap.remove(); style.remove();
+}
+
 console.log(`pagination.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

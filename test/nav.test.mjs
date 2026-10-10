@@ -137,5 +137,24 @@ void PuredashboardNav;
   ok(el._label("collapse", "X") === "Collapse X", "unset label keeps the English default");
 }
 
+// ---- subtle attribute: author-owned, survives renders; CSS styles the active row through it ----
+{
+  const el = mount("puredashboard-nav");
+  el.setAttribute("subtle", "");
+  el.items = [{ label: "A", href: "#/a" }, { label: "B", href: "#/b" }];
+  el.current = "#/a";
+  await tick();
+  el.current = "#/b";
+  await tick();
+  ok(el.hasAttribute("subtle"), "subtle stays on the host across renders");
+  ok(el.querySelector(".puredashboard-nav__link--active")?.getAttribute("href") === "#/b", "subtle does not change which row is active");
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/nav.css", import.meta.url), "utf8");
+  ok(/puredashboard-nav\[subtle\] \.puredashboard-nav__link--active,[^{]*\{[^}]*background:\s*var\(--pd-panel-3\)[^}]*box-shadow:\s*inset 3px 0 0 var\(--pd-accent\)/.test(css), "subtle active row: panel fill + inset accent bar (CSS contract)");
+  ok(/puredashboard-nav\[subtle\] \.puredashboard-nav__link--active:focus-visible[^{]*\{[^}]*var\(--pd-focus-ring\)/.test(css), "subtle active row keeps the focus ring");
+  ok(/--pd-nav-icon-size:\s*16px/.test(css), "--pd-nav-icon-size defaults to 16px");
+  ok(/\.puredashboard-nav__icon svg\s*\{[^}]*width:\s*var\(--pd-nav-icon-size\)[^}]*height:\s*var\(--pd-nav-icon-size\)/.test(css), "item icon SVG is sized by --pd-nav-icon-size");
+}
+
 console.log(`nav.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

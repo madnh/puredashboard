@@ -134,5 +134,23 @@ const trs = (el) => [...el.querySelectorAll("tbody > tr.puredashboard-table__row
   ok([...el.querySelector(".js-puredashboard-table__page-size").options].map((o) => o.value).join() === "5,20", "a pageSize already in pageSizes is not duplicated");
 }
 
+// ---- columns[].nowrap: that column's body cells stay on one line; headers untouched ----
+{
+  const style = document.createElement("style");
+  style.textContent = readFileSync(new URL("../src/table.css", import.meta.url), "utf8");
+  document.head.appendChild(style);
+  const el = mount("puredashboard-table");
+  el.columns = [{ key: "name", label: "Name", nowrap: true }, { key: "n", label: "N" }];
+  el.rows = ROWS;
+  await tick();
+  const firstCells = [...el.querySelectorAll("tbody tr")].map((tr) => tr.querySelectorAll("td")[0]);
+  const otherCells = [...el.querySelectorAll("tbody tr")].map((tr) => tr.querySelectorAll("td")[1]);
+  ok(firstCells.length > 0 && firstCells.every((td) => td.classList.contains("puredashboard-table__td--nowrap")), "nowrap adds the --nowrap modifier on every <td> of that column");
+  ok(otherCells.every((td) => !td.classList.contains("puredashboard-table__td--nowrap")), "other columns' cells get no --nowrap modifier");
+  ok(firstCells.every((td) => w.getComputedStyle(td).whiteSpace === "nowrap"), "nowrap column: body cells computed white-space nowrap");
+  ok(![...el.querySelectorAll("thead th")].some((th) => th.className.includes("nowrap")), "nowrap leaves the <th> classes alone");
+  style.remove();
+}
+
 console.log(`table.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

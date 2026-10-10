@@ -225,5 +225,43 @@ const DATA = { name: "web-01", up: true, ports: [80, 443], meta: null, count: 3 
   ok(raw && raw.textContent === "not json {", "invalid JSON falls back to raw text");
 }
 
+// ---- maxDepth: deeper objects/arrays render as one placeholder row; deep input cannot overflow the stack ----
+{
+  const deep = (n) => { let v = 1; for (let i = 0; i < n; i++) v = [v]; return v; };
+  const el = mount("puredashboard-json-view");
+  let err = null;
+  try { el.data = deep(5000); await tick(); } catch (e) { err = e; }
+  ok(err === null, "5000-deep array renders without throwing (no RangeError)");
+  const caps = el.querySelectorAll(".puredashboard-json-view__row--depth-cap");
+  ok(caps.length === 1, "one depth-cap placeholder row at the default cap");
+  ok(el.querySelectorAll(".js-puredashboard-json-view__toggle").length === 64, "default cap 64: nodes at depth 0..63 stay toggles");
+  ok(caps[0] && caps[0].textContent.includes("… 1 item") && caps[0].textContent.includes("[") && caps[0].textContent.includes("]"), "placeholder shows braces, ellipsis and the item count");
+
+  const s = mount("puredashboard-json-view");
+  s.setAttribute("max-depth", "1");
+  s.data = { a: { b: 1, c: 2 }, d: [1], e: 3 };
+  await tick();
+  ok(s.maxDepth === 1, "max-depth attribute reflects to maxDepth (number)");
+  const sc = [...s.querySelectorAll(".puredashboard-json-view__row--depth-cap")];
+  ok(sc.length === 2 && sc[0].textContent.includes("2 keys") && sc[1].textContent.includes("1 item"), "max-depth=1: each child object/array is a placeholder with its count");
+  ok(s.querySelectorAll(".puredashboard-json-view__value--number").length === 1, "values inside capped nodes are not rendered");
+
+  const lv = mount("puredashboard-json-view");
+  lv.level = 1;
+  err = null;
+  try { lv.data = deep(5000); await tick(); } catch (e) { err = e; }
+  ok(err === null && lv.collapsed.size === 63, "level seed walk stops at the cap too (no RangeError; depths 1..63 seeded collapsed)");
+
+  const plain = mount("puredashboard-json-view");
+  plain.data = DATA;
+  await tick();
+  ok(!plain.querySelector(".puredashboard-json-view__row--depth-cap"), "data shallower than maxDepth renders without placeholders");
+  const neg = mount("puredashboard-json-view");
+  neg.maxDepth = -3;
+  neg.data = deep(70);
+  await tick();
+  ok(neg.querySelectorAll(".js-puredashboard-json-view__toggle").length === 64 && neg.querySelectorAll(".puredashboard-json-view__row--depth-cap").length === 1, "a negative maxDepth falls back to the default 64");
+}
+
 console.log(`\njson-view: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

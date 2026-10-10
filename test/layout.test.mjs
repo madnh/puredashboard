@@ -172,5 +172,15 @@ void mod;
   ok(other._label("collapse") === "Collapse sidebar", "default label kept when not overridden");
 }
 
+// ---- a nav in the sider is inset; a collapsed sider shows it icon-only (CSS contract) ----
+{
+  const css = readFileSync(new URL("../src/layout.css", import.meta.url), "utf8");
+  ok(/\.puredashboard-sider__inner > puredashboard-nav\s*\{[^}]*padding:\s*var\(--pd-sider-nav-inset/.test(css), "a direct nav child of the sider is padded by --pd-sider-nav-inset");
+  const rail = "puredashboard-sider\\[collapsed\\] > \\.puredashboard-sider__inner > puredashboard-nav ";
+  ok(new RegExp(rail + "\\.puredashboard-nav__label\\s*\\{[^}]*position:\\s*absolute[^}]*clip-path:\\s*inset\\(50%\\)").test(css), "collapsed: nav labels are clipped (visually hidden, still named)");
+  ok(!new RegExp(rail + "\\.puredashboard-nav__label\\s*\\{[^}]*display:\\s*none").test(css), "collapsed: nav labels are not display:none");
+  ok(new RegExp(rail + "\\.puredashboard-nav__badge,\\s*" + rail + "\\.puredashboard-nav__toggle\\s*\\{\\s*display:\\s*none").test(css), "collapsed: nav badges and group chevrons are hidden");
+}
+
 console.log(`layout.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
