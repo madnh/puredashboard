@@ -390,10 +390,10 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-button` | `variant`(primary/default/dashed/text/link), `size`, `danger`, `loading`, `block`, `href`, `type`, `icon` | native `click` | label = children; renders `<a>` when `href` set |
 | `puredashboard-copy` | `value`(string \| Blob \| `<img>`/`<canvas>`/`<table>` \| fn), `src`(image URL), `from`(CSS selector), `type`(auto/text/html/image), `label`, `showValue`, `variant`(default/text), `size`, `feedback`(ms) | `copied`{type,value,blob}, `copyerror`{error} | copy-to-clipboard button; icon swaps to a check/cross for `feedback` ms + announces it. A `<table>` copies as HTML + TSV (pastes into Excel as cells); images are normalised to PNG and need a SECURE CONTEXT (text degrades to `execCommand`). Named "Copy" by default, so an icon-only one needs no `aria-label` |
 | `puredashboard-divider` | `orientation`, `dashed`, `textAlign`, `text` | — | text = children or `text` |
-| `puredashboard-space` | `direction`, `size`, `align`, `justify`, `wrap` | — | flex gap container; children stay flex items |
+| `puredashboard-space` | `direction`, `size`, `align`, `justify`, `wrap` | — | flex gap container; children stay flex items; `hidden` attr hides it |
 | `puredashboard-flex` | `vertical`, `justify`, `align`, `wrap`, `gap` | — | thin flexbox wrapper; children stay flex items |
 | `puredashboard-row` / `puredashboard-col` | row: `gutter`,`align`,`justify` · col: `span`(1-24),`offset`,`xs/sm/md/lg/xl` | — | 24-column grid |
-| `puredashboard-layout` + `-header`/`-sider`/`-content`/`-footer` | sider: `width`, `collapsedWidth`, `collapsible`, `collapsed`, `breakpoint` | sider `collapse`{collapsed} | page scaffold; auto side-by-side when a `-sider` is present; sider self-adds a collapse trigger |
+| `puredashboard-layout` + `-header`/`-sider`/`-content`/`-footer` | sider: `width`, `collapsedWidth`, `collapsible`, `collapsed`, `breakpoint` | sider `collapse`{collapsed} | page scaffold; auto side-by-side when a `-sider` is present; sider self-adds a collapse trigger; a `<puredashboard-nav>` placed directly in the sider is inset (`--pd-sider-nav-inset`) and turns icon-only while `collapsed` (labels stay the links' accessible names) |
 | `puredashboard-splitter` | `vertical`, `minSize`, `gutterSize` | `resize`{sizes} | adopts direct children as panels; drag gutters between them |
 | `puredashboard-titlebar` | `platform`(mac/windows/linux), `title`, `controls`, `maximized` | `minimize`, `maximizetoggle`, `close` (bubble+composed) | custom titlebar for frameless Tauri/Wails/Electron; whole bar is an OS drag region; slot children via `data-titlebar-leading`/`-center`/`-trailing` |
 | `puredashboard-segmented` | `options`, `value`, `size`, `block`, `disabled` | `change`{value} | single-select button group |
@@ -425,15 +425,15 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 |---|---|---|---|
 | `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId,href}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements; with `href` on the tabs = link mode: `<nav>` of real `<a>`, `value` = current page (`aria-current`), no panels/keyboard/`tabchange`; `disabled`/no-`href` tab = non-link span |
 | `puredashboard-breadcrumb` | `items`([{label,href}]), `maxItems` | — | last = current; real `<a>` |
-| `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount`, `hasMore` | `pagechange`{page,direction} | windowed + ellipsis; `hasMore` = cursor/keyset paging (`pageCount` reached so far, one more offered) |
+| `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount`, `hasMore` | `pagechange`{page,direction} | windowed + ellipsis; `hasMore` = cursor/keyset paging (`pageCount` reached so far, one more offered); placed right after a `<puredashboard-table>` (table pager off) it sits 10px below like the built-in pager; `hidden` attr hides it |
 | `puredashboard-steps` | `steps`, `current`(0-based), `vertical`, `clickable` | `stepchange`{index} | |
-| `puredashboard-nav` | `items`(tree {label,href,icon,children}), `current` | `toggle` | sidebar; real `<a>`, collapsible groups |
+| `puredashboard-nav` | `items`(tree {label,href,icon,children}), `current`; attr `subtle` | `toggle` | sidebar; real `<a>`, collapsible groups; `subtle` = active row as panel fill + accent start bar instead of a solid accent block; icon SVGs sized by `--pd-nav-icon-size` (16px) |
 | `puredashboard-menubar` | `menus`([{label,items,icon,disabled}]), `orientation`, `disabled`, `openIndex`; methods `open(i)`/`close()` | `select`{value,menu,index}, `openchange`{open,index} | desktop app menu bar (File · Edit · View); each dropdown is a full `menu()` (icons, shortcuts, groups, checkbox/radio, submenus); APG menubar keyboard + hover-to-switch |
 
 ### Data display
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
-| `puredashboard-table` | `columns`(+`thAttrs`, `wrapHeader`), `rows`, `rowKey`, `rowAttrs(row,i)`, `selectable`, `actions`, `bulkActions`, `pageSize`, `getHref`; attr `wrap-headers` | `action`{name,row}, `bulkaction`, `selectionchange` | sort/filter/paginate; `column.render(row)` may return a DOM node |
+| `puredashboard-table` | `columns`(+`thAttrs`, `wrapHeader`, `nowrap`: that column's body cells on one line), `rows`, `rowKey`, `rowAttrs(row,i)`, `selectable`, `actions`, `bulkActions`, `pageSize`, `getHref`; attr `wrap-headers` | `action`{name,row}, `bulkaction`, `selectionchange` | sort/filter/paginate; `column.render(row)` may return a DOM node |
 | `puredashboard-card` | `title`, `bordered`; attrs `role` (kept if authored), `scroll` | — | body = children; `data-card-footer`/`-extra` children project |
 | `puredashboard-descriptions` | `items`([{label,value,span}]), `columns`, `bordered`, `title` | — | dl/dt/dd |
 | `puredashboard-statistic` | `title`, `value`, `precision`, `prefix`, `suffix`, `trend`(up/down) | — | formats numbers |
@@ -442,12 +442,12 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-avatar` | `src`, `name`, `size`, `shape`, `color` | — | image → initials fallback |
 | `puredashboard-list` | `items`([{title,description,extra}]), `header`, `footer`, `bordered`, `loading` | — | |
 | `puredashboard-tree` | `nodes`(hierarchical), `selectedKey`, `expandedKeys` | `select`{key,node}, `toggle` | APG tree |
-| `puredashboard-collapse` | `items`([{key,header,content}]), `value`, `multiple`, `headingLevel`(1-6/none), `regions` | `change`{value} | APG accordion |
+| `puredashboard-collapse` | `items`([{key,header,content}]), `value`, `multiple`, `headingLevel`(1-6/none), `regions` | `change`{value} | APG accordion; `hidden` attr hides it |
 | `puredashboard-timeline` | `items`([{label,content,color,dot}]), `mode`(left/right/alternate), `pending` | — | |
 | `puredashboard-empty` | `description`, `compact` | — | actions = children |
 | `puredashboard-result` | `status`(success/error/info/warning/404/403/500), `title`, `subtitle` | — | actions = children |
 | `puredashboard-markdown` | `value` | — | XSS-safe (textContent only). **Do not `cloneNode()` a rendered one** — the copy adopts the original's rendered output as its source; clone declarative `value="…"` markup, or build a new element and set `.value`. Inline children are taken as the source ONCE, on first connect — after that set `.value`. Only a source change repaints, so moving it (a keyed `repeat()` reorder, a drag-drop) costs no re-parse. Bind it as `.value=${x}`, never by interpolating a child — a child `${}` is unsupported and renders stale |
-| `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
+| `puredashboard-json-view` | `data`(value or JSON string), `theme`(auto + 10 built-in palettes e.g. github-dark/dracula/nord, or a custom mode), `themes`(per-mode palette override), `level`(initial expand depth: 0=all closed, 1=root's fields, …), `maxDepth`/attr `max-depth`(default 64: deeper objects/arrays become one placeholder row with their count, so deep input can't overflow the stack), `copyable` | — | collapsible syntax-highlighted JSON tree; OS-aware; per-value copy (reads textContent on click, keeps escapes) |
 | `puredashboard-lazy` | `trigger`(visible/idle/eager/manual), `rootMargin`, `height`, `unrender`; props `render(host)` / `load()`; methods `renderNow()`/`reset()` | `render`{reason}, `loaderror`{error}, `unrender` | defers building expensive content (json-view, markdown, tables) until it scrolls into view; `<template>` child = zero-JS, `[data-lazy-fallback]` child = your own placeholder |
 
 ### Overlay (wrap a trigger child)
