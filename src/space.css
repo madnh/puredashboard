@@ -22,6 +22,9 @@ puredashboard-space {
   gap: var(--pd-space-gap);
 }
 
+/* display:flex above would override the UA rule for [hidden], so a hidden space would stay visible. */
+puredashboard-space[hidden] { display: none; }
+
 /* Direction ---------------------------------------------------------------- */
 .puredashboard-space--horizontal { flex-direction: row; }
 .puredashboard-space--vertical   { flex-direction: column; }
