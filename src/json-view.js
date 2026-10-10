@@ -82,10 +82,12 @@ async function copyText(text) {
  * @prop {Object} themes - Palette overrides keyed by mode name, e.g. `{ dark: {…}, "github-dark": {…}, myMode: {…} }`. Each map may set any of `bg`, `border`, `text`, `muted`, `key`, `string`, `number`, `boolean`, `null`, `punct`, `summary`, `accent` (any CSS colour); applied as `--pd-json-view-*` inline custom properties for the active mode only (they win over the built-in palette). Unset knobs keep the stylesheet default.
  * @prop {boolean} copyable - Show a copy button after each leaf value. Default `true`.
  * @prop {number} level - Initial expand depth. Omit (default) to expand everything. Otherwise a node at depth < `level` starts open and deeper nodes start collapsed (depth 0 = root): `0` collapses all (including the root), `1` shows the root's fields, `2` expands one level further, and so on. Only the INITIAL state — the user can still toggle any node; it re-applies when `data` or `level` changes.
+ * @prop {number} maxDepth - Deepest level rendered as a tree. Default `64`. An object/array at depth >= `maxDepth` (depth 0 = root) renders as one placeholder row — its braces, an ellipsis and the item/key count — and its contents are not walked, so a hostile or pathological value nested thousands deep can't exhaust the call stack or the DOM. A non-finite or negative value falls back to the default.
  * @prop {Object} labels - Override UI strings. Keys: `copy`, `copied`, `items(n)`, `keys(n)`. Unset keys keep the English default.
  *
  * @attr {string} theme - Reflected to the `theme` property (`auto`, a built-in name, or a custom mode).
  * @attr {string} level - Reflected to the `level` property (parsed as a number).
+ * @attr {string} max-depth - Reflected to the `maxDepth` property (parsed as a number).
  *
  * @cssprop [--pd-json-view-bg] - Panel background.
  * @cssprop [--pd-json-view-border] - Panel border colour.
@@ -111,15 +113,26 @@ class PuredashboardJsonView extends Reactive {
   static BUILT_IN_THEMES = ["light", "dark", "github-light", "github-dark", "monokai", "dracula", "solarized-light", "solarized-dark", "nord", "one-dark"];
 
   static properties = {
-    data: {}, theme: {}, themes: {}, copyable: {}, level: {}, labels: {}, collapsed: {},
+    data: {}, theme: {}, themes: {}, copyable: {}, level: {}, maxDepth: {}, labels: {}, collapsed: {},
   };
 
+  // Default for `maxDepth`: deep enough for any real payload, shallow enough that the
+  // recursive render/seed walks stay far from the engine's stack limit.
+  static DEFAULT_MAX_DEPTH = 64;
+
   // Reflect the declarative `theme`/`level` attributes so they can be set the natural
-  // way: <puredashboard-json-view theme="dark" level="1">.
-  static observedAttributes = ["theme", "level"];
+  // way: <puredashboard-json-view theme="dark" level="1" max-depth="32">.
+  static observedAttributes = ["theme", "level", "max-depth"];
   attributeChangedCallback(name, _old, val) {
     if (name === "theme") this.theme = val || "auto";
     else if (name === "level") this.level = val == null || val === "" ? undefined : Number(val);
+    else if (name === "max-depth") this.maxDepth = val == null || val === "" ? undefined : Number(val);
+  }
+
+  // Effective depth cap: `maxDepth` when it's a finite number >= 0, else the default.
+  _maxDepth() {
+    const n = this.maxDepth;
+    return typeof n === "number" && Number.isFinite(n) && n >= 0 ? Math.floor(n) : PuredashboardJsonView.DEFAULT_MAX_DEPTH;
   }
 
   setup() {
@@ -167,10 +180,12 @@ class PuredashboardJsonView extends Reactive {
     const lvl = this.level;
     const s = new Set();
     if (lvl != null) {
+      const max = this._maxDepth();
       let v = this.data;
       if (typeof v === "string") { try { v = JSON.parse(v); } catch { v = undefined; } }
       const walk = (val, path, depth) => {
         if (val === null || typeof val !== "object") return;   // primitive → no toggle
+        if (depth >= max) return;                              // depth-capped placeholder → no toggle
         const entries = Array.isArray(val) ? val.map((x, i) => [i, x]) : Object.entries(val);
         if (!entries.length) return;                           // empty {}/[] → no toggle
         if (depth >= lvl) s.add(path);
@@ -222,7 +237,7 @@ class PuredashboardJsonView extends Reactive {
   // After each render: (re)seed collapse state when data/level changed, then reflect the
   // resolved mode and apply the per-mode palette as inline custom properties.
   updated(changed) {
-    if (changed && (changed.has("data") || changed.has("level"))) this._seedCollapsed();
+    if (changed && (changed.has("data") || changed.has("level") || changed.has("maxDepth"))) this._seedCollapsed();
     const mode = this._mode();
     if (this.dataset.mode !== mode) this.dataset.mode = mode;
     const pal = (this.themes && this.themes[mode]) || null;
@@ -246,8 +261,9 @@ class PuredashboardJsonView extends Reactive {
   }
 
   // Render one node. `path` is a collision-free index path; `key` is the object key
-  // (or null in an array); `last` suppresses the trailing comma.
-  node(v, path, key, last) {
+  // (or null in an array); `last` suppresses the trailing comma; `depth` is the
+  // nesting level (0 = root), checked against `maxDepth` so recursion stays bounded.
+  node(v, path, key, last, depth = 0) {
     const keyPart = this._keyPart(key);
     const comma = last ? "" : html`<span class="puredashboard-json-view__punct">,</span>`;
     const isArr = Array.isArray(v);
@@ -259,10 +275,13 @@ class PuredashboardJsonView extends Reactive {
       if (!entries.length) {
         return html`<div class="puredashboard-json-view__row">${keyPart}<span class="puredashboard-json-view__brace">${o + c}</span>${comma}</div>`;
       }
+      if (depth >= this._maxDepth()) {
+        return html`<div class="puredashboard-json-view__row puredashboard-json-view__row--depth-cap">${keyPart}<span class="puredashboard-json-view__brace">${o}</span><span class="puredashboard-json-view__summary">… ${this._label(isArr ? "items" : "keys", entries.length)}</span><span class="puredashboard-json-view__brace">${c}</span>${comma}</div>`;
+      }
       const open = this._isOpen(path);
       return html`<div class="puredashboard-json-view__node">
         <button type="button" class="puredashboard-json-view__toggle js-puredashboard-json-view__toggle ${open ? "puredashboard-json-view__toggle--open" : ""}" data-path="${path}" aria-expanded="${open ? "true" : "false"}"><span class="puredashboard-json-view__chevron-wrap">${iconChevron}</span>${keyPart}<span class="puredashboard-json-view__brace">${o}</span>${open ? "" : html`<span class="puredashboard-json-view__summary">${this._label(isArr ? "items" : "keys", entries.length)}</span><span class="puredashboard-json-view__brace">${c}</span>${comma}`}</button>
-        ${open ? html`<div class="puredashboard-json-view__children">${entries.map(([k, val], i) => this.node(val, `${path}.${i}`, isArr ? null : k, i === entries.length - 1))}</div><div class="puredashboard-json-view__row puredashboard-json-view__row--close"><span class="puredashboard-json-view__brace">${c}</span>${comma}</div>` : ""}
+        ${open ? html`<div class="puredashboard-json-view__children">${entries.map(([k, val], i) => this.node(val, `${path}.${i}`, isArr ? null : k, i === entries.length - 1, depth + 1))}</div><div class="puredashboard-json-view__row puredashboard-json-view__row--close"><span class="puredashboard-json-view__brace">${c}</span>${comma}</div>` : ""}
       </div>`;
     }
 
