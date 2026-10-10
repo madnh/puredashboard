@@ -26,6 +26,9 @@ puredashboard-collapse {
   --pd-collapse-pad: var(--sp-3, 12px);
 }
 
+/* display:block above would override the UA rule for [hidden], so a hidden collapse would stay visible. */
+puredashboard-collapse[hidden] { display: none; }
+
 .puredashboard-collapse__group {
   display: flex;
   flex-direction: column;
