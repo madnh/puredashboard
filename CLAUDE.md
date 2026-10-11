@@ -99,6 +99,6 @@ multi-line `html\`<el>\n  text\n</el>\`` puts newlines into `textContent` and fa
   interpolated at a child position actually accepts a string OR a node/nested-`html`
   template — see the "Rich content" recipe in `_agents.md`.
 - **Not published to any registry** (no npm package — by design). Distributed as source +
-  GitHub Releases. Version via git tags + `CHANGELOG.md` (currently `v0.2.1`, `0.x` = API may change).
+  GitHub Releases. Version via git tags + `CHANGELOG.md` (currently `v0.3.0`, `0.x` = API may change).
 - **Pull requests are not accepted** (issues-only; see `CONTRIBUTING.md`). When proposing
   changes, don't add CI/workflow files — a CI pipeline contradicts the no-build story.

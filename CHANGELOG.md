@@ -9,6 +9,8 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-11
+
 A stronger sidebar, modelled on the shadcn Sidebar and adapted to PureDashboard's
 zero-dependency, light-DOM conventions. Defaults keep their look; everything new is
 opt-in except two small visual corrections called out under Changed.
@@ -785,7 +787,8 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/madnh/puredashboard/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/madnh/puredashboard/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/madnh/puredashboard/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/madnh/puredashboard/releases/tag/v0.1.0
