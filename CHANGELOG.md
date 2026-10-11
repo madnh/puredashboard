@@ -9,6 +9,65 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+A stronger sidebar, modelled on the shadcn Sidebar and adapted to PureDashboard's
+zero-dependency, light-DOM conventions. Defaults keep their look; everything new is
+opt-in except two small visual corrections called out under Changed.
+
+### Added
+- **`<puredashboard-nav>` sections.** A node `{ heading, children, collapsible? }` renders
+  a titled block (small muted heading over a flat list, `puredashboard-nav__section` /
+  `__heading` / `__list--section`); `collapsible: true` makes the heading a
+  `<button aria-expanded>` and the `toggle` event reports it by its `heading`.
+- **`<puredashboard-nav>` row actions.** A node's `action: { icon, label }` adds a secondary
+  button beside the link (`puredashboard-nav__action`, shown on hover / focus / on the
+  active row, always on touch screens) that fires `action` with `{ item, label, href }`.
+- **`<puredashboard-nav>` `icon-only` attribute.** The rail look on the nav itself: centred
+  icons, labels clipped (still the links' names) and copied to each link's `title`, badges /
+  chevrons / actions / sub-lists / section headings hidden (a section keeps a separator).
+- **`<puredashboard-nav>` `loading`.** `true` (5 rows) or a number renders skeleton rows and
+  marks the nav `aria-busy`.
+- **`<puredashboard-nav>` palette knobs** `--pd-nav-text` / `-muted` / `-hover` / `-active-bg`
+  / `-border` / `-radius`, so a container (the sider) can recolour a nav without touching
+  the page tokens.
+- **`<puredashboard-sider>` header and footer slots.** Children with `slot="header"` /
+  `slot="footer"` sit in sticky regions above / below the scrolling middle (brand or
+  workspace switcher on top, user menu at the bottom); `puredashboard-sider__expanded-only`
+  on any element inside hides it while collapsed.
+- **`<puredashboard-sider>` `variant="floating"`** (a rounded, bordered, shadowed card inset
+  from the layout) and **`variant="inset"`** (the sider sits on the page background and the
+  content beside it becomes the raised card).
+- **`<puredashboard-sider>` `collapsible="offcanvas"`** slides the sider out completely
+  (width 0) instead of leaving the icon rail; `collapseMode` reads back `"icon"` /
+  `"offcanvas"`.
+- **`<puredashboard-sider>` `rail`** — a thin toggle handle along the outer edge (hover
+  shows a line, click toggles; `labels.rail`).
+- **`<puredashboard-sider>` `shortcut`** — Cmd (macOS) / Ctrl + the given key toggles; the
+  bare attribute means `b`.
+- **`<puredashboard-sider>` `persist`** — remembers the collapsed state in `localStorage`
+  under `puredashboard-sider:<name>` and restores it on connect.
+- **`<puredashboard-sider>` drawer below its `breakpoint`.** Expanding a breakpoint-collapsed
+  sider (trigger, rail, shortcut, `toggle()`) opens it over the content as a drawer
+  (`overlay` state attribute, backdrop on the layout); backdrop click, Escape or a link
+  inside closes it.
+- **Theme tokens `--sidebar-bg` / `-text` / `-muted` / `-border` / `-hover` / `-active`** in
+  `tokens.css`, defaulting to the page panel tokens; the sider and the nav inside it paint
+  with them, so one override gives every sidebar its own palette.
+- Gallery: Nav stories "App shell", "Icon rail", "Floating", "Inset", "Offcanvas",
+  "Loading", "Sidebar palette".
+
+### Changed
+- **Nav rows are square.** Top-level rows were rounded (`--radius`, 10px) while nested rows
+  were squared off next to the guide line, so the active row changed shape with its depth;
+  now every row (and section heading / action button) has no radius. Opt back in with
+  `--pd-nav-radius`.
+- **A `<puredashboard-sider>` mirrors `collapsed` onto its navs as `icon-only`** (a
+  `MutationObserver` covers navs added later); the icon-only CSS moved from `layout.css`
+  into `nav.css` under that attribute. Visually unchanged.
+- **A sider's `breakpoint` only collapses on a match.** Above the breakpoint an author-set
+  or persisted `collapsed` now stands; it used to be forced open on connect.
+- **The sider no longer clips its own overflow** (the header, middle and footer regions do),
+  so the edge rail can straddle the border.
+
 ## [0.2.1] - 2026-10-10
 
 Ten small changes a production consumer (model-gateway) was carrying as local patches

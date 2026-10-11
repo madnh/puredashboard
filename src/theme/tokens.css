@@ -81,6 +81,18 @@
   --danger-border:  color-mix(in srgb, var(--red)   40%, var(--border));
   --success-border: color-mix(in srgb, var(--green) 40%, var(--border));
 
+  /* sidebar palette — what <puredashboard-sider> (and the nav inside it) paints with.
+   * Defaults to the page panel, so nothing changes until you give the sidebar its own
+   * look: e.g. a darker rail (`--sidebar-bg: #0b0d12; --sidebar-border: #1c2029`) or
+   * an off-white one in light mode. Mode-neutral here because each value references a
+   * per-mode surface/text token. */
+  --sidebar-bg: var(--panel);
+  --sidebar-text: var(--text);
+  --sidebar-muted: var(--muted);
+  --sidebar-border: var(--border);
+  --sidebar-hover: var(--panel-2);
+  --sidebar-active: var(--panel-3);
+
   /* focus ring — one token every control shares for a consistent a11y outline */
   --ring-width: 3px;
   --focus-ring: 0 0 0 var(--ring-width) color-mix(in srgb, var(--accent) 40%, transparent);

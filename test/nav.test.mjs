@@ -156,5 +156,96 @@ void PuredashboardNav;
   ok(/\.puredashboard-nav__icon svg\s*\{[^}]*width:\s*var\(--pd-nav-icon-size\)[^}]*height:\s*var\(--pd-nav-icon-size\)/.test(css), "item icon SVG is sized by --pd-nav-icon-size");
 }
 
+
+// ---- sections: heading + flat list; collapsible heading toggles ----
+{
+  const el = mount("puredashboard-nav");
+  el.items = [
+    { heading: "Platform", children: [{ label: "Home", href: "#/" }, { label: "Nodes", children: [{ label: "Web", href: "#/w" }] }] },
+    { heading: "Projects", collapsible: true, children: [{ label: "Acme", href: "#/acme" }] },
+  ];
+  await tick();
+  const sections = el.querySelectorAll(".puredashboard-nav__section");
+  ok(sections.length === 2, "each heading node renders a section");
+  const h1 = sections[0].querySelector(".puredashboard-nav__heading");
+  ok(h1 && h1.tagName === "DIV" && h1.textContent === "Platform", "a plain section heading is a <div> with the heading text");
+  const list1 = sections[0].querySelector(".puredashboard-nav__list--section");
+  ok(list1 && list1.getAttribute("aria-labelledby") === h1.id && h1.id, "section list is labelled by its heading");
+  ok(!list1.hasAttribute("hidden"), "a section starts open");
+  ok(!list1.classList.contains("puredashboard-nav__list--sub"), "a section list is flat (not a nested sub-list)");
+  ok(list1.querySelector(".puredashboard-nav__list--sub"), "groups still nest inside a section");
+  const h2 = sections[1].querySelector(".puredashboard-nav__heading");
+  ok(h2.tagName === "BUTTON" && h2.getAttribute("aria-expanded") === "true", "a collapsible heading is a <button aria-expanded=true>");
+  let detail = null;
+  el.addEventListener("toggle", (e) => { detail = e.detail; });
+  h2.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  await tick();
+  const h2b = el.querySelectorAll(".puredashboard-nav__section")[1].querySelector(".puredashboard-nav__heading");
+  const list2 = el.querySelectorAll(".puredashboard-nav__section")[1].querySelector(".puredashboard-nav__list--section");
+  ok(h2b.getAttribute("aria-expanded") === "false" && list2.hasAttribute("hidden"), "clicking a collapsible heading closes its section");
+  ok(detail && detail.label === "Projects" && detail.expanded === false, "toggle event carries the section heading + expanded=false");
+}
+
+// ---- row action: a sibling <button> that emits `action` with the node ----
+{
+  const el = mount("puredashboard-nav");
+  const node = { label: "Acme", href: "#/acme", action: { icon: '<svg data-tag="more"></svg>', label: "More" } };
+  el.items = [node, { label: "Plain", href: "#/p" }];
+  await tick();
+  const items = el.querySelectorAll(".puredashboard-nav__item");
+  const btn = items[0].querySelector("button.js-puredashboard-nav__action");
+  ok(btn, "a node with `action` renders an action button");
+  ok(btn.parentElement === items[0] && btn.previousElementSibling.tagName === "A", "the action sits beside the link, not inside it");
+  ok(btn.getAttribute("aria-label") === "More" && btn.querySelector('svg[data-tag="more"]'), "action button carries the label + icon");
+  ok(items[0].classList.contains("puredashboard-nav__item--has-action"), "the row is flagged so its text clears the button");
+  ok(!items[1].querySelector(".puredashboard-nav__action"), "no action button without `action`");
+  let detail = null;
+  el.addEventListener("action", (e) => { detail = e.detail; });
+  btn.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  ok(detail && detail.item === node && detail.href === "#/acme" && detail.label === "Acme", "action event carries the node");
+}
+
+// ---- icon-only: titles on string labels; CSS contract for the rail look ----
+{
+  const el = mount("puredashboard-nav");
+  el.items = [{ label: "Home", href: "#/" }, { label: "Nodes", children: [{ label: "Web", href: "#/w" }] }];
+  await tick();
+  ok(!el.querySelector("a").hasAttribute("title"), "no title while expanded");
+  el.setAttribute("icon-only", "");
+  await tick();
+  ok(el.querySelector("a").getAttribute("title") === "Home", "icon-only: a leaf link's title is its label");
+  ok(el.querySelector("button.js-puredashboard-nav__group").getAttribute("title") === "Nodes", "icon-only: a group button's title is its label");
+  ok(el.querySelector(".puredashboard-nav__label").textContent === "Home", "icon-only: the label text stays in the DOM (accessible name)");
+  el.removeAttribute("icon-only");
+  await tick();
+  ok(!el.querySelector("a").hasAttribute("title"), "removing icon-only drops the titles again");
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/nav.css", import.meta.url), "utf8");
+  ok(/puredashboard-nav\[icon-only\] \.puredashboard-nav__label\s*\{[^}]*position:\s*absolute[^}]*clip-path:\s*inset\(50%\)/.test(css), "icon-only: labels are clipped (visually hidden, still named)");
+  ok(!/puredashboard-nav\[icon-only\] \.puredashboard-nav__label\s*\{[^}]*display:\s*none/.test(css), "icon-only: labels are not display:none");
+  ok(/puredashboard-nav\[icon-only\] \.puredashboard-nav__badge,[\s\S]*?\.puredashboard-nav__toggle,[\s\S]*?\.puredashboard-nav__action,[\s\S]*?\.puredashboard-nav__list--sub,[\s\S]*?\{\s*display:\s*none/.test(css), "icon-only: badges, chevrons, actions and sub-lists are hidden");
+  ok(/puredashboard-nav\[icon-only\] \.puredashboard-nav__link\s*\{[^}]*justify-content:\s*center/.test(css), "icon-only: the icon is centred in the row");
+  ok(!/\.puredashboard-nav__list--sub \.puredashboard-nav__link\s*\{[^}]*border-radius:\s*0/.test(css), "nested rows have no rule of their own for the row shape");
+  ok(/--pd-radius:\s*var\(--pd-nav-radius,\s*0\)/.test(css), "rows are square by default (--pd-nav-radius opts into rounding)");
+  ok(/--pd-text:\s*var\(--pd-nav-text,\s*var\(--text/.test(css), "row text colour goes through the --pd-nav-text knob (sider palette hook)");
+}
+
+// ---- loading: skeleton rows + aria-busy ----
+{
+  const el = mount("puredashboard-nav");
+  el.items = [{ label: "Home", href: "#/" }];
+  el.loading = true;
+  await tick();
+  ok(el.querySelector("nav").getAttribute("aria-busy") === "true", "loading marks the nav aria-busy");
+  ok(el.querySelectorAll(".puredashboard-nav__item--skeleton").length === 5, "loading=true renders 5 skeleton rows");
+  ok(!el.querySelector("a"), "no real links while loading");
+  el.loading = 3;
+  await tick();
+  ok(el.querySelectorAll(".puredashboard-nav__item--skeleton").length === 3, "loading=3 renders 3 skeleton rows");
+  el.loading = false;
+  await tick();
+  ok(!el.querySelector("nav").hasAttribute("aria-busy") && el.querySelector("a"), "loading=false renders the items again, not busy");
+}
+
 console.log(`nav.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

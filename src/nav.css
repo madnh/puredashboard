@@ -4,24 +4,27 @@
  * to the shared app tokens (--accent, --text, --panel-2/3, --border, --focus-ring, …)
  * and finally to neutral system colours — so the sidebar looks right with NO theme
  * linked and adapts to light/dark automatically. Theme by defining the app tokens, or
- * override the --pd-nav-* knobs below.
+ * override the --pd-nav-* knobs below. A <puredashboard-sider> sets the --pd-nav-*
+ * knobs from the theme's --sidebar-* tokens, so a nav inside it follows the sidebar
+ * palette while the same nav elsewhere keeps the page palette.
  */
 puredashboard-nav {
   display: block;
   --pd-accent:     var(--accent,     #3b82f6);
   --pd-accent-ink: var(--accent-ink, #ffffff);
-  --pd-text:       var(--text,       CanvasText);
-  --pd-muted:      var(--muted,      color-mix(in srgb, CanvasText 60%, Canvas));
-  --pd-panel-2:    var(--panel-2,    color-mix(in srgb, CanvasText 6%, Canvas));
-  --pd-panel-3:    var(--panel-3,    color-mix(in srgb, CanvasText 12%, Canvas));
-  --pd-border:     var(--border,     color-mix(in srgb, CanvasText 16%, Canvas));
-  --pd-radius:     var(--radius,     10px);
+  --pd-text:       var(--pd-nav-text,      var(--text,    CanvasText));
+  --pd-muted:      var(--pd-nav-muted,     var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas)));
+  --pd-panel-2:    var(--pd-nav-hover,     var(--panel-2, color-mix(in srgb, CanvasText 6%, Canvas)));
+  --pd-panel-3:    var(--pd-nav-active-bg, var(--panel-3, color-mix(in srgb, CanvasText 12%, Canvas)));
+  --pd-border:     var(--pd-nav-border,    var(--border,  color-mix(in srgb, CanvasText 16%, Canvas)));
+  --pd-radius:     var(--pd-nav-radius,    0);   /* square rows by default; set --pd-nav-radius to round them */
   --pd-focus-ring: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--pd-accent) 40%, transparent));
   --pd-duration:   var(--duration-fast, 120ms);
   --pd-ease:       var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
   --pd-nav-item-height: var(--control-height-md, 34px);
   --pd-nav-indent:      var(--sp-4, 16px);
   --pd-nav-icon-size:   16px;
+  color: var(--pd-text);
 }
 
 .puredashboard-nav__nav { display: block; }
@@ -31,20 +34,59 @@ puredashboard-nav {
   margin: 0;
   padding: 0;
 }
+/* Nested rows hang off a vertical guide line, indented one step; the rows themselves keep
+ * the same shape as top-level rows so the active one looks the same at any depth. */
 .puredashboard-nav__list--sub {
   margin-left: var(--pd-nav-indent);
   border-left: 1px solid var(--pd-border);
   /* breathing room so nested rows don't sit flush against the guide line */
   padding-left: var(--sp-2, 8px);
 }
-/* Nested rows sit against the vertical guide line — a rounded pill next to that
- * line reads oddly, so square them off (the top-level rows stay rounded). */
-.puredashboard-nav__list--sub .puredashboard-nav__link { border-radius: 0; }
 .puredashboard-nav__list[hidden] { display: none; }
 
-.puredashboard-nav__item { margin: var(--sp-1, 4px) 0; }
+.puredashboard-nav__item {
+  position: relative;   /* anchors the row's action button */
+  margin: var(--sp-1, 4px) 0;
+}
 
-/* Shared row look for leaf links and group buttons. */
+/* ── Sections: a titled block of rows (shadcn's "group") ───────────────────── */
+.puredashboard-nav__section { margin: 0; }
+.puredashboard-nav__section + .puredashboard-nav__section { margin-top: var(--sp-3, 12px); }
+.puredashboard-nav__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: calc(var(--pd-nav-item-height) - 4px);
+  margin: 0;
+  padding: 0 var(--sp-3, 12px);
+  font: inherit;
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--weight-medium, 500);
+  letter-spacing: 0.02em;
+  text-align: left;
+  color: var(--pd-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--pd-radius);
+}
+.puredashboard-nav__heading-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.puredashboard-nav__heading--toggle { cursor: pointer; }
+.puredashboard-nav__heading--toggle:hover { color: var(--pd-text); background: var(--pd-panel-2); }
+.puredashboard-nav__heading--toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--pd-focus-ring);
+}
+.puredashboard-nav__heading--open .puredashboard-nav__toggle { transform: rotate(90deg); }
+
+/* ── Rows: shared look for leaf links and group buttons ─────────────────────── */
 .puredashboard-nav__link {
   display: flex;
   align-items: center;
@@ -69,6 +111,8 @@ puredashboard-nav {
   outline: none;
   box-shadow: var(--pd-focus-ring);
 }
+/* A row with an action keeps its text clear of the button. */
+.puredashboard-nav__item--has-action > .puredashboard-nav__link { padding-inline-end: calc(var(--sp-3, 12px) + 28px); }
 
 /* Active leaf — the item whose href === current (aria-current="page"). The a11y state
  * doubles as the style hook so they can never drift apart. */
@@ -124,6 +168,8 @@ puredashboard-nav[subtle] .puredashboard-nav__link--active .puredashboard-nav__i
   min-width: 1.4em;
   padding: 0 var(--sp-1, 4px);
   font-size: var(--font-size-xs, 11px);
+  font-weight: var(--weight-medium, 500);
+  font-variant-numeric: tabular-nums;
   line-height: 1.5;
   text-align: center;
   color: var(--pd-text);
@@ -147,3 +193,108 @@ puredashboard-nav[subtle] .puredashboard-nav__link--active .puredashboard-nav__b
   transition: transform var(--pd-duration) var(--pd-ease);
 }
 .puredashboard-nav__link--open .puredashboard-nav__toggle { transform: rotate(90deg); }
+
+/* ── Row action: a secondary button at the row's end (shadcn SidebarMenuAction) ── */
+.puredashboard-nav__action {
+  position: absolute;
+  top: calc(var(--pd-nav-item-height) / 2);
+  inset-inline-end: var(--sp-1, 4px);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--pd-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--pd-radius);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--pd-duration) var(--pd-ease), background-color var(--pd-duration) var(--pd-ease), color var(--pd-duration) var(--pd-ease);
+}
+.puredashboard-nav__action svg { width: var(--pd-nav-icon-size); height: var(--pd-nav-icon-size); }
+.puredashboard-nav__action-fallback { font-weight: var(--weight-semibold, 600); line-height: 1; }
+.puredashboard-nav__action:hover { color: var(--pd-text); background: var(--pd-panel-3); }
+.puredashboard-nav__action:focus-visible { outline: none; box-shadow: var(--pd-focus-ring); opacity: 1; }
+/* Revealed on hover / keyboard focus anywhere in the row, and always on the active row. */
+.puredashboard-nav__item:hover > .puredashboard-nav__action,
+.puredashboard-nav__item:focus-within > .puredashboard-nav__action,
+.puredashboard-nav__item--active > .puredashboard-nav__action { opacity: 1; }
+/* The active row's solid accent fill needs an ink-coloured action; `subtle` keeps the muted one. */
+.puredashboard-nav__item--active > .puredashboard-nav__action { color: var(--pd-accent-ink); }
+.puredashboard-nav__item--active > .puredashboard-nav__action:hover { background: color-mix(in srgb, var(--pd-accent-ink) 18%, transparent); }
+puredashboard-nav[subtle] .puredashboard-nav__item--active > .puredashboard-nav__action { color: var(--pd-muted); }
+puredashboard-nav[subtle] .puredashboard-nav__item--active > .puredashboard-nav__action:hover { color: var(--pd-text); background: var(--pd-panel-2); }
+/* No hover on touch screens: keep the action visible. */
+@media (hover: none) { .puredashboard-nav__action { opacity: 1; } }
+
+/* ── Skeleton rows while `loading` ─────────────────────────────────────────── */
+.puredashboard-nav__skeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  min-height: var(--pd-nav-item-height);
+  padding: 0 var(--sp-3, 12px);
+}
+.puredashboard-nav__skeleton-icon,
+.puredashboard-nav__skeleton-text {
+  display: block;
+  background: var(--pd-panel-3);
+  border-radius: var(--radius-sm, 8px);
+  animation: puredashboard-nav-pulse 1.4s var(--pd-ease) infinite;
+}
+.puredashboard-nav__skeleton-icon { flex: none; width: var(--pd-nav-icon-size); height: var(--pd-nav-icon-size); }
+.puredashboard-nav__skeleton-text { height: 0.8em; }
+@keyframes puredashboard-nav-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) {
+  .puredashboard-nav__skeleton-icon, .puredashboard-nav__skeleton-text { animation: none; }
+}
+
+/* ── icon-only (rail) mode ──────────────────────────────────────────────────
+ * Rows show only their icon, centred; the label is visually hidden but stays the link's
+ * accessible name (clipped, not display:none) — nav.js also copies a string label to the
+ * link's `title`. Badges, chevrons, actions, nested lists and section headings are hidden;
+ * a section keeps a separator line so the grouping still reads. <puredashboard-sider> sets
+ * this attribute on its navs while collapsed. */
+puredashboard-nav[icon-only] .puredashboard-nav__link {
+  justify-content: center;
+  padding-inline: 0;
+}
+puredashboard-nav[icon-only] .puredashboard-nav__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+puredashboard-nav[icon-only] .puredashboard-nav__badge,
+puredashboard-nav[icon-only] .puredashboard-nav__toggle,
+puredashboard-nav[icon-only] .puredashboard-nav__action,
+puredashboard-nav[icon-only] .puredashboard-nav__list--sub,
+puredashboard-nav[icon-only] .puredashboard-nav__heading-text,
+puredashboard-nav[icon-only] .puredashboard-nav__skeleton-text {
+  display: none;
+}
+/* The nested list is hidden, so a group holding the current item marks itself instead. */
+puredashboard-nav[icon-only] .puredashboard-nav__link--holds-current {
+  background: var(--pd-panel-3);
+  box-shadow: inset 3px 0 0 var(--pd-accent);
+}
+puredashboard-nav[icon-only] .puredashboard-nav__link--holds-current .puredashboard-nav__icon { color: var(--pd-accent); }
+puredashboard-nav[icon-only] .puredashboard-nav__heading {
+  min-height: 0;
+  padding: 0;
+  margin: var(--sp-2, 8px) var(--sp-1, 4px);
+  border-top: 1px solid var(--pd-border);
+  border-radius: 0;
+  pointer-events: none;
+}
+puredashboard-nav[icon-only] .puredashboard-nav__section:first-child > .puredashboard-nav__heading { display: none; }
+puredashboard-nav[icon-only] .puredashboard-nav__section + .puredashboard-nav__section { margin-top: 0; }
+puredashboard-nav[icon-only] .puredashboard-nav__skeleton { justify-content: center; padding: 0; }

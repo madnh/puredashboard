@@ -72,52 +72,62 @@ puredashboard-footer {
 
 /* ── Sider ─────────────────────────────────────────────────────────────────── */
 puredashboard-sider {
+  position: relative;          /* anchors the edge rail */
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
   box-sizing: border-box;
-  /* --pd-sider-w is set inline by the element (width ↔ collapsedWidth). */
+  /* --pd-sider-w is set inline by the element (width ↔ collapsedWidth / 0). */
   width: var(--pd-sider-w, 220px);
   min-width: 0;
-  background: var(--pd-sider-bg, var(--panel, Canvas));
-  color: var(--text, CanvasText);
-  border-right: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
-  overflow: hidden;
-  transition: width var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+  /* The sidebar palette: the theme's --sidebar-* tokens, else the page panel. The nav inside
+   * reads the same values through its --pd-nav-* knobs, so one set of tokens colours both. */
+  --pd-sider-text:   var(--sidebar-text,   var(--text,    CanvasText));
+  --pd-sider-border: var(--sidebar-border, var(--border,  color-mix(in srgb, CanvasText 16%, Canvas)));
+  --pd-nav-text:      var(--pd-sider-text);
+  --pd-nav-muted:     var(--sidebar-muted,  var(--muted,   color-mix(in srgb, CanvasText 60%, Canvas)));
+  --pd-nav-hover:     var(--sidebar-hover,  var(--panel-2, color-mix(in srgb, CanvasText 6%, Canvas)));
+  --pd-nav-active-bg: var(--sidebar-active, var(--panel-3, color-mix(in srgb, CanvasText 12%, Canvas)));
+  --pd-nav-border:    var(--pd-sider-border);
+  background: var(--pd-sider-bg, var(--sidebar-bg, var(--panel, Canvas)));
+  color: var(--pd-sider-text);
+  border-right: 1px solid var(--pd-sider-border);
+  transition: width var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1)),
+              margin var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
 }
 
-/* Scroll region holding the author's children (nav, etc.). */
+/* Header / scroll region / footer. Each clips its own content (the sider itself stays
+ * overflow-visible so the edge rail can straddle the border). */
+.puredashboard-sider__header,
+.puredashboard-sider__footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 8px);
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--pd-sider-nav-inset, var(--sp-2, 8px));
+  overflow: hidden;
+}
 .puredashboard-sider__inner {
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   overflow: auto;
+  overflow-x: hidden;
 }
 /* A nav in the sider is inset from its edges, so the rounded rows (and the active one)
  * don't run into the sider border; the inset is the same on both sides, so a row in the
- * collapsed rail stays centred. Override with --pd-sider-nav-inset (0 = edge to edge). */
+ * collapsed rail stays centred. Override with --pd-sider-nav-inset (0 = edge to edge).
+ * The header/footer slots already pad, so a nav placed in one sits flush. */
 .puredashboard-sider__inner > puredashboard-nav {
   padding: var(--pd-sider-nav-inset, var(--sp-2, 8px));
 }
-/* Collapsed rail: that nav shows icons only. The label is hidden visually but stays the
- * link's accessible name (clipped, not display:none); badges and group chevrons are
- * hidden; the icon is centred in the row. */
-puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__link {
-  position: relative;
-  justify-content: center;
-}
-puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__badge,
-puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav .puredashboard-nav__toggle {
-  display: none;
-}
+/* Author content that only makes sense beside its icon (brand name, user name) — hidden
+ * while collapsed. The icon-only nav rows are handled by the nav itself (`icon-only`).
+ * !important so the class also beats an inline `style="display:flex"` on that element —
+ * hiding is its one job, and an author reaches for inline display on brand lockups. */
+puredashboard-sider[collapsed] .puredashboard-sider__expanded-only { display: none !important; }
 
 /* Collapse trigger pinned to the bottom. */
 .puredashboard-sider__trigger {
@@ -129,10 +139,10 @@ puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav
   height: var(--control-height-lg, 42px);
   padding: 0;
   margin: 0;
-  background: var(--panel-2, color-mix(in srgb, CanvasText 4%, Canvas));
-  color: var(--muted, color-mix(in srgb, CanvasText 60%, Canvas));
+  background: var(--pd-nav-hover);
+  color: var(--pd-nav-muted);
   border: 0;
-  border-top: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  border-top: 1px solid var(--pd-sider-border);
   border-radius: 0;   /* flush with the square sider */
   cursor: pointer;
   font-size: var(--font-size-lg, 15px);
@@ -141,8 +151,8 @@ puredashboard-sider[collapsed] > .puredashboard-sider__inner > puredashboard-nav
 }
 .puredashboard-sider__trigger:active { transform: none; }
 .puredashboard-sider__trigger:hover {
-  background: var(--panel-3, color-mix(in srgb, CanvasText 8%, Canvas));
-  color: var(--text, CanvasText);
+  background: var(--pd-nav-active-bg);
+  color: var(--pd-sider-text);
 }
 .puredashboard-sider__trigger:focus-visible {
   outline: none;
@@ -157,11 +167,99 @@ puredashboard-sider[collapsed] .puredashboard-sider__trigger svg {
   transform: rotate(180deg);
 }
 
+/* Edge rail (shadcn SidebarRail): a 16px hit strip straddling the outer border; a 2px line
+ * appears on hover, the cursor says which way the sider will go. */
+.puredashboard-sider__rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-end: -8px;
+  z-index: 1;
+  width: 16px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  cursor: w-resize;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.puredashboard-sider__rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background var(--duration-fast, 120ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+.puredashboard-sider__rail:hover::after { background: var(--pd-sider-border); }
+puredashboard-sider[collapsed] .puredashboard-sider__rail { cursor: e-resize; }
+puredashboard-sider[collapsible="offcanvas"][collapsed] .puredashboard-sider__rail { inset-inline-end: -16px; }
+puredashboard-sider[collapsible="offcanvas"][collapsed] .puredashboard-sider__rail:hover::after { background: var(--accent, Highlight); }
+
+/* Offcanvas collapse: the sider is gone entirely — no border, no margin. */
+puredashboard-sider[collapsible="offcanvas"][collapsed] {
+  border-inline-end-width: 0;
+  margin: 0;
+}
+
+/* ── Variants ───────────────────────────────────────────────────────────── */
+/* floating: a card inset from the layout edges. */
+puredashboard-sider[variant="floating"] {
+  margin: var(--sp-2, 8px);
+  border: 1px solid var(--pd-sider-border);
+  border-radius: var(--radius, 10px);
+  box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.2));
+}
+puredashboard-sider[variant="floating"] .puredashboard-sider__trigger {
+  border-radius: 0 0 var(--radius, 10px) var(--radius, 10px);
+}
+/* inset: the sider sits transparently on the layout background (--bg); the content
+ * beside it becomes a raised panel card — so the sidebar reads as part of the page. */
+puredashboard-sider[variant="inset"] {
+  background: var(--pd-sider-bg, transparent);
+  border-inline-end: 0;
+}
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-content,
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout {
+  margin: var(--sp-2, 8px);
+  margin-inline-start: 0;
+  background: var(--panel, Canvas);
+  border: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
+  border-radius: var(--radius, 10px);
+  box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.2));
+  overflow: hidden;
+}
+/* ── Drawer below the breakpoint (`overlay`, set by the element) ──────────────
+ * The sider leaves the flow and slides over the content; the layout paints a backdrop. */
+puredashboard-layout { position: relative; }
+puredashboard-sider[overlay] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 0;
+  z-index: var(--z-overlay, 1200);
+  width: var(--pd-sider-drawer-w, var(--pd-sider-w, 220px));
+  margin: 0;
+  box-shadow: var(--shadow-3, 0 12px 32px rgba(0, 0, 0, 0.4));
+}
+puredashboard-layout:has(> puredashboard-sider[overlay])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-overlay, 1200) - 1);
+  background: var(--pd-sider-backdrop, rgba(0, 0, 0, 0.45));   /* a dark scrim reads right in both modes */
+}
+
 /* Belt-and-braces for hosts whose motion tokens don't collapse to 0ms. */
 @media (prefers-reduced-motion: reduce) {
   puredashboard-sider,
   .puredashboard-sider__trigger,
-  .puredashboard-sider__trigger svg {
+  .puredashboard-sider__trigger svg,
+  .puredashboard-sider__rail::after {
     transition: none;
   }
 }
