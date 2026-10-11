@@ -9,6 +9,8 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-12
+
 ### Changed
 - **`<puredashboard-sider>` `rail` hides while the sider is `closed` below its breakpoint.**
   On a phone the 16px edge strip sat invisibly over the content's left edge and the way
@@ -870,7 +872,8 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/madnh/puredashboard/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/madnh/puredashboard/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/madnh/puredashboard/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/madnh/puredashboard/compare/v0.2.0...v0.2.1
