@@ -43,6 +43,7 @@ export class Router {
     this.catchAll = this.routes.find((r) => r.catchAll) || null;
     this.layouts = opts.layouts || {};   // key → loader (lazy module of a layout)
     this.beforeEach = opts.beforeEach;   // (ctx) => true | false | "/redirect" | void
+    this.afterEach = opts.afterEach;     // (ctx, hit) => void — the navigation is committed
     this.modules = new Map();            // pattern → resolved page module (lazy cache)
     this.layoutModules = new Map();      // key → resolved layout module (lazy cache)
     this.current = null;                 // { route, params, query, path }
@@ -153,10 +154,17 @@ export class Router {
     if (token !== this._token) return;
 
     document.title = titleFor(hit.route.title, hit.params, this.appName);
+    this.current = hit;
+    // afterEach: the guards passed and the modules loaded — the navigation is committed and
+    // the page is about to mount (before the swap / view transition). A hook error is
+    // reported through onError (or the console) and never blocks the mount.
+    if (typeof this.afterEach === "function") {
+      try { this.afterEach(ctx, hit); }
+      catch (e) { if (this.onError) this.onError(e, hit); else console.error(e); }
+    }
     const swap = () => this._mountWithLayout(hit, pageMod, layoutMod, ctx);
     if (this.useTransition && document.startViewTransition) this._transition(swap, token);
     else swap();
-    this.current = hit;
     this._setActiveLinks(hit.path);
     // Reactive layouts/pages render their links on a microtask, after this point —
     // re-run once the queue drains so their <a> links also get aria-current.

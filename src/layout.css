@@ -44,6 +44,22 @@ puredashboard-header {
   border-bottom: 1px solid var(--border, color-mix(in srgb, CanvasText 16%, Canvas));
 }
 
+/* Header sections — author-applied classes that split the bar into start / centre /
+ * end: the start hugs the left (sider toggle, breadcrumb), the centre takes the slack and
+ * centres its content (search, tabs), the end hugs the right (actions, user). Any of the
+ * three may be omitted; a bare child of the header still works as before. */
+.puredashboard-header__start,
+.puredashboard-header__center,
+.puredashboard-header__end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2, 8px);
+  min-width: 0;
+}
+.puredashboard-header__start { flex: 0 1 auto; }
+.puredashboard-header__center { flex: 1 1 auto; justify-content: center; }
+.puredashboard-header__end { flex: 0 0 auto; margin-inline-start: auto; }
+
 /* ── Content ───────────────────────────────────────────────────────────────── */
 puredashboard-content {
   display: block;
@@ -159,6 +175,24 @@ puredashboard-sider[collapsed] .puredashboard-sider__expanded-only { display: no
   box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, Highlight 40%, transparent));
 }
 
+/* trigger="button": a small centred icon button instead of the full-width strip — the
+ * default for the inset variant, whose transparent sider has no panel for a strip to sit
+ * on (the strip read as a stray bar next to the content card). */
+puredashboard-sider[trigger="button"] .puredashboard-sider__trigger,
+puredashboard-sider[variant="inset"]:not([trigger="bar"]) .puredashboard-sider__trigger {
+  align-self: center;
+  width: var(--control-height-sm, 30px);
+  height: var(--control-height-sm, 30px);
+  margin: var(--sp-2, 8px) auto;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm, 8px);
+}
+puredashboard-sider[trigger="button"] .puredashboard-sider__trigger:hover,
+puredashboard-sider[variant="inset"]:not([trigger="bar"]) .puredashboard-sider__trigger:hover {
+  background: var(--pd-nav-hover);
+}
+
 /* The chevron points left (toward the sider); flip it when collapsed. */
 .puredashboard-sider__trigger svg {
   transition: transform var(--duration-base, 200ms) var(--ease-standard, cubic-bezier(0.2, 0, 0, 1));
@@ -197,14 +231,19 @@ puredashboard-sider[collapsed] .puredashboard-sider__trigger svg {
 }
 .puredashboard-sider__rail:hover::after { background: var(--pd-sider-border); }
 puredashboard-sider[collapsed] .puredashboard-sider__rail { cursor: e-resize; }
-puredashboard-sider[collapsible="offcanvas"][collapsed] .puredashboard-sider__rail { inset-inline-end: -16px; }
-puredashboard-sider[collapsible="offcanvas"][collapsed] .puredashboard-sider__rail:hover::after { background: var(--accent, Highlight); }
+puredashboard-sider[closed] .puredashboard-sider__rail { inset-inline-end: -16px; }
+puredashboard-sider[closed] .puredashboard-sider__rail:hover::after { background: var(--accent, Highlight); }
 
-/* Offcanvas collapse: the sider is gone entirely — no border, no margin. */
-puredashboard-sider[collapsible="offcanvas"][collapsed] {
+/* `closed` (set by the element): collapsed to width 0 — offcanvas, `breakpoint-collapse=
+ * "offcanvas"` below the breakpoint, or `collapsed-width="0"`. The sider is gone entirely:
+ * no border, no margin, and nothing inside is painted (the element also makes every region
+ * `inert`, so the trigger, links and buttons leave the Tab order). The rail stays: it is
+ * the pointer handle that brings the sider back. */
+puredashboard-sider[closed] {
   border-inline-end-width: 0;
   margin: 0;
 }
+puredashboard-sider[closed] > :not(.puredashboard-sider__rail) { visibility: hidden; }
 
 /* ── Variants ───────────────────────────────────────────────────────────── */
 /* floating: a card inset from the layout edges. */
@@ -224,7 +263,9 @@ puredashboard-sider[variant="inset"] {
   border-inline-end: 0;
 }
 puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-content,
-puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout {
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout:not([plain]),
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout[plain] > puredashboard-content,
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout[plain] > puredashboard-layout:not([plain]) {
   margin: var(--sp-2, 8px);
   margin-inline-start: 0;
   background: var(--panel, Canvas);
@@ -232,6 +273,14 @@ puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard
   border-radius: var(--radius, 10px);
   box-shadow: var(--shadow-1, 0 1px 2px rgba(0, 0, 0, 0.2));
   overflow: hidden;
+}
+/* `plain` on the nested layout beside an inset sider: the column itself stays on the page
+ * background, its header sheds the panel and border (a bare toolbar above the card), and
+ * what is inside it becomes the inset card — a bare content, or a nested layout that keeps
+ * its own header (title bar) + content inside the card. */
+puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard-layout[plain] > puredashboard-header {
+  background: transparent;
+  border-bottom: 0;
 }
 /* ── Drawer below the breakpoint (`overlay`, set by the element) ──────────────
  * The sider leaves the flow and slides over the content; the layout paints a backdrop. */

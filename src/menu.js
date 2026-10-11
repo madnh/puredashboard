@@ -45,7 +45,7 @@
  * @param {HTMLElement} anchor - Element to position under (usually the trigger button). Gets `aria-haspopup`/`aria-expanded` while open, and focus back on close.
  * @param {Array<Object>} items - Items and groups. Item: `{ label, value?, href?, target?, icon?, shortcut?, danger?, disabled?, checked?, closeOnSelect?, onSelect?, items?, separator? }`. Group: `{ group: label, items, radio?, onSelect? }`.
  * @param {Object} [opts] - `{ placement?: "bottom-start"|"bottom-end"|"top-start"|"top-end"|"right-start"|"left-start", className?: string, labels?: Object, hoverDelay?: number, finalFocus?: boolean, onEdgeNav?: (dir: -1|1) => boolean }`. `onEdgeNav` is called when Arrow{Left,Right} at the root level has no submenu to open/close — `<puredashboard-menubar>` uses it to walk to the adjacent menu.
- * @returns {Promise<*>} Resolves with the picked item's `value`, or `null` if dismissed (Esc / click-outside). The promise also carries `.close(value?)` and `.el` (the root popup) so a caller can drive it (e.g. a menubar).
+ * @returns {Promise<*>} Resolves with the picked item's `value`, or `null` if dismissed (Esc / click-outside / a press on the anchor). The promise also carries `.close(value?)` and `.el` (the root popup) so a caller can drive it (e.g. a menubar). Clicking the anchor of the OPEN menu closes it and does not re-open it: `menu()` called for that anchor from the same click's handler returns an already-resolved `null` (`.el` is `null`), so the usual `btn.onclick = () => menu(btn, …)` wiring toggles.
  *
  * @example
  * const picked = await menu(btn, [
@@ -117,7 +117,35 @@ function leafItems(entries) {
 }
 const isCheckable = (it, radioGroup) => radioGroup != null || typeof it.checked === "boolean";
 
+// Anchors whose open menu was just dismissed by a press ON the anchor. The usual trigger
+// wiring is `button.onclick = () => menu(button, …)`: the pointerdown closes the open
+// menu (light-dismiss — the anchor is outside the popup), then the SAME click's handler
+// would open a fresh one, so the menu never closes from its own button. While an anchor
+// is in this set, `menu()` for it resolves null at once instead of re-opening; the entry
+// clears once the gesture's click has run (or the gesture is cancelled).
+const reclick = new WeakSet();
+function suppressReopen(anchor) {
+  reclick.add(anchor);
+  let timer = 0;
+  const clear = () => {
+    clearTimeout(timer);
+    window.removeEventListener("click", clear);
+    window.removeEventListener("pointercancel", clear);
+    reclick.delete(anchor);
+  };
+  window.addEventListener("click", clear);
+  window.addEventListener("pointercancel", clear);
+  timer = setTimeout(clear, 1000);    // a press with no click (released off-screen)
+}
+
 export function menu(anchor, items, opts = {}) {
+  // The click that dismissed this anchor's open menu must not open it again.
+  if (anchor && reclick.has(anchor)) {
+    const settled = Promise.resolve(null);
+    settled.close = () => {};
+    settled.el = null;
+    return settled;
+  }
   const labels = { ...LABELS, ...(opts.labels || {}) };
   const hoverDelay = opts.hoverDelay ?? 120;
   const levels = [];                 // open levels; [0] = root popup
@@ -132,6 +160,7 @@ export function menu(anchor, items, opts = {}) {
     document.removeEventListener("keydown", onKey, true);
     document.removeEventListener("pointerdown", onOutside, true);
     if (anchor) {
+      anchor.removeEventListener("pointerdown", onAnchorDown, true);
       anchor.removeAttribute("aria-expanded");
       if (anchor.dataset && anchor.dataset.pdMenuHaspopup === "1") { anchor.removeAttribute("aria-haspopup"); delete anchor.dataset.pdMenuHaspopup; }
       if (opts.finalFocus !== false && anchor.isConnected && typeof anchor.focus === "function") anchor.focus();
@@ -377,14 +406,17 @@ export function menu(anchor, items, opts = {}) {
   function edgeNav(dir) { return !!(opts.onEdgeNav && opts.onEdgeNav(dir) !== false); }
 
   function onOutside(e) {
-    if (levels.some((lv) => lv.el.contains(e.target)) || e.target === anchor) return;
+    if (levels.some((lv) => lv.el.contains(e.target)) || (anchor && anchor.contains(e.target))) return;
     closeAll(null);
   }
+  // A press on the anchor of THIS open menu closes it (and keeps the click from re-opening it).
+  function onAnchorDown() { suppressReopen(anchor); closeAll(null); }
 
   // ------------------------------------------------------------------- launch
   if (anchor) {
     if (!anchor.hasAttribute("aria-haspopup")) { anchor.setAttribute("aria-haspopup", "menu"); if (anchor.dataset) anchor.dataset.pdMenuHaspopup = "1"; }
     anchor.setAttribute("aria-expanded", "true");
+    anchor.addEventListener("pointerdown", onAnchorDown, true);
   }
   const root = openLevel(items, { anchorEl: anchor, placement: opts.placement || "bottom-start", focusFirst: true });
 

@@ -269,5 +269,23 @@ const ICON = '<svg viewBox="0 0 16 16"><path d="M0 0h16v16H0z"/></svg>';
   ok((await p) === "forced", "close(value): resolves with the forced value");
 }
 
+// ============================ clicking the open menu's anchor closes it, no re-open
+{
+  const a = anchorEl();
+  let opened = 0, first = null;
+  // the usual trigger wiring: every click asks for a menu
+  a.addEventListener("click", () => { opened++; const p = menu(a, [{ label: "A", value: "a" }]); if (!first) first = p; });
+  a.click();
+  ok(roots().length === 1 && a.getAttribute("aria-expanded") === "true", "re-click: first click opens the menu");
+  a.dispatchEvent(new w.Event("pointerdown", { bubbles: true }));   // the press that light-dismisses
+  ok(roots().length === 0, "re-click: pressing the anchor closes the open menu");
+  a.click();                                                          // the same gesture's click
+  ok(opened === 2 && roots().length === 0, "re-click: the click's handler ran but no menu re-opened");
+  ok((await first) === null && !a.hasAttribute("aria-expanded"), "re-click: the first promise resolved null, anchor aria cleaned up");
+  a.click();                                                          // a NEW gesture
+  ok(roots().length === 1, "re-click: the next click opens again");
+  root().remove(); // tidy (the popup is torn down with its promise when the page goes away)
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

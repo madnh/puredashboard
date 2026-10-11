@@ -52,6 +52,9 @@ void mod;
   ok(/puredashboard-layout\s*\{[^}]*flex-direction:\s*column/.test(css), "layout stacks (column) by default");
   ok(/:has\(>\s*puredashboard-sider\)/.test(css), "layout becomes a row when it has a direct sider (:has)");
   ok(/puredashboard-header\s*\{[^}]*display:\s*flex/.test(css), "header renders as a flex bar");
+  ok(/\.puredashboard-header__center\s*\{[^}]*flex:\s*1 1 auto;[^}]*justify-content:\s*center/.test(css), "header __center takes the slack and centres");
+  ok(/\.puredashboard-header__end\s*\{[^}]*margin-inline-start:\s*auto/.test(css), "header __end hugs the right");
+  ok(/\.puredashboard-header__start,\s*\.puredashboard-header__center,\s*\.puredashboard-header__end\s*\{[^}]*display:\s*flex/.test(css), "all three header sections are flex rows");
   ok(/puredashboard-content\s*\{[^}]*overflow:\s*auto/.test(css), "content scrolls its overflow");
 }
 
@@ -63,6 +66,11 @@ void mod;
   ok(lay.hasAttribute("has-sider"), "hasSider=true reflects to the has-sider attribute");
   lay.hasSider = false;
   ok(!lay.hasAttribute("has-sider"), "hasSider=false removes the attribute");
+  ok(lay.plain === false, "plain defaults to false");
+  lay.plain = true;
+  ok(lay.hasAttribute("plain"), "plain=true reflects to the attribute");
+  lay.plain = false;
+  ok(!lay.hasAttribute("plain"), "plain=false removes the attribute");
 }
 
 // ---- sider preserves children by moving them into an inner scroll region ----
@@ -159,6 +167,7 @@ void mod;
 {
   ok(typeof window.matchMedia !== "function", "sanity: jsdom has no matchMedia");
   const sider = mount("puredashboard-sider");
+  ok(sider.breakpointMatches === false, "breakpointMatches is false without matchMedia");
   let threw = false;
   try { sider.breakpoint = "md"; } catch { threw = true; }
   ok(!threw, "setting breakpoint does not throw when matchMedia is unavailable");
@@ -183,6 +192,8 @@ void mod;
   ok(/puredashboard-sider\[collapsed\] \.puredashboard-sider__expanded-only\s*\{\s*display:\s*none !important/.test(css), "collapsed: author content marked expanded-only is hidden");
   ok(/puredashboard-sider\[variant="floating"\]\s*\{[^}]*border-radius/.test(css), "floating variant is a rounded card");
   ok(/puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-content/.test(css), "inset variant turns the sibling content into the card");
+  ok(/> puredashboard-layout:not\(\[plain\]\),\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-content,\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-layout:not\(\[plain\]\)\s*\{/.test(css), "a plain nested layout is not the card; the content or the layout inside it is");
+  ok(/> puredashboard-layout\[plain\] > puredashboard-header\s*\{[^}]*background:\s*transparent;[^}]*border-bottom:\s*0/.test(css), "the plain layout's header is a bare toolbar (no panel, no border)");
   ok(/puredashboard-sider\[overlay\]\s*\{[^}]*position:\s*absolute/.test(css), "overlay (drawer) takes the sider out of the flow");
   ok(/puredashboard-layout:has\(> puredashboard-sider\[overlay\]\)::after/.test(css), "the layout paints a backdrop behind an open drawer");
   const tokens = readFileSync(new URL("../src/theme/tokens.css", import.meta.url), "utf8");
@@ -243,6 +254,23 @@ void mod;
   ok(sider.shortcut === "k", "shortcut is lower-cased");
   sider.shortcut = "";
   ok(!sider.hasAttribute("shortcut") && sider.shortcut === "", "clearing shortcut removes the attribute");
+}
+
+// ---- trigger look: bar by default, a centred button for inset (or on request) ----
+{
+  const sider = mount("puredashboard-sider");
+  ok(sider.trigger === "bar", "trigger defaults to the full-width bar");
+  sider.variant = "inset";
+  ok(sider.trigger === "button", "the inset variant defaults to the centred button");
+  sider.trigger = "bar";
+  ok(sider.getAttribute("trigger") === "bar" && sider.trigger === "bar", "trigger='bar' overrides the inset default");
+  sider.trigger = "";
+  sider.variant = "";
+  sider.trigger = "button";
+  ok(sider.trigger === "button", "trigger='button' works on the flush variant too");
+  const css = readFileSync(new URL("../src/layout.css", import.meta.url), "utf8");
+  ok(/puredashboard-sider\[trigger="button"\] \.puredashboard-sider__trigger,\s*puredashboard-sider\[variant="inset"\]:not\(\[trigger="bar"\]\) \.puredashboard-sider__trigger\s*\{[^}]*align-self:\s*center/.test(css), "CSS: button trigger is centred, and inset gets it unless trigger=bar");
+  ok(/puredashboard-sider\[trigger="button"\] \.puredashboard-sider__trigger,[^{]*\{[^}]*border:\s*0/.test(css), "CSS: button trigger drops the strip border");
 }
 
 // ---- collapsible="offcanvas" collapses to 0 width ----
@@ -342,6 +370,154 @@ void mod;
   } finally {
     delete w.matchMedia;
   }
+}
+
+// ---- breakpoint-collapse="offcanvas": nothing below the breakpoint, the rail above it ----
+{
+  let listener = null, matches = true;
+  w.matchMedia = () => ({ get matches() { return matches; }, addEventListener: (_t, fn) => { listener = fn; }, removeEventListener: () => { listener = null; } });
+  try {
+    const lay = mount("puredashboard-layout");
+    const main = document.createElement("puredashboard-content");
+    const sider = document.createElement("puredashboard-sider");
+    const link = document.createElement("a"); link.href = "#/y"; link.textContent = "y";
+    sider.appendChild(link);
+    sider.setAttribute("collapsible", "");
+    sider.setAttribute("rail", "");
+    sider.setAttribute("collapsed", "");             // the desktop choice: the icon rail
+    sider.setAttribute("breakpoint-collapse", "offcanvas");
+    lay.append(sider, main);
+    sider.breakpoint = "md";
+    ok(sider.breakpointCollapse === "offcanvas", "breakpoint-collapse attribute reflected to breakpointCollapse");
+    ok(sider.collapsed && sider.style.getPropertyValue("--pd-sider-w") === "0px", "breakpoint matched + offcanvas: width 0");
+    ok(sider.collapseMode === "offcanvas", "breakpoint matched + offcanvas: collapseMode reads offcanvas");
+    ok(sider.hasAttribute("closed"), "width 0 sets the closed state attribute");
+    const trigger = sider.querySelector(".js-puredashboard-sider__trigger");
+    const rail = sider.querySelector(".js-puredashboard-sider__rail");
+    const inner = sider.querySelector(".puredashboard-sider__inner");
+    ok(trigger.hasAttribute("inert") && inner.hasAttribute("inert"), "closed: trigger and scroll region are inert (not tabbable)");
+    ok(!rail.hasAttribute("inert") && rail.tabIndex === -1, "closed: the rail stays a pointer handle (never tabbable)");
+
+    let n = 0; sider.addEventListener("collapse", () => n++);
+    sider.toggle();
+    ok(sider.hasAttribute("overlay") && !sider.collapsed && n === 1, "toggle() below the breakpoint opens the drawer + emits");
+    ok(sider.style.getPropertyValue("--pd-sider-w") === "220px" && !sider.hasAttribute("closed"), "the drawer is full width and no longer closed");
+    ok(!trigger.hasAttribute("inert") && !inner.hasAttribute("inert"), "open: regions are reachable again");
+    ok(main.hasAttribute("inert"), "open drawer: the layout sibling beside it is inert");
+    const esc = new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    esc.preventDefault();
+    document.dispatchEvent(esc);
+    ok(sider.hasAttribute("overlay"), "an Escape something else consumed (defaultPrevented) leaves the drawer open");
+    document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    ok(!sider.hasAttribute("overlay") && sider.collapsed && n === 2, "Escape closes the drawer + emits");
+    ok(!main.hasAttribute("inert"), "closed drawer: the sibling is reachable again");
+    ok(sider.style.getPropertyValue("--pd-sider-w") === "0px" && sider.hasAttribute("closed"), "closed again: width 0");
+
+    sider.setAttribute("breakpoint-collapse", "icon");
+    ok(sider.style.getPropertyValue("--pd-sider-w") === "64px" && sider.collapseMode === "icon" && !sider.hasAttribute("closed"), "changing the attribute re-applies the width (icon = 64)");
+    sider.breakpointCollapse = "offcanvas";
+    ok(sider.getAttribute("breakpoint-collapse") === "offcanvas" && sider.style.getPropertyValue("--pd-sider-w") === "0px", "breakpointCollapse property reflects and re-applies");
+
+    ok(sider.breakpointMatches === true, "breakpointMatches reads true below the breakpoint");
+    const bps = []; sider.addEventListener("breakpoint", (e) => bps.push(e.detail));
+    matches = false; listener({ matches: false });
+    ok(sider.breakpointMatches === false, "breakpointMatches reads false above it");
+    ok(bps.length === 1 && bps[0].matches === false && bps[0].collapsed === true && bps[0].collapseMode === "icon", "a media flip fires `breakpoint` { matches, collapsed, collapseMode } even though collapsed did not change");
+    ok(sider.collapsed === true, "growing past the breakpoint restores the pre-breakpoint state (collapsed)");
+    ok(sider.style.getPropertyValue("--pd-sider-w") === "64px" && sider.collapseMode === "icon", "media flips to wide: width 64, collapseMode icon");
+    ok(!sider.hasAttribute("closed") && !trigger.hasAttribute("inert"), "wide: no longer closed, trigger tabbable");
+    sider.toggle();
+    ok(sider.collapsed === false && n === 3, "above the breakpoint toggle() expands normally");
+    matches = true; listener({ matches: true });
+    ok(sider.collapsed && sider.style.getPropertyValue("--pd-sider-w") === "0px", "shrinking again: width 0");
+    ok(bps.length === 2 && bps[1].matches === true && bps[1].collapseMode === "offcanvas", "shrinking fires `breakpoint` with collapseMode offcanvas");
+    matches = false; listener({ matches: false });
+    ok(sider.collapsed === false && sider.style.getPropertyValue("--pd-sider-w") === "220px", "and leaving restores the expanded state held before");
+
+    // default value unchanged from v0.3.0: the icon rail below the breakpoint
+    const plain = document.createElement("puredashboard-sider");
+    plain.setAttribute("collapsible", "");
+    lay.appendChild(plain);
+    matches = true;
+    plain.breakpoint = "md";
+    ok(plain.breakpointCollapse === "icon" && plain.style.getPropertyValue("--pd-sider-w") === "64px" && !plain.hasAttribute("closed"), "default breakpointCollapse is icon: 64px below the breakpoint");
+
+    // parsed markup: the attribute callbacks collapse it BEFORE connectedCallback re-runs the
+    // media setup — the remembered pre-breakpoint state must still be "expanded"
+    const host = document.createElement("div");
+    lay.appendChild(host);
+    host.innerHTML = `<puredashboard-sider collapsible breakpoint="md" breakpoint-collapse="offcanvas"></puredashboard-sider>`;
+    const parsed = host.firstElementChild;
+    ok(parsed.collapsed && parsed.hasAttribute("closed"), "parsed under a matching breakpoint: starts closed");
+    matches = false; listener({ matches: false });
+    ok(parsed.collapsed === false && parsed.style.getPropertyValue("--pd-sider-w") === "220px", "leaving the breakpoint expands a parsed sider that was never collapsed by the author (measured in Chrome: it stayed collapsed)");
+    matches = true;
+  } finally {
+    delete w.matchMedia;
+  }
+}
+
+// ---- persist below the breakpoint is transient ----
+{
+  let listener = null, matches = true;
+  w.matchMedia = () => ({ get matches() { return matches; }, addEventListener: (_t, fn) => { listener = fn; }, removeEventListener: () => { listener = null; } });
+  try {
+    localStorage.setItem("puredashboard-sider:bp", "collapsed");
+    const lay = mount("puredashboard-layout");
+    const sider = document.createElement("puredashboard-sider");
+    const link = document.createElement("a"); link.href = "#/z"; link.textContent = "z";
+    sider.appendChild(link);
+    sider.setAttribute("persist", "bp");
+    sider.setAttribute("collapsible", "");
+    sider.setAttribute("breakpoint", "md");
+    lay.appendChild(sider);
+    ok(sider.collapsed === true, "persisted collapsed + breakpoint matched: mounted collapsed");
+    sider.toggle();
+    ok(sider.hasAttribute("overlay") && localStorage.getItem("puredashboard-sider:bp") === "collapsed", "opening the drawer does not overwrite the stored value");
+    link.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+    ok(sider.collapsed && localStorage.getItem("puredashboard-sider:bp") === "collapsed", "closing it via a link leaves the stored value alone");
+    sider.querySelector(".js-puredashboard-sider__trigger").click();
+    sider.querySelector(".js-puredashboard-sider__trigger").click();
+    ok(sider.collapsed && localStorage.getItem("puredashboard-sider:bp") === "collapsed", "the trigger inside the drawer does not store either");
+    sider.toggle();                                   // leave the drawer OPEN, then grow
+    matches = false; listener({ matches: false });
+    ok(sider.collapsed === true, "growing past the breakpoint restores the persisted choice, not the drawer state");
+    sider.toggle();
+    ok(localStorage.getItem("puredashboard-sider:bp") === "expanded", "above the breakpoint toggling stores as before");
+    localStorage.removeItem("puredashboard-sider:bp");
+  } finally {
+    delete w.matchMedia;
+  }
+}
+
+// ---- parsed markup that starts closed: `inert` lands on the regions, never on the author's nodes ----
+{
+  document.body.innerHTML = `<puredashboard-sider collapsible="offcanvas" collapsed><div slot="header"><b>Acme</b></div><puredashboard-nav></puredashboard-nav><a href="#/q">q</a></puredashboard-sider>`;
+  const sider = document.body.firstElementChild;
+  const nav = sider.querySelector("puredashboard-nav");
+  const link = sider.querySelector("a[href]");
+  ok(sider.hasAttribute("closed"), "parsed offcanvas+collapsed starts closed");
+  ok(!nav.hasAttribute("inert") && !link.hasAttribute("inert") && !sider.querySelector("[slot=header]").hasAttribute("inert"), "author children carry no inert of their own (measured in Chrome: a stale inert on the nav made the drawer's links unfocusable)");
+  ok(sider.querySelector(".puredashboard-sider__inner").hasAttribute("inert"), "the region around them is the inert one");
+  sider.collapsed = false;
+  ok(!link.closest("[inert]"), "expanded: no inert ancestor is left between the link and the sider");
+}
+
+// ---- any 0-width collapse is `closed` (offcanvas mode, collapsed-width="0"); CSS contract ----
+{
+  const off = mount("puredashboard-sider");
+  off.collapsible = "offcanvas";
+  off.collapsed = true;
+  ok(off.hasAttribute("closed") && off.querySelector(".js-puredashboard-sider__trigger").hasAttribute("inert"), "collapsible=offcanvas collapsed: closed, trigger inert");
+  off.collapsed = false;
+  ok(!off.hasAttribute("closed") && !off.querySelector(".js-puredashboard-sider__trigger").hasAttribute("inert"), "expanded: closed cleared, trigger reachable");
+  const zero = mount("puredashboard-sider");
+  zero.collapsedWidth = 0;
+  zero.collapsed = true;
+  ok(zero.hasAttribute("closed") && zero.querySelector(".puredashboard-sider__inner").hasAttribute("inert"), "collapsed-width=0 in icon mode: closed too");
+  const css = readFileSync(new URL("../src/layout.css", import.meta.url), "utf8");
+  ok(/puredashboard-sider\[closed\]\s*\{[^}]*border-inline-end-width:\s*0/.test(css), "closed: the edge border is dropped (no 1px line at width 0)");
+  ok(/puredashboard-sider\[closed\] > :not\(\.puredashboard-sider__rail\)\s*\{\s*visibility:\s*hidden/.test(css), "closed: every region but the rail is hidden (the trigger does not spill out)");
 }
 
 console.log(`layout.test.mjs: ${pass} passed, ${fail} failed`);

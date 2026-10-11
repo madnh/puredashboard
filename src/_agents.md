@@ -131,6 +131,10 @@ const picked = await menu(anchorEl, [
   ArrowRight/ArrowLeft (or Enter/Esc) to enter/leave a submenu.
 - The returned promise also carries `.close(value?)` and `.el` so a caller (e.g. a
   menubar) can drive the open menu.
+- Wire the trigger as `btn.onclick = () => menu(btn, …)` and nothing else: a click on the
+  anchor of the **open** menu closes it (the promise resolves `null`) and the same click
+  does **not** re-open it — `menu()` then returns an already-resolved `null` (`.el` is
+  `null`). Do not add your own "is it open" toggle.
 
 **Overflow menus (keep a busy UI tidy).** Show the one or two frequent actions and
 collapse the rest behind a single icon trigger — a **kebab `⋯`** for one row/card's own
@@ -174,6 +178,10 @@ router.start();
 // No page files? Inline it: load: () => Promise.resolve({ default: (o) => {…} })
 ```
 Use real `<a href="#/nodes/web">` links; the router only *reacts* to navigation.
+Hooks: `beforeEach(ctx)` (return `false` to cancel, a path to redirect) runs before the
+page module loads; `afterEach(ctx, hit)` runs once it has loaded — the navigation is
+committed, `router.current` is the new hit, the page mounts right after (before the
+view-transition swap). Load failures go to `onError(e, hit)`, not to `afterEach`.
 
 ### Untrusted / rich text
 ```js
@@ -393,7 +401,7 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-space` | `direction`, `size`, `align`, `justify`, `wrap` | — | flex gap container; children stay flex items; `hidden` attr hides it |
 | `puredashboard-flex` | `vertical`, `justify`, `align`, `wrap`, `gap` | — | thin flexbox wrapper; children stay flex items |
 | `puredashboard-row` / `puredashboard-col` | row: `gutter`,`align`,`justify` · col: `span`(1-24),`offset`,`xs/sm/md/lg/xl` | — | 24-column grid |
-| `puredashboard-layout` + `-header`/`-sider`/`-content`/`-footer` | sider: `width`, `collapsedWidth`, `collapsible` (attr value `offcanvas` = slide out fully), `collapsed`, `breakpoint`, `variant` (`floating`\|`inset`), `rail`, `shortcut` (Cmd/Ctrl+key), `persist` (localStorage name) | sider `collapse`{collapsed} | page scaffold; auto side-by-side when a `-sider` is present; sider children with `slot="header"`/`slot="footer"` become sticky regions (brand on top, user menu below), the rest scrolls; sider self-adds a collapse trigger; a `<puredashboard-nav>` inside is inset (`--pd-sider-nav-inset`) and gets `icon-only` while `collapsed`; `.puredashboard-sider__expanded-only` hides brand/user text in the rail; below `breakpoint` an expanded sider is a drawer over the content (`overlay`); themed by `--sidebar-*` tokens |
+| `puredashboard-layout` + `-header`/`-sider`/`-content`/`-footer` | sider: `width`, `collapsedWidth`, `collapsible` (attr value `offcanvas` = slide out fully), `collapsed`, `breakpoint`, `breakpointCollapse` (`icon`\|`offcanvas`: what it collapses to BELOW the breakpoint), `breakpointMatches` (read-only), `variant` (`floating`\|`inset`), `trigger` (`bar`\|`button`: full strip or a centred icon button; inset defaults to button), `rail`, `shortcut` (Cmd/Ctrl+key), `persist` (localStorage name; written only above the breakpoint) | sider `collapse`{collapsed}, `breakpoint`{matches,collapsed,collapseMode} on each media flip | page scaffold; auto side-by-side when a `-sider` is present; header children wrapped in `.puredashboard-header__start` / `__center` / `__end` split the bar (left hug / centred slack / right hug); beside an inset sider the nested layout is the card unless it is `plain` (then its header is a bare toolbar and its content is the card); sider children with `slot="header"`/`slot="footer"` become sticky regions (brand on top, user menu below), the rest scrolls; sider self-adds a collapse trigger; a `<puredashboard-nav>` inside is inset (`--pd-sider-nav-inset`) and gets `icon-only` while `collapsed`; `.puredashboard-sider__expanded-only` hides brand/user text in the rail; below `breakpoint` an expanded sider is a modal drawer over the content (`overlay`; siblings `inert`, Escape/backdrop/link close it, leaving the breakpoint restores the earlier state); collapsed to width 0 = `closed` (regions `inert` + hidden, no border — rail/shortcut/your button bring it back); phone shell = `breakpoint="md" breakpoint-collapse="offcanvas"` + a header hamburger calling `toggle()`; themed by `--sidebar-*` tokens |
 | `puredashboard-splitter` | `vertical`, `minSize`, `gutterSize` | `resize`{sizes} | adopts direct children as panels; drag gutters between them |
 | `puredashboard-titlebar` | `platform`(mac/windows/linux), `title`, `controls`, `maximized` | `minimize`, `maximizetoggle`, `close` (bubble+composed) | custom titlebar for frameless Tauri/Wails/Electron; whole bar is an OS drag region; slot children via `data-titlebar-leading`/`-center`/`-trailing` |
 | `puredashboard-segmented` | `options`, `value`, `size`, `block`, `disabled` | `change`{value} | single-select button group |

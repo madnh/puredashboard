@@ -153,6 +153,25 @@ export default {
       return bar;
     } },
 
+    { name: "Toggle from its button", notes: "the plain `btn.onclick = () => menu(btn, …)` wiring toggles: clicking the button of the OPEN menu closes it (resolves null) and does NOT re-open it — the counter below shows how many menus actually opened and what the last one resolved", render: () => {
+      let opened = 0, resolved = "–";
+      const status = el("span", { className: "js-story-menu-toggle-status", style: "font-size:var(--font-size-sm,12px);color:var(--muted,#99a0ad)" });
+      const show = () => { status.textContent = `opened: ${opened} · last resolved: ${resolved}`; };
+      show();
+      const btn = trigger("Menu ▾", (b) => {
+        const p = menu(b, [
+          { label: "Rename", value: "rename", icon: ICON_PENCIL },
+          { label: "Duplicate", value: "dup", icon: ICON_COPY },
+          { separator: true },
+          { label: "Delete", value: "delete", icon: ICON_TRASH, danger: true },
+        ]);
+        if (p.el) opened++;                           // an already-resolved null (re-click) opens nothing
+        show();
+        p.then((v) => { resolved = String(v); show(); log("menu picked:")(v); });
+      });
+      return hstack([btn, status]);
+    } },
+
     { name: "Disabled & placement", notes: "disabled items are skipped by the keyboard; placement aligns the popup", render: () =>
       hstack([
         trigger("bottom-start ▾", (btn) => menu(btn, [

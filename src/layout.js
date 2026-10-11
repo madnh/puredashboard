@@ -76,6 +76,13 @@ function chevronIcon() {
  * Set the `hasSider` boolean (attribute `has-sider`) to force the row layout
  * regardless (e.g. for a sider added asynchronously).
  *
+ * Beside a `variant="inset"` sider, the nested layout (or a bare content) becomes the
+ * raised card. Mark that nested layout `plain` to keep IT on the page background: its
+ * header then sheds the panel and border (a bare toolbar above the card) and what is
+ * inside it is the card instead — a bare `<puredashboard-content>`, or a nested layout
+ * that keeps its own header (title bar) and content within the card — the "toolbar
+ * above the inset".
+ *
  * Preserves author children untouched — place any of `<puredashboard-header>`,
  * `<puredashboard-content>`, `<puredashboard-footer>`, `<puredashboard-sider>`,
  * or your own markup inside it.
@@ -83,7 +90,9 @@ function chevronIcon() {
  * @element puredashboard-layout
  *
  * @prop {boolean} hasSider - Force the horizontal (row) layout. Default `false`.
+ * @prop {boolean} plain    - Beside an inset sider: this nested layout is NOT the card — its header is a bare toolbar and the content (or nested layout) inside becomes the card. Default `false`.
  * @attr {boolean} has-sider - Declarative form of `hasSider`.
+ * @attr {boolean} plain    - Declarative form of `plain`.
  *
  * @cssprop [--pd-layout-bg] - Frame background (defaults to `--bg`, then transparent).
  *
@@ -101,6 +110,7 @@ class PuredashboardLayout extends HTMLElement {
   constructor() {
     super();
     this._upgrade("hasSider");
+    this._upgrade("plain");
   }
 
   // Reconcile a property set BEFORE upgrade (a template engine may assign it),
@@ -111,13 +121,19 @@ class PuredashboardLayout extends HTMLElement {
 
   get hasSider() { return this.hasAttribute("has-sider"); }
   set hasSider(v) { if (v) this.setAttribute("has-sider", ""); else this.removeAttribute("has-sider"); }
+
+  get plain() { return this.hasAttribute("plain"); }
+  set plain(v) { if (v) this.setAttribute("plain", ""); else this.removeAttribute("plain"); }
 }
 
 /**
  * The top bar of a layout — a fixed-height horizontal flex row with `--panel`
  * background and a bottom border. Preserves author children (brand, nav,
- * actions); lay them out with the flex it provides (add `margin-inline-start:auto`
- * to a child to push it to the right).
+ * actions); lay them out with the flex it provides. To split the bar into sections,
+ * wrap children in `puredashboard-header__start` (hugs the left: sider toggle,
+ * breadcrumb), `puredashboard-header__center` (takes the slack and centres: search,
+ * tabs) and `puredashboard-header__end` (hugs the right: actions, user menu) — any of
+ * the three may be omitted; a bare child with `margin-inline-start:auto` still works.
  *
  * @element puredashboard-header
  *
@@ -126,8 +142,9 @@ class PuredashboardLayout extends HTMLElement {
  *
  * @example
  * // <puredashboard-header>
- * //   <strong>Acme Admin</strong>
- * //   <nav style="margin-inline-start:auto">…</nav>
+ * //   <div class="puredashboard-header__start"><button aria-label="Toggle sidebar">☰</button><puredashboard-breadcrumb></puredashboard-breadcrumb></div>
+ * //   <div class="puredashboard-header__center"><puredashboard-input type="search" placeholder="Search…"></puredashboard-input></div>
+ * //   <div class="puredashboard-header__end"><puredashboard-badge count="3"><button>Inbox</button></puredashboard-badge><puredashboard-avatar name="Ada"></puredashboard-avatar></div>
  * // </puredashboard-header>
  */
 class PuredashboardHeader extends HTMLElement {}
@@ -180,36 +197,56 @@ class PuredashboardFooter extends HTMLElement {}
  * auto-collapses the sider below that width (feature-detected — a no-op where
  * `matchMedia` is unavailable); expanding it again there (trigger, rail, shortcut or
  * `toggle()`) opens it as a DRAWER over the content (`overlay` attribute, set by the
- * element): the layout gets a backdrop, and clicking it, pressing Escape or following
- * a link inside closes the drawer.
+ * element): the layout gets a backdrop, the sider's layout siblings become `inert`, and
+ * clicking the backdrop, pressing Escape (unless something already handled it —
+ * `defaultPrevented`, e.g. an open menu) or following a link inside closes the drawer.
+ * Below the breakpoint the collapsed state is transient: `persist` is neither written
+ * there nor overridden by it, and growing past the breakpoint restores the state held
+ * before it matched (the persisted one when `persist` is set). `breakpoint-collapse=
+ * "offcanvas"` makes the sider disappear entirely below the breakpoint (width `0`)
+ * instead of leaving the icon rail — the usual "rail on desktop, hamburger + drawer on
+ * phones" shell, with your header button calling `toggle()`.
+ *
+ * Whenever the sider is collapsed to width `0` (that mode, `collapsible="offcanvas"`,
+ * or `collapsed-width="0"`) it carries the `closed` state attribute: its header, scroll
+ * region, footer and trigger are `inert` and hidden, so nothing inside is reachable by
+ * Tab or pointer, and the edge border is dropped. Only the `rail` (a pointer handle) and
+ * the keyboard `shortcut` remain as ways back in — or your own button.
  *
  * @element puredashboard-sider
  *
  * @prop {number}  width          - Expanded width in px. Default `220`.
  * @prop {number}  collapsedWidth - Collapsed width in px (icon rail). Default `64`. Ignored by `collapsible="offcanvas"` (collapses to `0`).
  * @prop {boolean} collapsible    - Render a collapse trigger button (and allow collapsing). Default `false`.
- * @prop {string}  collapseMode   - Read-only: `"icon"` (collapses to the icon rail) or `"offcanvas"` (slides out completely; pair with `rail` or your own toggle). Set via the `collapsible` attribute's value.
+ * @prop {string}  collapseMode   - Read-only: `"icon"` (collapses to the icon rail) or `"offcanvas"` (slides out completely; pair with `rail` or your own toggle). Set via the `collapsible` attribute's value; reads `"offcanvas"` while the breakpoint matches and `breakpointCollapse` is `"offcanvas"`.
  * @prop {boolean} collapsed      - Collapsed state (reflected to the `collapsed` attribute). Default `false`.
  * @prop {string}  breakpoint     - `"sm"` | `"md"` | `"lg"` — auto-collapse below this width; below it an expanded sider is a drawer. Default `""` (off).
+ * @prop {boolean} breakpointMatches - Read-only: the viewport is currently below `breakpoint` (always `false` without one or without `matchMedia`).
+ * @prop {string}  breakpointCollapse - How the sider collapses BELOW the breakpoint: `"icon"` (the icon rail, default) or `"offcanvas"` (width `0`, nothing shown; open it as a drawer with `toggle()` from a header button). Above the breakpoint the `collapsible` mode applies.
  * @prop {string}  variant        - `""` (flush panel with an edge border, default) | `"floating"` (a rounded, bordered, shadowed card inset from the layout edges) | `"inset"` (the sider sits on the layout background and the CONTENT beside it becomes the inset card).
+ * @prop {string}  trigger        - How the collapse trigger looks: `"bar"` (a full-width strip with a top border, default) | `"button"` (a small centred icon button, no strip — reads right on a transparent or card sider). Unset, `variant="inset"` uses `"button"`, everything else `"bar"`.
  * @prop {boolean} rail           - Add a thin toggle handle along the sider's outer edge (shadcn SidebarRail): hover shows a line, click toggles. Default `false`.
  * @prop {string}  shortcut       - A key that toggles the sider with Cmd (macOS) / Ctrl held, e.g. `"b"`. Default `""` (off); the bare attribute means `"b"`.
- * @prop {string}  persist        - A name under which the collapsed state is remembered in `localStorage` (`puredashboard-sider:<name>`) and restored on connect. Default `""` (off). A breakpoint match still wins while it holds.
+ * @prop {string}  persist        - A name under which the collapsed state is remembered in `localStorage` (`puredashboard-sider:<name>`) and restored on connect. Default `""` (off). Only choices made ABOVE the breakpoint are stored; opening/closing the drawer below it leaves the stored value alone.
  * @prop {Object}  labels         - Override UI strings. Keys: `expand`, `collapse`, `rail`. Unset keys keep the English default.
  * @attr {number}  width          - Declarative form of `width`.
  * @attr {number}  collapsed-width - Declarative form of `collapsedWidth`.
  * @attr {boolean|string} collapsible - Declarative form of `collapsible`; the value `"offcanvas"` selects that collapse mode (`"icon"` or empty = the icon rail).
  * @attr {boolean} collapsed      - Declarative form of `collapsed`.
  * @attr {string}  breakpoint     - Declarative form of `breakpoint`.
+ * @attr {string}  breakpoint-collapse - Declarative form of `breakpointCollapse` (`"icon"` | `"offcanvas"`).
  * @attr {string}  variant        - Declarative form of `variant`.
+ * @attr {string}  trigger        - Declarative form of `trigger`.
  * @attr {boolean} rail           - Declarative form of `rail`.
  * @attr {string}  shortcut       - Declarative form of `shortcut`.
  * @attr {string}  persist        - Declarative form of `persist`.
  * @attr {boolean} overlay        - STATE, set by the element: the sider is open as a drawer below its breakpoint. Do not set it yourself.
+ * @attr {boolean} closed         - STATE, set by the element: the sider is collapsed to width `0` (its regions are `inert` and hidden). Do not set it yourself.
  *
  * @fires collapse - `CustomEvent` (bubbles) when the collapsed state changes via the trigger, rail, shortcut, drawer dismissal, `toggle()`, or a breakpoint. `detail = { collapsed }`.
+ * @fires breakpoint - `CustomEvent` (bubbles) on every media-query flip across `breakpoint` (not on the initial sync), whether or not `collapsed` changed. `detail = { matches, collapsed, collapseMode }` — read `collapseMode` here to show/hide desktop-only UI (a shortcut hint) without your own `matchMedia`.
  *
- * @method toggle - `toggle() => void` — flip `collapsed` and emit `collapse`.
+ * @method toggle - `toggle() => void` — flip `collapsed` and emit `collapse`. Below the breakpoint this opens / closes the drawer without touching `persist`.
  *
  * @cssprop [--pd-sider-w]   - Current width (set inline by the element; do not override).
  * @cssprop [--pd-sider-bg]  - Background (defaults to the theme's `--sidebar-bg`, then `--panel`). The theme's `--sidebar-text` / `--sidebar-muted` / `--sidebar-border` / `--sidebar-hover` / `--sidebar-active` tokens colour the sider and the nav inside it; define them to give the sidebar its own palette.
@@ -224,7 +261,7 @@ class PuredashboardFooter extends HTMLElement {}
  * sider.addEventListener("collapse", (e) => console.log(e.detail.collapsed));
  */
 class PuredashboardSider extends HTMLElement {
-  static get observedAttributes() { return ["width", "collapsed-width", "collapsible", "collapsed", "breakpoint", "rail", "shortcut", "persist"]; }
+  static get observedAttributes() { return ["width", "collapsed-width", "collapsible", "collapsed", "breakpoint", "breakpoint-collapse", "rail", "shortcut", "persist"]; }
 
   constructor() {
     super();
@@ -236,9 +273,12 @@ class PuredashboardSider extends HTMLElement {
     this._rail = null;
     this._mql = null;
     this._onMedia = null;
+    this._bpActive = false;     // the breakpoint currently matches (we collapsed for it)
+    this._beforeBp = false;     // `collapsed` as it stood when the breakpoint last matched
     this._observer = null;
     this._overlayParent = null;
-    for (const p of ["width", "collapsedWidth", "collapsible", "collapsed", "breakpoint", "variant", "rail", "shortcut", "persist", "labels"]) this._upgrade(p);
+    this._inerted = [];         // layout siblings we made inert for the drawer
+    for (const p of ["width", "collapsedWidth", "collapsible", "collapsed", "breakpoint", "breakpointCollapse", "variant", "trigger", "rail", "shortcut", "persist", "labels"]) this._upgrade(p);
   }
 
   _upgrade(p) {
@@ -262,11 +302,24 @@ class PuredashboardSider extends HTMLElement {
   get breakpoint() { return this.getAttribute("breakpoint") || ""; }
   set breakpoint(v) { if (v) this.setAttribute("breakpoint", v); else this.removeAttribute("breakpoint"); }
 
+  get breakpointCollapse() { return (this.getAttribute("breakpoint-collapse") || "").trim() === "offcanvas" ? "offcanvas" : "icon"; }
+  set breakpointCollapse(v) { if (v && v !== "icon") this.setAttribute("breakpoint-collapse", String(v)); else this.removeAttribute("breakpoint-collapse"); }
+
   // `collapsible` stays a boolean (the attribute's presence); its VALUE picks the mode.
-  get collapseMode() { return (this.getAttribute("collapsible") || "").trim() === "offcanvas" ? "offcanvas" : "icon"; }
+  // Below a matching breakpoint, `breakpoint-collapse` takes over.
+  get collapseMode() {
+    if (this._bpMatches() && this.breakpointCollapse === "offcanvas") return "offcanvas";
+    return (this.getAttribute("collapsible") || "").trim() === "offcanvas" ? "offcanvas" : "icon";
+  }
+  _bpMatches() { return !!(this._mql && this._mql.matches); }
+  get breakpointMatches() { return this._bpMatches(); }
 
   get variant() { return this.getAttribute("variant") || ""; }
   set variant(v) { if (v) this.setAttribute("variant", v); else this.removeAttribute("variant"); }
+
+  // The trigger's look; the CSS applies the same default (inset → button) on its own.
+  get trigger() { const v = (this.getAttribute("trigger") || "").trim(); return v === "button" || v === "bar" ? v : (this.variant === "inset" ? "button" : "bar"); }
+  set trigger(v) { if (v) this.setAttribute("trigger", String(v)); else this.removeAttribute("trigger"); }
 
   get rail() { return this.hasAttribute("rail"); }
   set rail(v) { if (v) this.setAttribute("rail", ""); else this.removeAttribute("rail"); }
@@ -296,6 +349,9 @@ class PuredashboardSider extends HTMLElement {
       case "collapsible":
         this._applyWidth();   // offcanvas ↔ icon changes the collapsed width
         this._syncTrigger();
+        break;
+      case "breakpoint-collapse":
+        this._applyWidth();   // only matters while the breakpoint matches
         break;
       case "breakpoint":
         this._setupMedia();
@@ -365,6 +421,21 @@ class PuredashboardSider extends HTMLElement {
   _applyWidth() {
     const w = this.collapsed ? (this.collapseMode === "offcanvas" ? 0 : this.collapsedWidth) : this.width;
     this.style.setProperty("--pd-sider-w", w + "px");
+    this._syncClosed(w === 0);
+  }
+
+  // `closed` = collapsed to nothing. A 0-wide panel must not keep its contents in the
+  // Tab order (measured: 11 stops in a hidden sider) — every region except the pointer
+  // rail is made `inert` (and hidden by CSS). Idempotent; the trigger/rail call it too.
+  _syncClosed(on = this.style.getPropertyValue("--pd-sider-w") === "0px") {
+    // Before _wrap the children are still the AUTHOR's nodes: marking them would leave a
+    // stale `inert` on the nav once they move into the regions. connectedCallback re-runs.
+    if (!this._wrapped) return;
+    if (on !== this.hasAttribute("closed")) this.toggleAttribute("closed", on);
+    for (const c of this.children) {
+      if (c === this._rail) continue;
+      if (c.hasAttribute("inert") !== on) c.toggleAttribute("inert", on);
+    }
   }
 
   // Mirror `collapsed` onto every <puredashboard-nav> inside as `icon-only` (the nav's own
@@ -395,6 +466,7 @@ class PuredashboardSider extends HTMLElement {
       this._rail.remove();
       this._rail = null;
     }
+    this._syncClosed();
   }
 
   // ---- keyboard shortcut: Cmd/Ctrl + <key> toggles ---------------------------
@@ -419,19 +491,26 @@ class PuredashboardSider extends HTMLElement {
   _storage() {
     try { return typeof localStorage !== "undefined" ? localStorage : null; } catch { return null; }
   }
-  _restore() {
+  // The stored choice: true / false, or null when there is none (no `persist`, nothing saved).
+  _stored() {
     const key = this.persist;
-    if (!key || !this._wrapped) return;
+    if (!key) return null;
     const st = this._storage();
-    if (!st) return;
+    if (!st) return null;
     let v = null;
     try { v = st.getItem(PERSIST_PREFIX + key); } catch { /* blocked storage */ }
-    if (v === "collapsed") this.collapsed = true;
-    else if (v === "expanded") this.collapsed = false;
+    return v === "collapsed" ? true : v === "expanded" ? false : null;
   }
+  _restore() {
+    if (!this._wrapped) return;
+    const v = this._stored();
+    if (v !== null) this.collapsed = v;
+  }
+  // Only a choice made ABOVE the breakpoint is worth remembering: below it the sider is a
+  // drawer, and opening it once must not turn a desktop "collapsed" into "expanded".
   _save() {
     const key = this.persist;
-    if (!key) return;
+    if (!key || this._bpMatches()) return;
     const st = this._storage();
     if (!st) return;
     try { st.setItem(PERSIST_PREFIX + key, this.collapsed ? "collapsed" : "expanded"); } catch { /* quota / blocked */ }
@@ -454,6 +533,13 @@ class PuredashboardSider extends HTMLElement {
     parent.addEventListener("click", this._onBackdrop);
     document.addEventListener("keydown", this._onEsc);
     this.addEventListener("click", this._onInnerLink);
+    // A drawer is modal: the content beside it is behind the backdrop, so take it out of
+    // the Tab order and the accessibility tree too (only what we set is restored).
+    for (const c of parent.children) {
+      if (c === this || c.hasAttribute("inert")) continue;
+      c.setAttribute("inert", "");
+      this._inerted.push(c);
+    }
   }
   _overlayOff() {
     const parent = this._overlayParent;
@@ -461,11 +547,14 @@ class PuredashboardSider extends HTMLElement {
     parent.removeEventListener("click", this._onBackdrop);
     document.removeEventListener("keydown", this._onEsc);
     this.removeEventListener("click", this._onInnerLink);
+    for (const c of this._inerted) c.removeAttribute("inert");
+    this._inerted = [];
     this._overlayParent = null;
   }
   _closeDrawer() { if (this.hasAttribute("overlay") && !this.collapsed) { this.collapsed = true; this._emitCollapse(); } }
   _onBackdrop = (e) => { if (e.target === this._overlayParent) this._closeDrawer(); };
-  _onEsc = (e) => { if (e.key === "Escape") this._closeDrawer(); };
+  // An Escape that something else already consumed (an open menu / popover) stays theirs.
+  _onEsc = (e) => { if (e.key === "Escape" && !e.defaultPrevented) this._closeDrawer(); };
   _onInnerLink = (e) => { const a = e.target.closest && e.target.closest("a[href]"); if (a && this.contains(a)) this._closeDrawer(); };
 
   // Add/remove the collapse trigger to match `collapsible`. Kept after the inner
@@ -488,6 +577,7 @@ class PuredashboardSider extends HTMLElement {
       this._trigger.remove();
       this._trigger = null;
     }
+    this._syncClosed();
   }
 
   _updateTriggerLabel() {
@@ -510,19 +600,37 @@ class PuredashboardSider extends HTMLElement {
     const mql = window.matchMedia(`(max-width: ${px - 1}px)`);
     this._mql = mql;
     this._onMedia = (e) => {
-      const collapse = !!e.matches;
-      if (collapse !== this.collapsed) {
-        this.collapsed = collapse;
+      const want = e.matches ? this._enterBp() : this._leaveBp();
+      if (want !== this.collapsed) {
+        this.collapsed = want;
         this._emitCollapse();
       }
+      this._applyWidth();    // `collapseMode` may differ on each side of the breakpoint
       this._syncOverlay();   // crossing the breakpoint while open turns the drawer on/off
+      this.dispatchEvent(new CustomEvent("breakpoint", { bubbles: true, detail: { matches: !!e.matches, collapsed: this.collapsed, collapseMode: this.collapseMode } }));
     };
     if (typeof mql.addEventListener === "function") mql.addEventListener("change", this._onMedia);
     else if (typeof mql.addListener === "function") mql.addListener(this._onMedia); // legacy
     // Apply the current match immediately (quietly — this is initial sync, not a toggle).
     // Only COLLAPSE on a match: above the breakpoint an author-set or persisted `collapsed` stands.
-    if (mql.matches) this.collapsed = true;
+    if (mql.matches) this.collapsed = this._enterBp();
+    this._applyWidth();
     this._syncOverlay();
+  }
+
+  // Entering the breakpoint remembers what the sider was (so leaving it can put that back
+  // instead of always expanding — a desktop `collapsed` choice survives a phone-width
+  // detour); below it the state is transient. Re-entering while already under it (the
+  // breakpoint attribute changed) keeps the remembered value.
+  _enterBp() {
+    if (!this._bpActive) { this._bpActive = true; this._beforeBp = this.collapsed; }
+    return true;
+  }
+  // Leaving it: the persisted choice when there is one, else the remembered state.
+  _leaveBp() {
+    this._bpActive = false;
+    const stored = this._stored();
+    return stored === null ? this._beforeBp : stored;
   }
 
   _teardownMedia() {
@@ -531,6 +639,10 @@ class PuredashboardSider extends HTMLElement {
     else if (typeof this._mql.removeListener === "function") this._mql.removeListener(this._onMedia);
     this._mql = null;
     this._onMedia = null;
+    // `_bpActive` / `_beforeBp` deliberately survive: connectedCallback re-runs _setupMedia
+    // after the attribute callbacks already collapsed us, and the remembered state must be
+    // the one from BEFORE that (measured in Chrome: a reset here made "wide again" restore
+    // `collapsed` for a sider that had been expanded).
   }
 
   _emitCollapse() {

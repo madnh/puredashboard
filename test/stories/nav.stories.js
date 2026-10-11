@@ -59,12 +59,32 @@ const nav = (props = {}) => {
   n.setAttribute("subtle", "");
   return n;
 };
-const frame = (kids, h = 420) => el("div", { style: `height:${h}px;border:1px solid var(--border,#d0d5dd);border-radius:8px;overflow:hidden` }, kids);
+// A fixed-height frame on the page; inside a gallery viewport frame (`only` + fill) the
+// gallery sets --pb-frame-h/-border/-radius so the same story fills the device instead.
+const frame = (kids, h = 420) => el("div", { style: `height:var(--pb-frame-h,${h}px);border:var(--pb-frame-border,1px) solid var(--border,#d0d5dd);border-radius:var(--pb-frame-radius,8px);overflow:hidden` }, kids);
 const para = (s) => el("p", { style: "margin:0 0 12px;color:var(--text,#1a1f2b);font-size:var(--font-size-md,13px)" }, [t(s)]);
 const content = (title, ...ps) => el("puredashboard-content", {}, [
   el("h2", { style: "margin:0 0 12px;font-size:var(--font-size-xl,18px)" }, [t(title)]),
   ...ps.map(para),
 ]);
+
+// The "rail on desktop, hamburger + drawer on phones" shell: breakpoint md, offcanvas below it,
+// a header ☰ that calls toggle() and mirrors the state on aria-expanded.
+const hamburgerShell = () => {
+  const sider = el("puredashboard-sider", { collapsible: true, rail: true, breakpoint: "md", persist: "purebook-hamburger" }, [brand(), nav(), user()]);
+  sider.setAttribute("breakpoint-collapse", "offcanvas");
+  const btn = el("puredashboard-button", { variant: "ghost", "aria-label": "Toggle sidebar", "aria-expanded": sider.collapsed ? "false" : "true" });
+  btn.innerHTML = I.menu;
+  btn.addEventListener("click", () => sider.toggle());
+  sider.addEventListener("collapse", (e) => btn.setAttribute("aria-expanded", e.detail.collapsed ? "false" : "true"));
+  return el("puredashboard-layout", { style: "height:100%" }, [
+    sider,
+    el("puredashboard-layout", { style: "flex:1;min-height:0" }, [
+      el("puredashboard-header", {}, [btn, el("strong", {}, [t("Hamburger")])]),
+      content("Phone shell", "Below 768px the sider disappears instead of leaving a rail, and the hamburger opens it over the content. Above 768px it is the usual collapsible sider with the icon rail."),
+    ]),
+  ]);
+};
 
 export default {
   tag: "puredashboard-nav",
@@ -110,15 +130,51 @@ export default {
         content("Floating sider", "The card keeps its margin while collapsing; the trigger rounds its bottom corners to match."),
       ]), 380);
     } },
-    { name: "Inset", notes: 'variant="inset": the sider sits on the page background and the content beside it becomes the raised card', render: () => {
+    { name: "Inset", notes: 'variant="inset": the sider sits on the page background and the content beside it becomes the raised card. Its header is split into puredashboard-header__start (sider toggle + breadcrumb) / __center (search) / __end (inbox badge, user) — the sider trigger is the centred button by default here', render: () => {
       const sider = el("puredashboard-sider", { collapsible: true, variant: "inset" }, [brand(), nav(), user()]);
+      const toggle = el("puredashboard-button", { variant: "ghost", size: "sm", "aria-label": "Toggle sidebar" });
+      toggle.innerHTML = I.menu;
+      toggle.addEventListener("click", () => sider.toggle());
+      const crumbs = el("puredashboard-breadcrumb", { items: [{ label: "Nodes", href: "#/nodes" }, { label: "DB", href: "#/nodes/db" }, { label: "Overview" }] });
+      const search = el("puredashboard-input", { type: "search", placeholder: "Search nodes…", size: "sm", style: "width:min(320px,100%)" });
+      const inbox = el("puredashboard-badge", { count: 3 }, [el("puredashboard-button", { variant: "ghost", size: "sm", "aria-label": "Inbox, 3 unread" })]);
+      inbox.firstElementChild.innerHTML = I.alert;
+      const me = el("puredashboard-avatar", { name: "Mạnh Đỗ", size: "sm" });
       return frame(el("puredashboard-layout", { style: "height:100%;background:var(--bg,#f4f6fa)" }, [
         sider,
         el("puredashboard-layout", { style: "flex:1;min-height:0" }, [
-          el("puredashboard-header", {}, [el("strong", {}, [t("Inset")])]),
-          content("Inset content", "The nested layout (header + content) is the card; the sider has no edge border."),
+          el("puredashboard-header", {}, [
+            el("div", { className: "puredashboard-header__start" }, [toggle, crumbs]),
+            el("div", { className: "puredashboard-header__center" }, [search]),
+            el("div", { className: "puredashboard-header__end" }, [inbox, me]),
+          ]),
+          content("Inset content", "The nested layout (header + content) is the card; the sider has no edge border. The header's three sections hug the start, centre the middle and hug the end."),
         ]),
       ]), 380);
+    } },
+    { name: "Inset · top header", notes: 'a toolbar ABOVE the inset card: the column beside the inset sider is marked `plain`, so it stays on the page background and its header is a bare toolbar (no panel, no border); the layout below it is the raised card, unchanged from the Inset story — its own header (title) + content', render: () => {
+      const sider = el("puredashboard-sider", { collapsible: true, variant: "inset" }, [brand(), nav(), user()]);
+      const toggle = el("puredashboard-button", { variant: "ghost", size: "sm", "aria-label": "Toggle sidebar" });
+      toggle.innerHTML = I.menu;
+      toggle.addEventListener("click", () => sider.toggle());
+      const crumbs = el("puredashboard-breadcrumb", { items: [{ label: "Nodes", href: "#/nodes" }, { label: "DB", href: "#/nodes/db" }, { label: "Overview" }] });
+      const search = el("puredashboard-input", { type: "search", placeholder: "Search nodes…", size: "sm", style: "width:min(320px,100%)" });
+      const inbox = el("puredashboard-badge", { count: 3 }, [el("puredashboard-button", { variant: "ghost", size: "sm", "aria-label": "Inbox, 3 unread" })]);
+      inbox.firstElementChild.innerHTML = I.alert;
+      const me = el("puredashboard-avatar", { name: "Mạnh Đỗ", size: "sm" });
+      const column = el("puredashboard-layout", { style: "flex:1;min-height:0" }, [
+        el("puredashboard-header", {}, [
+          el("div", { className: "puredashboard-header__start" }, [toggle, crumbs]),
+          el("div", { className: "puredashboard-header__center" }, [search]),
+          el("div", { className: "puredashboard-header__end" }, [inbox, me]),
+        ]),
+        el("puredashboard-layout", { style: "flex:1;min-height:0" }, [
+          el("puredashboard-header", {}, [el("strong", {}, [t("Inset")])]),
+          content("Inset content", "This column is `plain`: the toolbar above sits on the page background with no panel, and this layout (its own header + content) is the inset card, exactly as in the Inset story."),
+        ]),
+      ]);
+      column.setAttribute("plain", "");
+      return frame(el("puredashboard-layout", { style: "height:100%;background:var(--bg,#f4f6fa)" }, [sider, column]), 400);
     } },
     { name: "Offcanvas", notes: 'collapsible="offcanvas" + rail: collapsing slides the sider out completely; bring it back with the rail at the left edge, the header button, or Cmd/Ctrl+B', render: () => {
       const sider = el("puredashboard-sider", { collapsible: "offcanvas", rail: true }, [brand(), nav(), user()]);
@@ -134,6 +190,8 @@ export default {
         ]),
       ]), 380);
     } },
+    { name: "Hamburger", notes: 'breakpoint="md" + breakpoint-collapse="offcanvas": the icon rail on wide screens; narrower than 768px the sider is gone (closed: nothing tabbable, no edge line) and the header hamburger opens it as a modal drawer — Escape, the backdrop or a link closes it. The persisted choice is only written above the breakpoint. This card follows the WINDOW width — use its Phone / Tablet / Desktop switch (or the toolbar Viewport) to frame it', render: () => frame(hamburgerShell(), 380) },
+    { name: "Hamburger · phone", viewport: "phone", notes: "the same shell framed as a phone (a real 390px viewport in an iframe), so the md breakpoint matches for real: the sider is closed, ☰ opens the drawer over the content, Escape / backdrop / a link closes it. Switch the card to Tablet / Desktop to watch it become the icon rail", render: () => el("div", { style: "height:100vh" }, hamburgerShell()) },
     { name: "Loading", notes: "loading=true renders skeleton rows (aria-busy) until items arrive — this story swaps them in after 2.5s", render: () => {
       const n = nav({ loading: true });
       setTimeout(() => { n.loading = false; }, 2500);

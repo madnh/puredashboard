@@ -533,5 +533,54 @@ function layoutLoaders() {
   router.stop();
 }
 
+// ============================ afterEach: fires once the navigation is committed =====
+{
+  const w = install("http://localhost/");
+  document.body.innerHTML = '<div id="view"></div>';
+  const view = document.getElementById("view");
+  const { make } = loaders();
+  const after = [], errors = [];
+  let blockNodes = false, boom = false;
+  const router = new Router({
+    outlet: "#view",
+    mode: "hash",
+    routes: {
+      "/": { title: "Home", load: make("home") },
+      "/nodes": { title: "Nodes", load: make("nodes") },
+      "/broken": { title: "Broken", load: () => Promise.reject(new Error("no module")) },
+      "*": { title: "404", load: make("404") },
+    },
+    beforeEach: (to) => (blockNodes && to.path === "/nodes" ? false : undefined),
+    afterEach: (ctx, hit) => {
+      if (boom) throw new Error("hook failed");
+      after.push({ path: ctx.path, same: ctx.route === hit.route, current: router.current === hit, mounted: view.textContent });
+    },
+    onError: (e) => errors.push(e.message),
+  });
+
+  w.location.hash = "#/";
+  await router.start();
+  ok(after.length === 1 && after[0].path === "/" && after[0].same, "afterEach: called once with (ctx, hit) for the first render");
+  ok(after[0].current === true, "afterEach: router.current already points at the new hit");
+  ok(after[0].mounted === "", "afterEach: runs BEFORE the page is mounted (before the swap)");
+  ok(view.textContent === "home", "afterEach: the page still mounts afterwards");
+
+  blockNodes = true;
+  w.location.hash = "#/nodes";
+  await router.render();
+  ok(after.length === 1 && view.textContent === "home", "afterEach: not called when a guard cancels");
+
+  blockNodes = false;
+  w.location.hash = "#/broken";
+  await router.render();
+  ok(after.length === 1 && errors.length === 1 && errors[0] === "no module", "afterEach: not called when the module fails to load (onError is)");
+
+  boom = true;
+  w.location.hash = "#/nodes";
+  await router.render();
+  ok(errors.length === 2 && errors[1] === "hook failed" && view.textContent === "nodes", "afterEach: a throwing hook goes to onError and the page still mounts");
+  router.stop();
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

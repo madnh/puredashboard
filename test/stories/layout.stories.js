@@ -2,7 +2,7 @@ import { el, t } from "./_util.js";
 
 // Constrain each story to a bordered, fixed-height box so it reads as an app frame.
 const frame = (kids) => el("div", {
-  style: "height:320px;border:1px solid var(--border,#d0d5dd);border-radius:8px;overflow:hidden",
+  style: "height:var(--pb-frame-h,320px);border:var(--pb-frame-border,1px) solid var(--border,#d0d5dd);border-radius:var(--pb-frame-radius,8px);overflow:hidden",   // --pb-frame-* come from a gallery viewport frame
 }, kids);
 
 // A brand lockup for the header.

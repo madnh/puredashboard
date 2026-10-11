@@ -78,4 +78,21 @@ puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; heig
 .puredashboard-gallery__cell-stage { padding: 20px; min-height: 96px; display: flex; align-items: center; background: var(--pd-panel); }
 
 .puredashboard-gallery__empty { padding: 40px; color: var(--pd-muted); }
+
+/* a story staged in its own viewport (`viewport: { width, height }`): the iframe sits
+ * centred on the panel-2 surface like a device on a desk; inside the frame (`only`
+ * mode) the story fills it edge to edge. */
+.puredashboard-gallery__viewport { font-size: 12px; color: var(--pd-muted); font-variant-numeric: tabular-nums; }
+/* per-card viewport switch (a <puredashboard-segmented>: Auto · Phone · Tablet · Desktop
+ * with icons), pushed to the bar's end */
+.puredashboard-gallery__vp { margin-inline-start: auto; flex: none; }
+.puredashboard-gallery__bar { flex-wrap: wrap; }
+.puredashboard-gallery__stage--viewport { padding: 20px; display: flex; justify-content: center; overflow: auto; background: var(--pd-panel-2); }
+.puredashboard-gallery__frame { display: block; flex: none; max-width: 100%; border: 1px solid var(--pd-border); border-radius: 12px; background: var(--pd-bg); }
+.puredashboard-gallery__story--fill { border: 0; border-radius: 0; }
+.puredashboard-gallery__story--fill .puredashboard-gallery__bar { display: none; }
+/* inside a viewport frame the story should fill the device: stories size their demo
+ * frames with var(--pb-frame-h, <px>) etc., so these take over only here. */
+.puredashboard-gallery__stage--fill { padding: 0; min-height: 100vh; --pb-frame-h: 100vh; --pb-frame-border: 0; --pb-frame-radius: 0; }
+puredashboard-gallery:has(> .puredashboard-gallery__only > .puredashboard-gallery__story--fill) > .puredashboard-gallery__only { padding: 0; }
 .puredashboard-gallery__err { margin: 0; color: var(--red, #dc2626); font-size: 12px; white-space: pre-wrap; }

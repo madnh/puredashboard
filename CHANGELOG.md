@@ -9,6 +9,81 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+Follow-ups to the 0.3.0 sidebar from the first app that adopted it (model-gateway):
+the "icon rail on desktop, hamburger + drawer on phones" shell, and three small
+contracts the app had been bridging on its side. Defaults unchanged; the one visible
+change is that a sider collapsed to width 0 now really is gone (see Fixed).
+
+### Added
+- **`<puredashboard-sider>` `breakpoint-collapse="offcanvas"`** (property
+  `breakpointCollapse`, default `"icon"` = today's behaviour): below the `breakpoint` the
+  sider collapses to width `0` instead of the icon rail, and `collapseMode` reads
+  `"offcanvas"` there; above it the `collapsible` mode applies. `toggle()` from a header
+  hamburger opens the existing drawer. Follows media-query flips both ways and attribute
+  changes.
+- **`<puredashboard-header>` sections.** Wrap children in `puredashboard-header__start`,
+  `puredashboard-header__center` and `puredashboard-header__end` to split the bar into a
+  left-hugging start (sider toggle, breadcrumb), a centred middle that takes the slack
+  (search, tabs) and a right-hugging end (actions, user menu). Any may be omitted.
+- **`<puredashboard-sider>` `trigger="bar"|"button"`**: the collapse trigger as today's
+  full-width strip, or a small centred icon button with no strip. Unset, `variant="inset"`
+  now uses the button (the strip read as a stray bar beside the content card); everything
+  else keeps the bar.
+- **`<puredashboard-sider>` `breakpointMatches`** (read-only) and a **`breakpoint` event**
+  `{ matches, collapsed, collapseMode }` on every media-query flip — whether or not
+  `collapsed` changed — so an app can show or hide desktop-only UI without its own
+  `matchMedia`.
+- **`<puredashboard-sider>` `closed` state attribute** (set by the element) whenever it is
+  collapsed to width `0` — `collapsible="offcanvas"`, `breakpoint-collapse="offcanvas"`
+  below the breakpoint, or `collapsed-width="0"`. Its header, scroll region, footer and
+  trigger are made `inert` and hidden, the edge border is dropped; only the `rail` (a
+  pointer handle) and the `shortcut` remain as ways back in.
+- **`Router` `afterEach(ctx, hit)`** option — called once the guards have passed and the
+  page module has loaded, i.e. the navigation is committed, just before the page mounts
+  (before the view-transition swap); `router.current` already points at the new hit. A
+  throwing hook is reported through `onError` (or the console) and never blocks the mount.
+- **`<puredashboard-gallery>` viewport switch.** Every story card gets an Auto · Phone ·
+  Tablet · Desktop switch (a `<puredashboard-segmented>` with icons), and the toolbar a
+  "Viewport" select (URL `vp=`) that frames every card at once. A framed story is staged in an `<iframe>` of that size (390 / 820 / 1280px
+  wide, or `"WxH"`) that loads the gallery in `only` mode, so the story gets a real viewport
+  of its own — breakpoints, media queries and `100vh` behave as on that device. A story may
+  declare its default with `viewport: "phone"` (or `{ width, height }`); props `viewport`
+  / `frames`, `.puredashboard-gallery__frame` / `__vp`.
+- **`<puredashboard-layout>` `plain`** for the nested layout beside an inset sider: it stays
+  on the page background, its header becomes a bare toolbar (no panel, no border) and the
+  content — or the nested layout with its own header — inside is the inset card: the
+  "toolbar above the card" arrangement.
+- Gallery: Nav story "Inset" now carries an app header split into the three sections (sider
+  toggle + breadcrumb | search | inbox badge + user), and "Inset · top header" shows the
+  same header as a bare toolbar ABOVE the inset card (`plain`).
+- Gallery: Nav stories "Hamburger" (breakpoint `md` + `breakpoint-collapse="offcanvas"`,
+  header button → `toggle()`, follows the window width) and "Hamburger · phone" (the same
+  shell framed as a phone by default, so the drawer shows on a desktop screen), and Menu
+  story "Toggle from its button" (a counter shows that the re-click closes without
+  re-opening).
+
+### Changed
+- **`<puredashboard-sider>` `persist` is desktop-only.** Opening or closing the drawer
+  below the breakpoint (trigger, rail, shortcut, `toggle()`, backdrop, Escape, link) no
+  longer writes the stored value — a desktop "collapsed" survives a phone-width detour.
+- **`<puredashboard-sider>` growing past its breakpoint restores the state held before it
+  matched** (the persisted choice when `persist` is set; otherwise the author-set or
+  previous value) instead of always expanding.
+- **`<puredashboard-sider>` drawer is modal:** while it is open the sider's layout siblings
+  are `inert` (restored on close), and an Escape that something else already handled
+  (`defaultPrevented` — an open `menu()`) no longer closes the drawer as well.
+
+### Fixed
+- **`<puredashboard-sider>` collapsed to width 0 kept its contents in the Tab order** (11
+  stops measured through a hidden sider), **left a 1px edge line, and let the collapse
+  trigger's chevron spill out** of the 0-wide offcanvas sider. All three are the `closed`
+  state above.
+- **`menu()`: clicking the anchor of the open menu re-opened it.** The press light-dismissed
+  the menu and the same click's handler opened a fresh one. Now a press on the anchor
+  closes it, the promise resolves `null`, and `menu()` called from that click's handler
+  returns an already-resolved `null` instead of opening again — no change to the usual
+  `button.onclick = () => menu(button, …)` wiring.
+
 ## [0.3.0] - 2026-10-11
 
 A stronger sidebar, modelled on the shadcn Sidebar and adapted to PureDashboard's
