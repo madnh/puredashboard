@@ -9,6 +9,8 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-11
+
 Follow-ups to the 0.3.0 sidebar from the first app that adopted it (model-gateway):
 the "icon rail on desktop, hamburger + drawer on phones" shell, and three small
 contracts the app had been bridging on its side. Defaults unchanged; the one visible
@@ -862,7 +864,8 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/madnh/puredashboard/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/madnh/puredashboard/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/madnh/puredashboard/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/madnh/puredashboard/compare/v0.1.0...v0.2.0
