@@ -9,6 +9,12 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed
+- **`<puredashboard-sider>` `rail` hides while the sider is `closed` below its breakpoint.**
+  On a phone the 16px edge strip sat invisibly over the content's left edge and the way
+  back in is the app's hamburger anyway; above the breakpoint (desktop offcanvas) the rail
+  stays as the pointer handle. (Observation from model-gateway's GW-231 measurements.)
+
 ## [0.3.1] - 2026-10-11
 
 Follow-ups to the 0.3.0 sidebar from the first app that adopted it (model-gateway):

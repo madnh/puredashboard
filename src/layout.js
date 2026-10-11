@@ -225,7 +225,7 @@ class PuredashboardFooter extends HTMLElement {}
  * @prop {string}  breakpointCollapse - How the sider collapses BELOW the breakpoint: `"icon"` (the icon rail, default) or `"offcanvas"` (width `0`, nothing shown; open it as a drawer with `toggle()` from a header button). Above the breakpoint the `collapsible` mode applies.
  * @prop {string}  variant        - `""` (flush panel with an edge border, default) | `"floating"` (a rounded, bordered, shadowed card inset from the layout edges) | `"inset"` (the sider sits on the layout background and the CONTENT beside it becomes the inset card).
  * @prop {string}  trigger        - How the collapse trigger looks: `"bar"` (a full-width strip with a top border, default) | `"button"` (a small centred icon button, no strip — reads right on a transparent or card sider). Unset, `variant="inset"` uses `"button"`, everything else `"bar"`.
- * @prop {boolean} rail           - Add a thin toggle handle along the sider's outer edge (shadcn SidebarRail): hover shows a line, click toggles. Default `false`.
+ * @prop {boolean} rail           - Add a thin toggle handle along the sider's outer edge (shadcn SidebarRail): hover shows a line, click toggles. Hidden while the sider is `closed` below its breakpoint (a phone reopens it from your hamburger, not a 16px edge strip). Default `false`.
  * @prop {string}  shortcut       - A key that toggles the sider with Cmd (macOS) / Ctrl held, e.g. `"b"`. Default `""` (off); the bare attribute means `"b"`.
  * @prop {string}  persist        - A name under which the collapsed state is remembered in `localStorage` (`puredashboard-sider:<name>`) and restored on connect. Default `""` (off). Only choices made ABOVE the breakpoint are stored; opening/closing the drawer below it leaves the stored value alone.
  * @prop {Object}  labels         - Override UI strings. Keys: `expand`, `collapse`, `rail`. Unset keys keep the English default.
@@ -436,6 +436,10 @@ class PuredashboardSider extends HTMLElement {
       if (c === this._rail) continue;
       if (c.hasAttribute("inert") !== on) c.toggleAttribute("inert", on);
     }
+    // Closed BELOW the breakpoint (a phone): the 16px edge strip would sit invisibly over
+    // the content's left edge, and the way back in there is the app's hamburger — hide it.
+    // Closed above it (desktop offcanvas) the rail stays: it is the pointer handle.
+    if (this._rail) this._rail.hidden = on && this._bpMatches();
   }
 
   // Mirror `collapsed` onto every <puredashboard-nav> inside as `icon-only` (the nav's own
