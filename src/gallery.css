@@ -13,10 +13,9 @@ puredashboard-gallery {
   --pd-border:  var(--border,  color-mix(in srgb, CanvasText 16%, Canvas));
   --pd-accent:  var(--accent,  #3b82f6);
 
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  /* full-viewport shell that never scrolls itself — the sidebar and the main
-   * canvas each scroll independently (see __side / __canvas). */
+  display: block;
+  /* full-viewport shell that never scrolls itself — the sider and the canvas
+   * (<puredashboard-content>) each scroll on their own. */
   height: 100vh;
   overflow: hidden;
   font: 14px/1.5 var(--sans, system-ui, sans-serif);
@@ -24,43 +23,57 @@ puredashboard-gallery {
   background: var(--pd-bg);
 }
 /* only-mode: a single story, full-bleed, no chrome (for screenshots) */
-puredashboard-gallery:has(> .puredashboard-gallery__only) { display: block; height: auto; overflow: visible; }
+puredashboard-gallery:has(> .puredashboard-gallery__only) { height: auto; overflow: visible; }
 .puredashboard-gallery__only { padding: 32px; }
 
-/* sidebar */
-.puredashboard-gallery__side { border-right: 1px solid var(--pd-border); background: var(--pd-panel); overflow-y: auto; min-height: 0; }
-.puredashboard-gallery__brand { padding: 16px; font-weight: 700; border-bottom: 1px solid var(--pd-border); position: sticky; top: 0; background: var(--pd-panel); }
-.puredashboard-gallery__group { padding: 12px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--pd-faint); }
-.puredashboard-gallery__item {
-  display: block; width: 100%; text-align: left; padding: 6px 16px;
-  font: inherit; color: var(--pd-muted); background: none; border: 0;
-  /* it's a <button>, so null out the base stylesheet's radius — a rounded fill
-   * next to the straight left accent bar reads oddly; keep it a clean rectangle. */
-  border-radius: 0;
-  border-left: 2px solid transparent; cursor: pointer;
-}
-.puredashboard-gallery__item:hover { color: var(--pd-text); background: var(--pd-panel-2); }
-.puredashboard-gallery__item[aria-current="true"] { color: var(--pd-text); border-left-color: var(--pd-accent); background: var(--pd-panel-2); }
+/* the shell is the library's own layout: sider | (header / content) */
+.puredashboard-gallery__shell { height: 100%; }
+.puredashboard-gallery__main { flex: 1 1 auto; min-width: 0; }
 
-/* main */
-.puredashboard-gallery__main { min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.puredashboard-gallery__toolbar { flex: 0 0 auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 20px; border-bottom: 1px solid var(--pd-border); background: var(--pd-bg); }
-.puredashboard-gallery__title { font-size: 16px; margin: 0 auto 0 0; }
-.puredashboard-gallery__toolbar label { color: var(--pd-muted); font-size: 13px; }
-.puredashboard-gallery__toolbar select { font: inherit; margin-left: 4px; padding: 5px 10px; background: var(--pd-panel-2); color: var(--pd-text); border: 1px solid var(--pd-border); border-radius: var(--radius-sm, 8px); cursor: pointer; }
+/* sidebar head: brand + filter (the sider's header slot) */
+.puredashboard-gallery__side-head { gap: 10px; }
+.puredashboard-gallery__brand { display: block; padding: 4px 6px 2px; font-weight: 700; font-size: 15px; color: var(--pd-text); text-decoration: none; }
+.puredashboard-gallery__brand:hover { color: var(--pd-accent); }
+.puredashboard-gallery__filter { display: block; width: 100%; }
+
+/* toolbar: <puredashboard-header> split into start (toggle + title) / end (controls) */
+.puredashboard-gallery__burger { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; margin: 0; flex: none; color: var(--pd-muted); background: transparent; border: 0; border-radius: var(--radius-sm, 8px); cursor: pointer; }
+.puredashboard-gallery__burger:hover { color: var(--pd-text); background: var(--pd-panel-2); }
+.puredashboard-gallery__title { font-size: 16px; margin: 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.puredashboard-gallery__controls { flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.puredashboard-gallery__controls label { color: var(--pd-muted); font-size: 13px; white-space: nowrap; }
+.puredashboard-gallery__controls select { font: inherit; margin-left: 4px; padding: 5px 10px; background: var(--pd-panel-2); color: var(--pd-text); border: 1px solid var(--pd-border); border-radius: var(--radius-sm, 8px); cursor: pointer; }
 /* grid-auto-rows: min-content sizes each story row to its own content — without it,
  * a story that's a scroll container (overflow:hidden makes its auto min-height 0) can
- * be shrunk below its content and clipped when the canvas overflows. The canvas itself
- * still scrolls (overflow-y:auto), so tall stories are fully visible. */
-.puredashboard-gallery__canvas { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 24px; display: grid; grid-auto-rows: min-content; gap: 24px; align-content: start; }
+ * be shrunk below its content and clipped when the canvas overflows. The canvas
+ * (<puredashboard-content>) scrolls, so tall stories are fully visible. */
+.puredashboard-gallery__canvas { padding: 24px; display: grid; grid-auto-rows: min-content; gap: 24px; align-content: start; }
 
-/* small screens: fall back to normal page scroll with a capped sidebar */
+/* small screens: the header controls wrap below the title */
 @media (max-width: 640px) {
-  puredashboard-gallery { grid-template-columns: 1fr; height: auto; overflow: visible; }
-  .puredashboard-gallery__side { max-height: 42vh; }
-  .puredashboard-gallery__main { overflow: visible; }
-  .puredashboard-gallery__canvas { overflow: visible; }
+  .puredashboard-gallery__toolbar { height: auto; min-height: var(--pd-header-height, 58px); flex-wrap: wrap; padding-block: 8px; }
+  .puredashboard-gallery__controls { flex: 1 1 100%; margin-inline-start: 0; justify-content: flex-start; }
+  .puredashboard-gallery__canvas { padding: 16px; }
+  /* the per-card viewport switch goes icon-only; the text stays as the accessible name */
+  .puredashboard-gallery__vp .puredashboard-segmented__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
+
+/* index: every component as a card, grouped like the sidebar */
+.puredashboard-gallery__index { display: grid; gap: 28px; }
+.puredashboard-gallery__index-heading { margin: 0 0 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--pd-muted); }
+.puredashboard-gallery__index-count { margin-inline-start: 6px; font-weight: 500; color: var(--pd-faint); }
+.puredashboard-gallery__index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.puredashboard-gallery__index-card {
+  display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  padding: 14px 16px; color: inherit; text-decoration: none;
+  background: var(--pd-panel); border: 1px solid var(--pd-border); border-radius: var(--radius, 10px);
+  transition: border-color var(--duration-fast, 120ms), background var(--duration-fast, 120ms);
+}
+.puredashboard-gallery__index-card:hover { border-color: var(--pd-accent); background: var(--pd-panel-2); }
+.puredashboard-gallery__index-card:focus-visible { outline: none; box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, Highlight 40%, transparent)); }
+.puredashboard-gallery__index-name { font-weight: 600; }
+.puredashboard-gallery__index-meta { font-size: 12px; color: var(--pd-muted); }
+.puredashboard-gallery__index-desc { font-size: 12px; color: var(--pd-faint); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* a story panel */
 .puredashboard-gallery__story { border: 1px solid var(--pd-border); border-radius: var(--radius, 10px); overflow: hidden; }

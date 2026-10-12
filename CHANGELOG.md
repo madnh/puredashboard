@@ -9,7 +9,30 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Added
+- **`<puredashboard-gallery>` index page.** With no component selected (the new default;
+  previously the first one) the canvas lists every component as a card — name, title,
+  story count, and the def's `description` or its first story's `notes` — grouped like
+  the sidebar. Cards are links (`?c=<tag>`).
+- **`<puredashboard-gallery>` filter.** A filter box in the sidebar (`filter` property,
+  URL `q=`, `/` focuses it) narrows the sidebar and the index by short name or title.
+
+### Changed
+- **`<puredashboard-gallery>` is built from the library's own layout:** a
+  `<puredashboard-sider>` (filter in its header slot, a `<puredashboard-nav>` with Index /
+  Overview rows and one section per title prefix; collapses off-canvas, a drawer below
+  `md`, remembered in `localStorage`), a `<puredashboard-header>` toolbar split into start
+  (sidebar toggle + title) and end (controls), and a `<puredashboard-content>` canvas. Nav
+  rows are real links, so Cmd/Ctrl-click opens a component in a new tab. Stories are no
+  longer remounted by unrelated re-renders (filtering, theme). On small screens the
+  toolbar controls wrap and the per-card viewport switch is icon-only. The old
+  `__side` / `__item` / `__group` / `__main` classes are gone.
+
 ### Fixed
+- **`reactive.js`: a child position that switched template → `repeat()` → the same
+  template rendered nothing.** The nested instance was kept after its DOM was removed, so
+  the switch back updated the detached instance. Any component rendering a list in one
+  state and a fixed template in another at the same position was affected.
 - **`<puredashboard-sider>` drawer no longer reflows the content.** Closing it put the
   sider back in the flow while its width was still animating to 0, so the text beside it
   rewrapped through every step; with the icon rail below the breakpoint, opening it also

@@ -360,9 +360,13 @@ that row. If a row varies a lot by type, bind the differences rather than branch
 ```js
 import "LIB/gallery.js";
 const g = Object.assign(document.createElement("puredashboard-gallery"), { route: true });
-g.stories = [{ tag: "my-el", title: "Mine/My el", stories: [{ name: "Basic", render: () => document.createElement("my-el") }] }];
-document.body.append(g);   // ?overview=1 = contact sheet, ?only=1 = single story
+g.stories = [{ tag: "my-el", title: "Mine/My el", description: "shown on its index card",
+  stories: [{ name: "Basic", render: () => document.createElement("my-el") }] }];
+document.body.append(g);   // ?c=<tag> = a component, no c = the index, ?q= = filter,
+                           // ?overview=1 = contact sheet, ?only=1 = single story
 ```
+The gallery's shell is the library's own layout (sider + nav + header + content): link
+`layout.css`, `nav.css` and `input.css` (or `components.css`) with `gallery.css`.
 
 ---
 

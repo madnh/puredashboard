@@ -3,7 +3,7 @@
 import { JSDOM } from "jsdom";
 const dom = new JSDOM("<!doctype html><body></body>", { runScripts: "outside-only" });
 const w = dom.window;
-for (const k of ["document", "HTMLElement", "customElements", "NodeFilter", "CustomEvent", "Node", "Event", "MouseEvent"])
+for (const k of ["document", "HTMLElement", "customElements", "NodeFilter", "CustomEvent", "Node", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver"])
   global[k] = w[k];
 global.window = w;
 global.queueMicrotask = queueMicrotask;
@@ -27,30 +27,97 @@ const STORIES = [
 
 const mount = () => { const g = document.createElement("puredashboard-gallery"); g.stories = STORIES; document.body.appendChild(g); return g; };
 
-// ---- sidebar + default canvas ----
+// ---- the shell is the library's own layout; nothing selected = the index ----
 {
   const g = mount();
-  await tick();
-  ok(g.querySelectorAll(".puredashboard-gallery__item").length === 2, "one sidebar item per component");
-  ok(g.querySelectorAll(".puredashboard-gallery__group").length === 2, "grouped by title prefix (One, Two)");
-  ok(g.querySelectorAll(".puredashboard-gallery__story").length === 2, "first component's stories render (A has 2)");
-  ok(!!g.querySelector(".story-a"), "story render() output is mounted live");
-  const first = g.querySelector(".puredashboard-gallery__item");
-  ok(first.getAttribute("aria-current") === "true", "first component is current by default");
+  await tick(); await tick();
+  ok(!!g.querySelector("puredashboard-layout.puredashboard-gallery__shell > puredashboard-sider"), "shell: a puredashboard-layout with a puredashboard-sider");
+  ok(!!g.querySelector("puredashboard-header.puredashboard-gallery__toolbar") && !!g.querySelector("puredashboard-content.puredashboard-gallery__canvas"), "shell: a puredashboard-header toolbar and a puredashboard-content canvas");
+  const sider = g.querySelector("puredashboard-sider");
+  ok(sider.collapseMode === "offcanvas" && sider.breakpoint === "md" && sider.breakpointCollapse === "offcanvas", "sider: off-canvas, a drawer below md");
+  ok(!!sider.querySelector(".puredashboard-sider__header puredashboard-input.js-puredashboard-gallery__filter"), "the filter box sits in the sider's header slot");
+  const nav = g.querySelector("puredashboard-nav.puredashboard-gallery__nav");
+  ok(nav && nav.items.map((n) => n.heading || n.label).join(",") === "Index,Overview,One,Two", "nav: Index + Overview rows, then one section per title prefix");
+  ok(nav.items[2].children.map((c) => c.label + "=" + c.href).join(",") === "a=?c=puredashboard-a", "nav rows are links to ?c=<tag>");
+  ok(nav.current === "?", "nothing selected: the nav's Index row is current");
+  ok(g.querySelectorAll(".puredashboard-gallery__index-card").length === 2 && g.querySelectorAll(".puredashboard-gallery__index-group").length === 2, "the canvas is the index: one card per component, grouped");
+  ok(!g.querySelector(".story-a"), "the index mounts no story");
+  ok(g.querySelector(".puredashboard-gallery__index-meta").textContent.includes("2 stories"), "a card names the title and the story count");
+  ok(g.querySelector(".puredashboard-gallery__title").textContent === "Components (2)", "toolbar title on the index");
+  ok(!!g.querySelector(".puredashboard-header__start .js-puredashboard-gallery__burger") && !!g.querySelector(".puredashboard-header__end .js-pb-theme"), "toolbar: toggle + title at the start, controls at the end");
 }
 
-// ---- selecting a component ----
+// ---- selecting: an index card, a nav row; modified clicks are left to the browser ----
 {
   const g = mount();
-  await tick();
+  await tick(); await tick();
   let sel = null;
   g.addEventListener("select", (e) => { sel = e.detail.tag; });
-  const items = g.querySelectorAll(".puredashboard-gallery__item");
-  items[1].click();
+  g.querySelector('.puredashboard-gallery__index-card[href="?c=puredashboard-a"]').click();
+  await tick(); await tick();
+  ok(sel === "puredashboard-a" && g.querySelectorAll(".puredashboard-gallery__story").length === 2 && !!g.querySelector(".story-a"), "clicking an index card selects it and mounts its stories");
+  ok(g.querySelector("puredashboard-nav").current === "?c=puredashboard-a", "the nav marks it current");
+  const toB = [...g.querySelectorAll("puredashboard-nav a")].find((a) => a.getAttribute("href") === "?c=puredashboard-b");
+  toB.click();
+  await tick(); await tick();
+  ok(sel === "puredashboard-b" && g.querySelectorAll(".puredashboard-gallery__story").length === 1 && !!g.querySelector(".story-b"), "clicking a nav row switches in place");
+  const toIndex = [...g.querySelectorAll("puredashboard-nav a")].find((a) => a.getAttribute("href") === "?");
+  const ctrl = new w.MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true });
+  toIndex.dispatchEvent(ctrl);
   await tick();
-  ok(sel === "puredashboard-b", "clicking an item emits select with its tag");
-  ok(g.querySelectorAll(".puredashboard-gallery__story").length === 1, "canvas shows the selected component's stories (B has 1)");
-  ok(!!g.querySelector(".story-b"), "B's story is mounted");
+  ok(!ctrl.defaultPrevented && g.selected === "puredashboard-b", "a Ctrl-click is NOT intercepted (opens a new tab)");
+  toIndex.click();
+  await tick(); await tick();
+  ok(sel === "" && g.querySelectorAll(".puredashboard-gallery__index-card").length === 2, "the Index row goes back to the index: sel=" + JSON.stringify(sel) + " cards=" + g.querySelectorAll(".puredashboard-gallery__index-card").length + " selected=" + JSON.stringify(g.selected));
+  const toOverview = [...g.querySelectorAll("puredashboard-nav a")].find((a) => a.getAttribute("href") === "?overview=1");
+  toOverview.click();
+  await tick(); await tick();
+  ok(g.overview === true && g.querySelectorAll(".puredashboard-gallery__cell").length === 2, "the Overview row shows the contact sheet");
+}
+
+// ---- filter: narrows the nav and the index; typing in the box drives it; "/" focuses it ----
+{
+  const g = mount();
+  await tick(); await tick();
+  g.filter = "B";
+  await tick(); await tick();
+  const nav = g.querySelector("puredashboard-nav");
+  ok(nav.items.map((n) => n.heading || n.label).join(",") === "Index,Overview,Two", "filter: only matching sections stay in the nav (case-insensitive)");
+  ok(g.querySelectorAll(".puredashboard-gallery__index-card").length === 1, "filter: the index shows only matches");
+  g.filter = "zzz";
+  await tick(); await tick();
+  ok(/No component matches/.test(g.querySelector(".puredashboard-gallery__empty")?.textContent || ""), "filter: a no-match message");
+  g.filter = "";
+  await tick(); await tick();
+  const field = g.querySelector(".js-puredashboard-gallery__filter input");
+  ok(!!field, "the filter box renders a real <input>");
+  field.value = "one";
+  field.dispatchEvent(new w.Event("input", { bubbles: true }));
+  await tick(); await tick();
+  ok(g.filter === "one" && g.querySelectorAll(".puredashboard-gallery__index-card").length === 1, "typing in the box sets `filter` (title match)");
+  field.blur();
+  document.body.focus();
+  const slash = new w.KeyboardEvent("keydown", { key: "/", bubbles: true, cancelable: true });
+  document.body.dispatchEvent(slash);
+  ok(slash.defaultPrevented && g.querySelector(".js-puredashboard-gallery__filter").contains(document.activeElement), "\"/\" focuses the filter box");
+  g.remove();
+}
+
+// ---- stories are not remounted by unrelated re-renders (typing in the filter) ----
+{
+  let renders = 0;
+  const S = [{ tag: "puredashboard-c", title: "Three/C", stories: [{ name: "Count", render: () => { renders++; return document.createElement("i"); } }] }];
+  const g = document.createElement("puredashboard-gallery");
+  g.stories = S; g.selected = "puredashboard-c"; document.body.appendChild(g);
+  await tick(); await tick();
+  ok(renders === 1, "the story rendered once");
+  g.filter = "x"; await tick(); await tick();
+  g.theme = "light"; await tick(); await tick();
+  ok(renders === 1, "filtering and switching theme do not remount it (got " + renders + ")");
+  g.selected = ""; await tick();
+  g.selected = "puredashboard-c"; await tick(); await tick();
+  ok(renders === 2, "re-selecting the component renders it afresh");
+  g.remove();
 }
 
 // ---- overview / contact sheet ----
@@ -69,7 +136,7 @@ const mount = () => { const g = document.createElement("puredashboard-gallery");
   document.body.appendChild(g);
   await tick();
   ok(!!g.querySelector(".puredashboard-gallery__only"), "only mode renders the full-bleed wrapper");
-  ok(!g.querySelector(".puredashboard-gallery__side"), "only mode hides the sidebar chrome");
+  ok(!g.querySelector("puredashboard-sider"), "only mode hides the sidebar chrome");
   ok(g.querySelectorAll(".puredashboard-gallery__story").length === 1, "only mode shows the single named story");
 }
 
@@ -79,7 +146,7 @@ const mount = () => { const g = document.createElement("puredashboard-gallery");
     { name: "Phone", viewport: { width: 390, height: 640 }, render: () => Object.assign(document.createElement("div"), { className: "story-v" }) },
   ] }];
   const g = document.createElement("puredashboard-gallery");
-  g.stories = VP; g.theme = "light"; g.lang = "vi";
+  g.stories = VP; g.selected = "puredashboard-v"; g.theme = "light"; g.lang = "vi";
   document.body.appendChild(g);
   await tick();
   const frame = g.querySelector("iframe.puredashboard-gallery__frame");
@@ -92,6 +159,7 @@ const mount = () => { const g = document.createElement("puredashboard-gallery");
   ok(g.querySelector(".puredashboard-gallery__viewport")?.textContent === "390 × 640", "the bar names the viewport size");
   const named = document.createElement("puredashboard-gallery");
   named.stories = [{ tag: "puredashboard-n", title: "Three/N", stories: [{ name: "P", viewport: "phone", render: () => document.createElement("i") }] }];
+  named.selected = "puredashboard-n";
   document.body.appendChild(named);
   await tick();
   ok(named.querySelector("iframe")?.style.width === "390px", "a story may declare its viewport by preset name");
@@ -108,6 +176,7 @@ const mount = () => { const g = document.createElement("puredashboard-gallery");
 // ---- viewport switch: toolbar for every card, per-card override (a segmented control), presets ----
 {
   const g = mount();            // puredashboard-a: "Basic" + "Alt", neither declares a viewport
+  g.selected = "puredashboard-a";
   await tick(); await tick();   // the segmented controls render on their own microtask
   const switches = () => [...g.querySelectorAll("puredashboard-segmented.js-puredashboard-gallery__vp")];
   ok(g.querySelectorAll("iframe").length === 0 && switches().length === 2, "no viewport: stories inline, every card carries a switch");
