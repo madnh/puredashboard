@@ -297,6 +297,62 @@ const lastDialog = () =>
   ok((await p) === "viaEnter", "prompt: Enter key submits → value");
 }
 
+// ---- size: a modal is a FIXED width (default md), drawers take the same names ----
+{
+  const w = (d) => d.el.style.getPropertyValue("--puredashboard-dialog-w");
+  const cls = (d) => [...d.el.classList].filter((c) => /--size|--sized/.test(c)).join(" ");
+  const def = dialog({ title: "x" });
+  ok(cls(def) === "puredashboard-dialog--sized puredashboard-dialog--size-md" && w(def) === "var(--puredashboard-dialog-w-md, 560px)", "default size is md: a fixed 560px width through a themable var — got " + cls(def) + " / " + w(def));
+  const lg = dialog({ size: "lg" });
+  ok(w(lg) === "var(--puredashboard-dialog-w-lg, 800px)" && lg.el.classList.contains("puredashboard-dialog--size-lg"), "size lg → 800px");
+  const xl = dialog({ size: "xl" });
+  ok(w(xl) === "var(--puredashboard-dialog-w-xl, 1140px)", "size xl → 1140px");
+  const sm = dialog({ size: "sm" });
+  ok(w(sm) === "var(--puredashboard-dialog-w-sm, 400px)", "size sm → 400px");
+  const num = dialog({ size: 640 });
+  ok(w(num) === "640px" && num.el.classList.contains("puredashboard-dialog--size-custom"), "a number is px");
+  const css = dialog({ size: "70vw" });
+  ok(w(css) === "70vw" && css.el.classList.contains("puredashboard-dialog--size-custom"), "a CSS length passes through");
+  const full = dialog({ size: "full" });
+  ok(w(full) === "100vw" && full.el.classList.contains("puredashboard-dialog--size-full"), "full → the viewport (CSS caps it to 100vw − 32px and sets the height)");
+  const auto = dialog({ size: "auto" });
+  ok(!auto.el.classList.contains("puredashboard-dialog--sized") && w(auto) === "", "auto → shrink-to-content (no fixed width)");
+  const dr = drawer({ size: "lg" });
+  ok(dr.el.style.width === "min(100vw, var(--puredashboard-dialog-drawer-w-lg, 560px))", "drawer size lg → 560px wide: " + dr.el.style.width);
+  const top = drawer({ position: "top", size: "sm" });
+  ok(top.el.style.height === "min(100vh, var(--puredashboard-dialog-drawer-h-sm, 30vh))", "a top drawer's size is its height: " + top.el.style.height);
+  const plain = drawer({});
+  ok(plain.el.style.width === "var(--puredashboard-dialog-drawer-w, min(92vw, 380px))" && !plain.el.classList.contains("puredashboard-dialog--sized"), "a drawer without size keeps the 380px default and is never --sized");
+  for (const d of [def, lg, xl, sm, num, css, full, auto, dr, top, plain]) d.el.remove();
+  const cssText = readFileSync(new URL("../src/dialog.css", import.meta.url), "utf8");
+  ok(/\.puredashboard-dialog--sized\s*\{\s*width:\s*min\(var\(--puredashboard-dialog-w\),\s*calc\(100vw - 32px\)\);\s*max-width:\s*none/.test(cssText), "CSS: a sized dialog takes --puredashboard-dialog-w, capped to the viewport");
+  ok(/max-height:\s*var\(--puredashboard-dialog-max-h,\s*85vh\)/.test(cssText), "CSS: the height cap is themable (--puredashboard-dialog-max-h)");
+}
+
+// ---- helpers fit their message unless sized ----
+{
+  const p = alert("hi");
+  await raf();
+  const el = lastDialog();
+  ok(el.classList.contains("puredashboard-dialog--alert") && !el.classList.contains("puredashboard-dialog--sized"), "alert() stays shrink-to-content (size auto)");
+  el.querySelector(".puredashboard-dialog__button").click();
+  await p;
+  const p2 = confirm("wide?", { size: "lg" });
+  await raf();
+  ok(lastDialog().classList.contains("puredashboard-dialog--size-lg"), "confirm({ size }) widens it");
+  lastDialog().querySelector(".puredashboard-dialog__button").click();
+  await p2;
+}
+
+// ---- the agent API lists the imperative functions, with the size guidance ----
+{
+  const lines = readFileSync(new URL("../src/_components.jsonl", import.meta.url), "utf8").trim().split("\n").map((l) => JSON.parse(l));
+  const fn = (n) => lines.find((r) => r.function === n);
+  for (const n of ["dialog", "drawer", "alert", "menu", "toast"]) ok(!!fn(n), `_components.jsonl has a line for ${n}()`);
+  const d = fn("dialog");
+  ok(d && /size/.test(d.summary) && /"lg"/.test(d.params[0].desc) && /size: "lg"/.test(d.example || ""), "dialog()'s line names `size` in its summary, its params and its example");
+}
+
 // ---- CSS contract: the body's scrollbar matches the sider's; dark theme says dark ----
 {
   const css = readFileSync(new URL("../src/dialog.css", import.meta.url), "utf8");

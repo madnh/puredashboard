@@ -10,6 +10,17 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Added
+- **`dialog()` / `drawer()` `size`:** `"sm"` 400 · `"md"` 560 · `"lg"` 800 · `"xl"` 1140px ·
+  `"full"` · a number (px) · a CSS length · `"auto"`. A modal is now a FIXED width capped
+  to the viewport; drawers take the same names for their width (320 / 400 / 560 / 720px)
+  or, at top/bottom, height (30 / 45 / 65 / 80vh). Presets are themable
+  (`--puredashboard-dialog-w-<name>`, `--puredashboard-dialog-drawer-w-<name>` / `-h-<name>`),
+  and the height cap is `--puredashboard-dialog-max-h` (85vh). Gallery story "Sizes".
+- **`_components.jsonl` lists the imperative functions** — `dialog`, `drawer`, `alert`
+  (with `confirm` / `prompt`), `menu`, `toast` — one line each with summary, params,
+  returns and example (`grep '"function":"dialog"'`). The generator reads their
+  `@function` JSDoc from the source; before, they were missing and agents guessed.
+- **`_agents.md`: "Always pass `size`"** with a content → size table.
 - **`<puredashboard-gallery>` index page.** With no component selected (the new default;
   previously the first one) the canvas lists every component as a card — name, title,
   story count, and the def's `description` or its first story's `notes` — grouped like
@@ -18,6 +29,10 @@ the API may still change between minor versions.
   URL `q=`, `/` focuses it) narrows the sidebar and the index by short name or title.
 
 ### Changed
+- **`dialog()` defaults to `size: "md"` (560px, fixed).** It used to shrink to its content
+  (up to 520px), so a dialog holding a form or a table came out cramped — the usual
+  result when nobody set a width. Pass `size: "auto"` for the old behaviour.
+  `alert` / `confirm` / `prompt` still fit their message unless given a `size`.
 - **`<puredashboard-gallery>` is built from the library's own layout:** a
   `<puredashboard-sider>` (filter in its header slot, a `<puredashboard-nav>` with Index /
   Overview rows and one section per title prefix; collapses off-canvas, a drawer below
@@ -36,6 +51,8 @@ the API may still change between minor versions.
 - **`dialog()` / `drawer()` body scrollbar** matches the sider's: thin, transparent track,
   thumb while the pointer is over the dialog or focus is inside;
   `--puredashboard-dialog-scrollbar` sets its colour.
+- **`_agents.md`: the `prompt()` example used `{ value }`**; the option is
+  `defaultValue`.
 - **`reactive.js`: a child position that switched template → `repeat()` → the same
   template rendered nothing.** The nested instance was kept after its DOM was removed, so
   the switch back updated the detached instance. Any component rendering a list in one

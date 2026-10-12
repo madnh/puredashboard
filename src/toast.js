@@ -45,6 +45,21 @@ function raise() {
   if (stack.hasAttribute("popover") && !stackShown) { try { stack.showPopover(); stackShown = true; } catch { /* */ } }
 }
 
+/**
+ * Show a transient notification in the top layer (bottom-right stack). Imperative —
+ * call it; it returns a handle. Shortcuts: `toast.info` / `toast.success` / `toast.warn`
+ * / `toast.error`. Note: a modal `<dialog>` still paints above toasts (a platform rule).
+ *
+ * @function toast
+ * @param {string} text - The message (inserted as text).
+ * @param {Object} [opts] - `{ type?: "info"|"success"|"warn"|"error", duration?: number (ms, default 4000, 0 = sticky), dismissable?: boolean (× button, default true), className?, onClose? }`.
+ * @returns {Object} `{ el, close() }`.
+ *
+ * @example
+ * import { toast } from "LIB/toast.js";
+ * toast.success("Saved");
+ * const t = toast.error("Save failed", { duration: 0 });   // sticky until t.close()
+ */
 export function toast(text, opts = {}) {
   const s = ensureStack();
   const type = TYPES.has(opts.type) ? opts.type : "info";

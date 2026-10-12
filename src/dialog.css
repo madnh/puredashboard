@@ -40,11 +40,16 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, .25);
   padding: 0;
   max-width: var(--puredashboard-dialog-max-w);
-  max-height: 85vh;
+  max-height: var(--puredashboard-dialog-max-h, 85vh);
   /* flex column so the head + footer stay put and only the body scrolls */
   display: flex;
   flex-direction: column;
 }
+/* `size` (set by dialog(); default md): a FIXED width from --puredashboard-dialog-w, capped
+ * to the viewport — not shrink-to-content, which left forms and tables cramped. Presets
+ * are themable: --puredashboard-dialog-w-sm / -md / -lg / -xl (400 / 560 / 800 / 1140px). */
+.puredashboard-dialog--sized { width: min(var(--puredashboard-dialog-w), calc(100vw - 32px)); max-width: none; }
+.puredashboard-dialog--size-full { height: calc(100vh - 32px); max-height: none; }
 .puredashboard-dialog::backdrop { background: var(--puredashboard-dialog-backdrop); }
 
 .puredashboard-dialog__head {

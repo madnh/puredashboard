@@ -4,7 +4,8 @@
 > you **don't have to read the component source** to use it. Everything you need —
 > the rules, the copy-paste recipes, and a full component index — is here. For the
 > exhaustive machine-readable API, see **`_components.jsonl`** next to this file —
-> one JSON line per component (props/events/attrs/CSS vars/example).
+> one JSON line per component (props/events/attrs/CSS vars/example) and per imperative
+> function (`dialog`, `drawer`, `alert`, `menu`, `toast`: params/returns/example).
 >
 > This file ships inside `src/` (as `_agents.md`), so it travels when someone copies
 > the folder. It is skipped by the `//go:embed` walker (leading `_`), so it never
@@ -100,12 +101,31 @@ f.addEventListener("invalid", () => {/* first bad field is focused */});
 ```js
 import { confirm, alert, prompt, dialog, drawer } from "LIB/dialog.js";
 if (await confirm("Delete 3 services?")) { /* … */ }        // → boolean
-const name = await prompt("New name?", { value: "web-01" }); // → string | null
-dialog({ title: "Edit", content: (body) => body.append(myForm), onClose: (v) => {} }).show();
-drawer({ position: "right", title: "Filters", content: (b) => {} }).show();
-dialog({ title: "Delete?", content: "Sure?", actions: [{ label: "Cancel", value: "cancel" },
+const name = await prompt("New name?", { defaultValue: "web-01" }); // → string | null
+dialog({ title: "Edit", size: "lg", content: (body) => body.append(myForm), onClose: (v) => {} }).show();
+drawer({ position: "right", size: "md", title: "Filters", content: (b) => {} }).show();
+dialog({ title: "Delete?", size: "sm", content: "Sure?", actions: [{ label: "Cancel", value: "cancel" },
   { label: "Delete", value: "ok", variant: "primary", danger: true }] }).show();   // library-rendered footer buttons; or onclick: (ev, d) => …
 ```
+**Always pass `size`, chosen from the content** — a modal is a fixed width, and a
+dialog that is too small is the most common overlay mistake:
+
+| content | `size` | width |
+|---|---|---|
+| a message, one field, a yes/no | `"sm"` | 400px |
+| a short form (≤ ~6 fields, one column) — the default | `"md"` | 560px |
+| a two-column form, a table, a detail view | `"lg"` | 800px |
+| a wide table, side-by-side panes, a diff | `"xl"` | 1140px |
+| an editor, a large preview, a wizard | `"full"` | viewport − 32px |
+
+Also a number (px) or a CSS length (`"70vw"`), or `"auto"` to fit the content. Every
+size is capped to the viewport, so `lg`/`xl` are safe on phones. Drawers take the same
+names for their width (`sm` 320 · `md` 400 · `lg` 560 · `xl` 720px) or, at top/bottom,
+their height (30 · 45 · 65 · 80vh). `alert`/`confirm`/`prompt` fit their message unless
+sized. An app re-themes a preset with `--puredashboard-dialog-w-lg: 900px` (drawers:
+`--puredashboard-dialog-drawer-w-<name>`), and the height cap with
+`--puredashboard-dialog-max-h` (85vh). Full option list: `grep '"function":"dialog"'
+_components.jsonl`.
 ```js
 import { menu } from "LIB/menu.js";              // anchored dropdown
 const picked = await menu(anchorEl, [
@@ -392,6 +412,10 @@ grep '"tag":"puredashboard-table"' src/_components.jsonl \
   | python3 -c 'import json,sys; [print(e["name"],"-",e.get("desc","")) for e in json.load(sys.stdin)["events"]]'
 
 # list every tag: grep -o '"tag":"[^"]*"' src/_components.jsonl
+
+# an imperative function (dialog / drawer / alert / menu / toast): its options + example
+grep '"function":"dialog"' src/_components.jsonl | jq -r '.desc, .params[].desc, .example'
+# list every function: grep -o '"function":"[^"]*"' src/_components.jsonl
 ```
 Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 `events[]{name,desc}`, `attrs[]`, `slots[]?`, `cssProps[]{name,desc}`, `example`, `file`.
@@ -479,7 +503,8 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 | `puredashboard-skeleton` | `variant`(text/rect/circle), `lines`, `width`, `height`, `animated` | — | loading placeholder |
 
 Imperative (not elements): `dialog`, `drawer`, `alert`, `confirm`, `prompt`
-(`dialog.js`); `menu` (`menu.js`); `toast` (`toast.js`).
+(`dialog.js`); `menu` (`menu.js`); `toast` (`toast.js`). Their options are in
+`_components.jsonl` too, one line per function: `grep '"function":"dialog"'`.
 
 ---
 

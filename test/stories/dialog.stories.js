@@ -44,6 +44,21 @@ export default {
         const d = dialog({ title: "Edit service", content: longBody(20), footer: footerActions((v) => d.close(v), "Save") });
         d.show();
       }) },
+    { name: "Sizes", notes: 'size: "sm" 400 · "md" 560 (default) · "lg" 800 · "xl" 1140 · "full" · "auto" (fit the content) — a fixed width capped to the viewport; pick it from the content. The second row sizes a drawer the same way', render: () => {
+      const sizes = ["sm", "md", "lg", "xl", "full", "auto"];
+      const what = { sm: "a message or one field", md: "a short form (the default)", lg: "a two-column form or a table", xl: "a wide table or side-by-side panes", full: "an editor or a large preview", auto: "shrink to the content" };
+      const open = (size) => {
+        const d = dialog({ title: `size: "${size}"`, size, content: (b) => { b.append(el("p", { textContent: "For " + what[size] + "." })); longBody(3)(b); }, actions: [{ label: "Close", value: "close", variant: "primary" }] });
+        d.show();
+      };
+      const row1 = el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" }, sizes.map((z) => trigger(z, () => open(z))));
+      const row2 = el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" }, ["sm", "md", "lg", "xl"].map((z) => {
+        const b = el("button", { className: "puredashboard-dialog__button", textContent: "drawer " + z });
+        b.addEventListener("click", () => { const d = drawer({ title: `drawer size: "${z}"`, size: z, content: longBody(12), actions: [{ label: "Close", value: "close" }] }); d.show(); });
+        return b;
+      }));
+      return el("div", {}, [row1, row2]);
+    } },
     { name: "Drawer — right", notes: "slides in from the edge; body scrolls, footer stays pinned", render: () =>
       trigger("Open right drawer", () => openDrawer("right", "Apply")) },
     { name: "Drawer — other edges", notes: "left / top / bottom", render: () => {
