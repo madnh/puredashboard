@@ -194,7 +194,8 @@ void mod;
   ok(/puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-content/.test(css), "inset variant turns the sibling content into the card");
   ok(/> puredashboard-layout:not\(\[plain\]\),\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-content,\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-layout:not\(\[plain\]\)\s*\{/.test(css), "a plain nested layout is not the card; the content or the layout inside it is");
   ok(/> puredashboard-layout\[plain\] > puredashboard-header\s*\{[^}]*background:\s*transparent;[^}]*border-bottom:\s*0/.test(css), "the plain layout's header is a bare toolbar (no panel, no border)");
-  ok(/puredashboard-sider\[overlay\]\s*\{[^}]*position:\s*absolute/.test(css), "overlay (drawer) takes the sider out of the flow");
+  ok(/puredashboard-sider\[overlay\]\s*\{[^}]*margin-inline-end:\s*calc\(var\(--pd-sider-cw, 0px\) - var\(--pd-sider-drawer-w, var\(--pd-sider-w/.test(css), "overlay (drawer) keeps only its collapsed footprint in the flow (negative end margin) — the content never reflows");
+  ok(!/puredashboard-sider\[overlay\]\s*\{[^}]*position:\s*absolute/.test(css), "overlay no longer leaves the flow (that made the content jump by the rail width)");
   ok(/\.puredashboard-sider__inner\s*\{[^}]*scrollbar-width:\s*thin;[^}]*scrollbar-color:\s*transparent transparent/.test(css), "the scroll region's scrollbar is thin and invisible at rest");
   ok(/puredashboard-sider:hover \.puredashboard-sider__inner,\s*puredashboard-sider:focus-within \.puredashboard-sider__inner\s*\{[^}]*scrollbar-color:\s*var\(--pd-sider-scrollbar/.test(css), "the thumb shows on hover / focus-within");
   ok(/puredashboard-layout:has\(> puredashboard-sider\[overlay\]\)::after/.test(css), "the layout paints a backdrop behind an open drawer");
@@ -406,6 +407,7 @@ void mod;
     ok(sider.hasAttribute("overlay") && !sider.collapsed && n === 1, "toggle() below the breakpoint opens the drawer + emits");
     ok(rail.hidden === false, "drawer open: the rail shows again (closes the drawer by pointer)");
     ok(sider.style.getPropertyValue("--pd-sider-w") === "220px" && !sider.hasAttribute("closed"), "the drawer is full width and no longer closed");
+    ok(sider.style.getPropertyValue("--pd-sider-cw") === "0px", "offcanvas below the breakpoint: collapsed footprint 0");
     ok(!trigger.hasAttribute("inert") && !inner.hasAttribute("inert"), "open: regions are reachable again");
     ok(main.hasAttribute("inert"), "open drawer: the layout sibling beside it is inert");
     const esc = new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
@@ -419,6 +421,7 @@ void mod;
 
     sider.setAttribute("breakpoint-collapse", "icon");
     ok(sider.style.getPropertyValue("--pd-sider-w") === "64px" && sider.collapseMode === "icon" && !sider.hasAttribute("closed"), "changing the attribute re-applies the width (icon = 64)");
+    ok(sider.style.getPropertyValue("--pd-sider-cw") === "64px", "icon mode: collapsed footprint is the rail width");
     sider.breakpointCollapse = "offcanvas";
     ok(sider.getAttribute("breakpoint-collapse") === "offcanvas" && sider.style.getPropertyValue("--pd-sider-w") === "0px", "breakpointCollapse property reflects and re-applies");
 

@@ -420,8 +420,12 @@ class PuredashboardSider extends HTMLElement {
 
   // Drive the current width via an inline custom property the CSS reads.
   _applyWidth() {
-    const w = this.collapsed ? (this.collapseMode === "offcanvas" ? 0 : this.collapsedWidth) : this.width;
+    const cw = this.collapseMode === "offcanvas" ? 0 : this.collapsedWidth;
+    const w = this.collapsed ? cw : this.width;
     this.style.setProperty("--pd-sider-w", w + "px");
+    // The collapsed footprint: an open drawer keeps exactly this much room in the flow, so
+    // the content beside it never changes width while the drawer opens or closes.
+    this.style.setProperty("--pd-sider-cw", cw + "px");
     this._syncClosed(w === 0);
   }
 

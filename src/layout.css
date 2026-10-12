@@ -301,16 +301,20 @@ puredashboard-layout:has(> puredashboard-sider[variant="inset"]) > puredashboard
   border-bottom: 0;
 }
 /* ── Drawer below the breakpoint (`overlay`, set by the element) ──────────────
- * The sider leaves the flow and slides over the content; the layout paints a backdrop. */
+ * The sider slides over the content (keeping only its collapsed footprint in the flow);
+ * the layout paints a backdrop. */
 puredashboard-layout { position: relative; }
+/* The drawer stays IN the flow with the footprint of its collapsed self (--pd-sider-cw:
+ * 0 offcanvas, or the rail width): it is drawn at the drawer width, and a negative end
+ * margin hands the difference back, so it overlaps the content instead of pushing it.
+ * Width and margin animate together, so the footprint is constant the whole time — the
+ * content beside it never reflows while the drawer opens or closes. */
 puredashboard-sider[overlay] {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  inset-inline-start: 0;
   z-index: var(--z-overlay, 1200);
   width: var(--pd-sider-drawer-w, var(--pd-sider-w, 220px));
   margin: 0;
+  margin-inline-end: calc(var(--pd-sider-cw, 0px) - var(--pd-sider-drawer-w, var(--pd-sider-w, 220px)));
+  border-inline-end-width: 0;   /* the shadow is the edge; a border would add 1px to the footprint */
   box-shadow: var(--shadow-3, 0 12px 32px rgba(0, 0, 0, 0.4));
 }
 puredashboard-layout:has(> puredashboard-sider[overlay])::after {

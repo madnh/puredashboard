@@ -10,6 +10,12 @@ the API may still change between minor versions.
 ## [Unreleased]
 
 ### Fixed
+- **`<puredashboard-sider>` drawer no longer reflows the content.** Closing it put the
+  sider back in the flow while its width was still animating to 0, so the text beside it
+  rewrapped through every step; with the icon rail below the breakpoint, opening it also
+  shifted the content by the rail width. The drawer now keeps exactly its collapsed
+  footprint in the flow (`--pd-sider-cw`, set by the element) and overlaps the rest with a
+  negative end margin that animates with the width, so the content width never changes.
 - **`<puredashboard-sider>` scrollbar.** When the nav is taller than the space between the
   sticky header and footer, the scroll region showed the browser's default scrollbar (a
   light gutter in dark themes). It is now thin, on a transparent track, and its thumb only
