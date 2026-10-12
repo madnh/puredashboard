@@ -282,6 +282,10 @@ class NodePart {
   // needed); only genuinely new keys build DOM, only dropped keys remove it.
   commitRepeat(d) {
     if (this.nodes.length) this.replace([]);              // leaving plain-children mode
+    // …and nested-template mode: its DOM was just removed, so the instance must go too —
+    // else switching BACK to that same template would update the detached instance and
+    // render nothing (template → repeat → same template left the position empty).
+    this.childInst = null;
     const parent = this.anchor.parentNode, mainAnchor = this.anchor;
     const items = d.items || [];
     const newKeys = items.map((it, i) => d.keyFn(it, i));

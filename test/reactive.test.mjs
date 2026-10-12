@@ -531,5 +531,18 @@ customElements.define("reactive-move-probe", MoveProbe);
   );
 }
 
+// ---- a position switching template → repeat → the SAME template renders it again ----
+{
+  const host = document.createElement("div");
+  const card = (n) => html`<b class="t">${n}</b>`;           // one template, reused
+  const view = (v) => html`<section>${v}</section>`;
+  renderResult(view(card("first")), host);
+  ok(host.querySelector(".t")?.textContent === "first", "switch: the template renders");
+  renderResult(view(repeat(["x", "y"], (k) => k, (k) => html`<i>${k}</i>`)), host);
+  ok(host.querySelectorAll("i").length === 2 && !host.querySelector(".t"), "switch: repeat replaces it");
+  renderResult(view(card("again")), host);
+  ok(host.querySelector(".t")?.textContent === "again" && host.querySelectorAll("i").length === 0, "switch: back to the same template renders it (was empty: the detached instance was reused)");
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
