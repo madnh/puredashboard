@@ -91,7 +91,8 @@ multi-line `html\`<el>\n  text\n</el>\`` puts newlines into `textContent` and fa
   (they travel when someone copies `src/`, but the leading `_` keeps them out of the
   go:embed binary): `src/_agents.md` is the front-door guide (rules + recipes +
   component index), and `src/_components.jsonl` is the machine-readable API (one JSON
-  line per component, grep the one you need). **`_components.jsonl` is GENERATED from
+  line per component and per imperative function — `dialog`, `drawer`, `menu`, `toast` —
+  grep the one you need; a function's line comes from its `@function` JSDoc block). **`_components.jsonl` is GENERATED from
   each component's JSDoc** — the JSDoc is the source of truth. So when you change a
   component's behaviour or a prop's description, keep all three in sync: edit the JSDoc,
   regenerate the jsonl (`make -C tools/api-reference`, needs Docker), and update
