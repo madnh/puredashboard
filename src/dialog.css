@@ -61,7 +61,21 @@
 
 /* the body takes the leftover height and scrolls only when it overflows
  * (min-height:0 lets a flex child shrink below its content so overflow can kick in) */
-.puredashboard-dialog__body { flex: 1 1 auto; min-height: 0; padding: var(--puredashboard-dialog-pad); display: flex; flex-direction: column; gap: var(--puredashboard-dialog-gap); overflow: auto; }
+.puredashboard-dialog__body { flex: 1 1 auto; min-height: 0; padding: var(--puredashboard-dialog-pad); display: flex; flex-direction: column; gap: var(--puredashboard-dialog-gap); overflow: auto;
+  /* the same thin scrollbar as the sider: transparent track, thumb while the pointer is
+   * over the dialog (or focus is inside); --puredashboard-dialog-scrollbar sets its colour */
+  scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.puredashboard-dialog:hover .puredashboard-dialog__body,
+.puredashboard-dialog:focus-within .puredashboard-dialog__body {
+  scrollbar-color: var(--puredashboard-dialog-scrollbar, color-mix(in srgb, currentColor 28%, transparent)) transparent;
+}
+.puredashboard-dialog__body::-webkit-scrollbar { width: 8px; }
+.puredashboard-dialog__body::-webkit-scrollbar-track { background: transparent; }
+.puredashboard-dialog__body::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+.puredashboard-dialog:hover .puredashboard-dialog__body::-webkit-scrollbar-thumb,
+.puredashboard-dialog:focus-within .puredashboard-dialog__body::-webkit-scrollbar-thumb {
+  background-color: var(--puredashboard-dialog-scrollbar, color-mix(in srgb, currentColor 28%, transparent));
+}
 .puredashboard-dialog__message { margin: 0; }
 .puredashboard-dialog__input {
   font: inherit; color: inherit; background: transparent;

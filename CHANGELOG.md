@@ -29,6 +29,13 @@ the API may still change between minor versions.
   `__side` / `__item` / `__group` / `__main` classes are gone.
 
 ### Fixed
+- **Theme: a forced `data-theme="dark"` now sets `color-scheme: dark`.** It inherited
+  `light dark`, which lets the browser follow the OS — so on a light-mode OS every native
+  scrollbar and control of a dark page was drawn light (a white scrollbar gutter beside
+  dark panels in dialogs, drawers, popovers, lists).
+- **`dialog()` / `drawer()` body scrollbar** matches the sider's: thin, transparent track,
+  thumb while the pointer is over the dialog or focus is inside;
+  `--puredashboard-dialog-scrollbar` sets its colour.
 - **`reactive.js`: a child position that switched template → `repeat()` → the same
   template rendered nothing.** The nested instance was kept after its DOM was removed, so
   the switch back updated the detached instance. Any component rendering a list in one

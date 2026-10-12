@@ -182,6 +182,11 @@
     --shadow-3: 0 12px 32px rgba(16, 24, 40, 0.16);
   }
 }
+/* Forced dark must say so: `light dark` lets the UA pick the OS preference, so on a light
+ * OS every native control and scrollbar of a data-theme="dark" page was drawn light (a
+ * white scrollbar gutter on dark panels). */
+:root[data-theme="dark"] { color-scheme: dark; }
+
 /* … or forced, regardless of OS, via <html data-theme="light"> */
 :root[data-theme="light"] {
   color-scheme: light;

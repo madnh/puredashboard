@@ -4,6 +4,7 @@
 // returnValue, the closed promise, cleanup, close-button, light-dismiss fallback,
 // and drawer layout/slide — is all exercised here.
 import { JSDOM } from "jsdom";
+import { readFileSync } from "node:fs";
 
 let pass = 0,
   fail = 0;
@@ -294,6 +295,15 @@ const lastDialog = () =>
     }),
   );
   ok((await p) === "viaEnter", "prompt: Enter key submits → value");
+}
+
+// ---- CSS contract: the body's scrollbar matches the sider's; dark theme says dark ----
+{
+  const css = readFileSync(new URL("../src/dialog.css", import.meta.url), "utf8");
+  ok(/\.puredashboard-dialog__body\s*\{[^}]*scrollbar-width:\s*thin;[^}]*scrollbar-color:\s*transparent transparent/.test(css), "dialog body: thin scrollbar, invisible at rest");
+  ok(/\.puredashboard-dialog:hover \.puredashboard-dialog__body,\s*\.puredashboard-dialog:focus-within \.puredashboard-dialog__body\s*\{[^}]*scrollbar-color:\s*var\(--puredashboard-dialog-scrollbar/.test(css), "dialog body: the thumb shows on hover / focus-within");
+  const tokens = readFileSync(new URL("../src/theme/tokens.css", import.meta.url), "utf8");
+  ok(/:root\[data-theme="dark"\]\s*\{\s*color-scheme:\s*dark;\s*\}/.test(tokens), "tokens: a forced dark theme sets color-scheme: dark (native scrollbars/controls follow the theme, not the OS)");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
