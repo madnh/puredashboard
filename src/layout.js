@@ -252,6 +252,7 @@ class PuredashboardFooter extends HTMLElement {}
  * @cssprop [--pd-sider-bg]  - Background (defaults to the theme's `--sidebar-bg`, then `--panel`). The theme's `--sidebar-text` / `--sidebar-muted` / `--sidebar-border` / `--sidebar-hover` / `--sidebar-active` tokens colour the sider and the nav inside it; define them to give the sidebar its own palette.
  * @cssprop [--pd-sider-nav-inset] - Padding around a `<puredashboard-nav>` child and inside the header/footer slots (defaults to `--sp-2`; `0` = edge to edge).
  * @cssprop [--pd-sider-drawer-w] - Drawer width below the breakpoint (defaults to the expanded `width`).
+ * @cssprop [--pd-sider-scrollbar] - Thumb colour of the scroll region's thin scrollbar, shown while the pointer is over the sider (defaults to `currentColor` at 28%).
  *
  * @example
  * const sider = document.createElement("puredashboard-sider");

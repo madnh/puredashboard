@@ -195,6 +195,8 @@ void mod;
   ok(/> puredashboard-layout:not\(\[plain\]\),\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-content,\s*puredashboard-layout:has\(> puredashboard-sider\[variant="inset"\]\) > puredashboard-layout\[plain\] > puredashboard-layout:not\(\[plain\]\)\s*\{/.test(css), "a plain nested layout is not the card; the content or the layout inside it is");
   ok(/> puredashboard-layout\[plain\] > puredashboard-header\s*\{[^}]*background:\s*transparent;[^}]*border-bottom:\s*0/.test(css), "the plain layout's header is a bare toolbar (no panel, no border)");
   ok(/puredashboard-sider\[overlay\]\s*\{[^}]*position:\s*absolute/.test(css), "overlay (drawer) takes the sider out of the flow");
+  ok(/\.puredashboard-sider__inner\s*\{[^}]*scrollbar-width:\s*thin;[^}]*scrollbar-color:\s*transparent transparent/.test(css), "the scroll region's scrollbar is thin and invisible at rest");
+  ok(/puredashboard-sider:hover \.puredashboard-sider__inner,\s*puredashboard-sider:focus-within \.puredashboard-sider__inner\s*\{[^}]*scrollbar-color:\s*var\(--pd-sider-scrollbar/.test(css), "the thumb shows on hover / focus-within");
   ok(/puredashboard-layout:has\(> puredashboard-sider\[overlay\]\)::after/.test(css), "the layout paints a backdrop behind an open drawer");
   const tokens = readFileSync(new URL("../src/theme/tokens.css", import.meta.url), "utf8");
   ok(/--sidebar-bg:\s*var\(--panel\)/.test(tokens) && /--sidebar-active:\s*var\(--panel-3\)/.test(tokens), "tokens.css ships --sidebar-* defaults that equal the page panel");

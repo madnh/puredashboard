@@ -9,6 +9,13 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Fixed
+- **`<puredashboard-sider>` scrollbar.** When the nav is taller than the space between the
+  sticky header and footer, the scroll region showed the browser's default scrollbar (a
+  light gutter in dark themes). It is now thin, on a transparent track, and its thumb only
+  shows while the pointer is over the sider or focus is inside; `--pd-sider-scrollbar`
+  sets its colour.
+
 ## [0.3.2] - 2026-10-12
 
 ### Changed

@@ -131,6 +131,24 @@ puredashboard-sider {
   min-width: 0;
   overflow: auto;
   overflow-x: hidden;
+  /* A long nav scrolls between the sticky header and footer. The scrollbar is thin, on a
+   * transparent track, and only shows its thumb while the pointer is over the sider (or
+   * focus is inside) — the UA default (a light gutter) read as a white stripe in dark
+   * themes. Override the colour with --pd-sider-scrollbar. */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+puredashboard-sider:hover .puredashboard-sider__inner,
+puredashboard-sider:focus-within .puredashboard-sider__inner {
+  scrollbar-color: var(--pd-sider-scrollbar, color-mix(in srgb, currentColor 28%, transparent)) transparent;
+}
+/* WebKit/Blink without scrollbar-color support (older Safari) */
+.puredashboard-sider__inner::-webkit-scrollbar { width: 8px; }
+.puredashboard-sider__inner::-webkit-scrollbar-track { background: transparent; }
+.puredashboard-sider__inner::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+puredashboard-sider:hover .puredashboard-sider__inner::-webkit-scrollbar-thumb,
+puredashboard-sider:focus-within .puredashboard-sider__inner::-webkit-scrollbar-thumb {
+  background-color: var(--pd-sider-scrollbar, color-mix(in srgb, currentColor 28%, transparent));
 }
 /* A nav in the sider is inset from its edges, so the rounded rows (and the active one)
  * don't run into the sider border; the inset is the same on both sides, so a row in the
