@@ -204,5 +204,29 @@ await import("../src/input.js");
   style.remove();
 }
 
+// ---- the native submit is still intercepted after a detach + re-attach ----
+// _wrap() runs once, but disconnectedCallback drops the <form>'s submit/reset listeners. Without
+// re-adding them on connect, a re-attached form let the browser submit natively (navigation)
+// and never emitted its own "submit".
+{
+  document.body.innerHTML = `<puredashboard-form><input name="q" value="hi"><button type="submit">Go</button></puredashboard-form>`;
+  const el = document.body.firstElementChild;
+  await tick();
+  el.remove();
+  document.body.appendChild(el);
+  await tick();
+  const form = el.querySelector(".js-puredashboard-form__form");
+  let got = null, resets = 0;
+  el.addEventListener("submit", (e) => { got = e.detail; });
+  el.addEventListener("reset", (e) => { if (e instanceof w.CustomEvent) resets++; });
+  const ev = new w.Event("submit", { bubbles: true, cancelable: true });
+  form.dispatchEvent(ev);
+  await tick();
+  ok(ev.defaultPrevented, "re-attach: the native submit is still preventDefault'd");
+  ok(got && got.values.q === "hi", "re-attach: the form still emits its own submit");
+  form.dispatchEvent(new w.Event("reset", { bubbles: true }));
+  ok(resets === 1, `re-attach: the form re-emits its own reset — got ${resets}`);
+}
+
 console.log(`form.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

@@ -162,5 +162,24 @@ void PuredashboardPopconfirm;
   ok(el.open === false, "disabled trigger click does not open the panel");
 }
 
+// ---- the trigger still opens the panel after a detach + re-attach ----------
+// A parent that re-renders by replacing children (a card body rebuilt on refresh) detaches
+// this element and attaches it again. disconnectedCallback used to drop the trigger's click
+// listener while _wire() — guarded to run once — never added it back, so every click after
+// the first re-attach did nothing.
+{
+  const { el, trigger } = mount({ title: "Delete this row?" });
+  await tick();
+  el.remove();
+  document.body.appendChild(el);
+  await tick();
+  trigger.click();
+  await tick();
+  ok(el.open === true, "re-attach: a trigger click still opens the panel");
+  ok(trigger.getAttribute("aria-expanded") === "true", "re-attach: aria-expanded follows");
+  el.open = false;
+  await tick();
+}
+
 console.log(`popconfirm.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

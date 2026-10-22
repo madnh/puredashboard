@@ -113,6 +113,12 @@ class PuredashboardForm extends HTMLElement {
 
   connectedCallback() {
     this._wrap();
+    // _wrap() runs once, but disconnectedCallback drops these — put them back on every
+    // re-attach, or a re-attached form submits natively. Re-adding the same function is a no-op.
+    if (this._form) {
+      this._form.addEventListener("submit", this._onSubmit);
+      this._form.addEventListener("reset", this._onReset);
+    }
   }
 
   // Create ONE real <form> and MOVE the author's current children into it,

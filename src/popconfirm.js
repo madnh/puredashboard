@@ -177,6 +177,9 @@ class PuredashboardPopconfirm extends HTMLElement {
 
   connectedCallback() {
     this._wire();
+    // _wire() runs once, but disconnectedCallback drops the trigger listener — put it back on
+    // every re-attach. Adding the same function reference twice is a no-op.
+    if (this._trigger) this._trigger.addEventListener("click", this._onTriggerClick);
     // Honour a declarative open="" once wired.
     if (this.hasAttribute("open")) this._setOpen(true);
     // Re-anchor an already-open panel after a RELOCATION — see the same block in popover.js
@@ -195,7 +198,8 @@ class PuredashboardPopconfirm extends HTMLElement {
 
   // Identify the trigger, keep it in place, BUILD the confirm panel, promote it to
   // the top layer (or mark it as the fallback), and wire ARIA + the trigger click.
-  // Guarded so it runs exactly once even across disconnect/reconnect.
+  // Guarded so it runs exactly once even across disconnect/reconnect (connectedCallback
+  // re-adds the trigger click).
   _wire() {
     if (this._wired) return;
     this._wired = true;

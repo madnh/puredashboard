@@ -135,6 +135,9 @@ class PuredashboardPopover extends HTMLElement {
 
   connectedCallback() {
     this._wire();
+    // _wire() runs once, but disconnectedCallback drops the trigger listener — put it back on
+    // every re-attach. Adding the same function reference twice is a no-op.
+    if (this._trigger) this._trigger.addEventListener("click", this._onTriggerClick);
     // Honour a declarative open="" once wired.
     if (this.hasAttribute("open")) this._setOpen(true);
     // A RELOCATION looks like a reconnect: re-parenting a node is a remove plus an insert,
@@ -162,7 +165,7 @@ class PuredashboardPopover extends HTMLElement {
 
   // Identify the trigger + content, keep the trigger in place, promote the content
   // to a top-layer popover, and wire ARIA + the trigger click. Guarded so it runs
-  // exactly once even across disconnect/reconnect.
+  // exactly once even across disconnect/reconnect (connectedCallback re-adds the trigger click).
   _wire() {
     if (this._wired) return;
     this._wired = true;

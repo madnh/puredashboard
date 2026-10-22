@@ -140,6 +140,13 @@ class PuredashboardGallery extends Reactive {
     document.addEventListener("keydown", this._onSlash);
   }
 
+  // setup() runs once, but disconnectedCallback drops the "/" listener — re-add it on every
+  // re-attach (adding the same function twice is a no-op).
+  connectedCallback() {
+    super.connectedCallback();
+    if (this._onSlash) document.addEventListener("keydown", this._onSlash);
+  }
+
   disconnectedCallback() { if (this._onSlash) document.removeEventListener("keydown", this._onSlash); }
 
   _list() { return this.stories || []; }

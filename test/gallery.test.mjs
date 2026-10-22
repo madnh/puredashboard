@@ -216,5 +216,20 @@ const mount = () => { const g = document.createElement("puredashboard-gallery");
   ok(g.querySelector(".puredashboard-gallery__empty")?.textContent === "Nothing here", "labels override the empty string");
 }
 
+// ---- "/" still focuses the filter after a detach + re-attach ----
+// setup() runs once, but disconnectedCallback removes the document keydown listener.
+{
+  const g = mount();
+  await tick(); await tick();
+  g.remove();
+  document.body.appendChild(g);
+  await tick(); await tick();
+  document.body.focus();
+  const slash = new w.KeyboardEvent("keydown", { key: "/", bubbles: true, cancelable: true });
+  document.body.dispatchEvent(slash);
+  ok(slash.defaultPrevented && g.querySelector(".js-puredashboard-gallery__filter").contains(document.activeElement), "re-attach: \"/\" still focuses the filter box");
+  g.remove();
+}
+
 console.log(`gallery.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

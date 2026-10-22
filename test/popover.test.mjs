@@ -242,5 +242,22 @@ void PuredashboardPopover;
   ok(closes === 0, "relocation: …with no event");
 }
 
+// ---- the trigger still opens the panel after a detach + re-attach ----------
+// Same failure as popconfirm: disconnectedCallback dropped the trigger's click listener and
+// the run-once _wire() never added it back, so a re-attached popover ignored every click.
+{
+  const { el, trigger, content } = mountPopover();
+  await tick();
+  el.remove();
+  document.body.appendChild(el);
+  await tick();
+  trigger.click();
+  await tick();
+  ok(el.open === true, "re-attach: a trigger click still opens the panel");
+  ok(content.hasAttribute("data-open"), "re-attach: the panel is shown");
+  el.open = false;
+  await tick();
+}
+
 console.log(`popover.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
