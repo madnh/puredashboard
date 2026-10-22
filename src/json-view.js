@@ -34,6 +34,21 @@ const LABELS = {
 // custom properties (dynamic values — allowed under the styles-only 'unsafe-inline').
 const PALETTE_KEYS = ["bg", "border", "text", "muted", "key", "string", "number", "boolean", "null", "punct", "summary", "accent"];
 
+// The app theme's switch (src/theme/tokens.css): <html data-theme="light|dark"> forces a mode
+// regardless of the OS. ONE observer on <html> serves every connected instance in "auto".
+const ROOT_WATCH = new Set();
+let rootObserver = null;
+function watchRoot(el) {
+  ROOT_WATCH.add(el);
+  if (rootObserver || typeof MutationObserver === "undefined" || typeof document === "undefined") return;
+  rootObserver = new MutationObserver(() => { for (const e of ROOT_WATCH) e._onScheme(); });
+  rootObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+}
+function unwatchRoot(el) {
+  ROOT_WATCH.delete(el);
+  if (!ROOT_WATCH.size && rootObserver) { rootObserver.disconnect(); rootObserver = null; }
+}
+
 // Inline, self-contained SVGs (no shared icon module). Static author markup.
 const iconChevron = html`<svg class="puredashboard-json-view__chevron" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>`;
 const iconCopy = html`<svg class="puredashboard-json-view__icon puredashboard-json-view__icon--copy" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
@@ -71,14 +86,14 @@ async function copyText(text) {
 /**
  * A collapsible, syntax-highlighted JSON tree viewer. Objects and arrays get a
  * header `<button aria-expanded>` that toggles their body; leaf values show a copy
- * button. Light/dark aware: by default it follows the OS colour scheme and updates
- * live, or you can pin a mode and supply a custom palette per mode. XSS-safe —
+ * button. Light/dark aware: by default it follows the app theme (`<html data-theme>`)
+ * or, without one, the OS colour scheme, and updates live, or you can pin a mode and supply a custom palette per mode. XSS-safe —
  * keys/values render as escaped text nodes, never markup.
  *
  * @element puredashboard-json-view
  *
  * @prop {*} data - The value to render: any JS value, or a JSON string (parsed; invalid JSON falls back to raw text).
- * @prop {string} theme - Colour mode. `"auto"` (default) follows the OS (`prefers-color-scheme`) and updates live, resolving to `light`/`dark`. ANY other value pins that mode name directly and is reflected to the `data-mode` attribute. Ten built-in palettes ship (see `PuredashboardJsonView.BUILT_IN_THEMES`): `light`, `dark`, `github-light`, `github-dark`, `monokai`, `dracula`, `solarized-light`, `solarized-dark`, `nord`, `one-dark`. A name outside that list is a valid custom mode — supply its colours via `themes[name]` (or a `[data-mode="name"]` CSS block).
+ * @prop {string} theme - Colour mode. `"auto"` (default) follows the app theme — `<html data-theme="light|dark">` when set — else the OS (`prefers-color-scheme`), updating live on either, resolving to `light`/`dark`. ANY other value pins that mode name directly and is reflected to the `data-mode` attribute. Ten built-in palettes ship (see `PuredashboardJsonView.BUILT_IN_THEMES`): `light`, `dark`, `github-light`, `github-dark`, `monokai`, `dracula`, `solarized-light`, `solarized-dark`, `nord`, `one-dark`. A name outside that list is a valid custom mode — supply its colours via `themes[name]` (or a `[data-mode="name"]` CSS block).
  * @prop {Object} themes - Palette overrides keyed by mode name, e.g. `{ dark: {…}, "github-dark": {…}, myMode: {…} }`. Each map may set any of `bg`, `border`, `text`, `muted`, `key`, `string`, `number`, `boolean`, `null`, `punct`, `summary`, `accent` (any CSS colour); applied as `--pd-json-view-*` inline custom properties for the active mode only (they win over the built-in palette). Unset knobs keep the stylesheet default.
  * @prop {boolean} copyable - Show a copy button after each leaf value. Default `true`.
  * @prop {number} level - Initial expand depth. Omit (default) to expand everything. Otherwise a node at depth < `level` starts open and deeper nodes start collapsed (depth 0 = root): `0` collapses all (including the root), `1` shows the root's fields, `2` expands one level further, and so on. Only the INITIAL state — the user can still toggle any node; it re-applies when `data` or `level` changes.
@@ -148,20 +163,25 @@ class PuredashboardJsonView extends Reactive {
   }
 
   // Re-add the scheme listener on reconnect (addEventListener dedupes the same
-  // reference, so this is a no-op when already attached).
+  // reference, so this is a no-op when already attached), and rejoin the <html data-theme> watch.
   connectedCallback() {
     super.connectedCallback();
     this._mql?.addEventListener?.("change", this._onScheme);
+    watchRoot(this);
   }
-  disconnectedCallback() { this._mql?.removeEventListener?.("change", this._onScheme); }
+  disconnectedCallback() { this._mql?.removeEventListener?.("change", this._onScheme); unwatchRoot(this); }
 
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
 
-  // Resolve the effective mode. Only "auto" tracks the OS; any other value pins that
-  // mode name directly — so a built-in palette OR a fully custom mode is just data.
+  // Resolve the effective mode. "auto" follows the app theme (<html data-theme="light|dark">)
+  // when one is forced, else the OS — the same order the token palette uses, so the tree
+  // matches the page around it. Any other value pins that mode name directly — so a built-in
+  // palette OR a fully custom mode is just data.
   _mode() {
     const t = this.theme ?? "auto";
     if (t !== "auto") return t;
+    const app = typeof document !== "undefined" ? document.documentElement.getAttribute("data-theme") : null;
+    if (app === "light" || app === "dark") return app;
     return this._mql && this._mql.matches ? "dark" : "light";
   }
 

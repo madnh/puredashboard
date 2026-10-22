@@ -113,7 +113,15 @@ class PuredashboardSplitter extends HTMLElement {
   // _label(key, …args) → localised string: this.labels override, else the default.
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
 
-  connectedCallback() { this._init(); }
+  connectedCallback() {
+    this._init();
+    // _init() runs once, but disconnectedCallback drops the gutter listeners — put them back on
+    // every re-attach. Re-adding the same function is a no-op (covers the first connect too).
+    for (const g of this._gutters) {
+      g.addEventListener("pointerdown", this._onPointerDown);
+      g.addEventListener("keydown", this._onKeyDown);
+    }
+  }
 
   // Adopt the author's direct element children as panels and weave in gutters.
   // Guarded so it runs exactly once, even across disconnect/reconnect —

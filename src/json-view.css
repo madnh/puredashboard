@@ -4,7 +4,7 @@
  * Self-contained & theme-able. Structural colours resolve through a --pd-* chain
  * that falls back to your app tokens and finally to neutral literals, so it looks
  * right with NO config. The component sets `data-mode="light|dark"` on itself
- * (from its `theme` prop; "auto" tracks the OS live), and this stylesheet swaps the
+ * (from its `theme` prop; "auto" tracks <html data-theme>, else the OS, live), and this stylesheet swaps the
  * syntax palette on that attribute — so forcing a mode actually re-colours the tree
  * regardless of the OS. The `themes` JS prop layers per-mode overrides on top as
  * inline `--pd-json-view-*` custom properties (highest priority).

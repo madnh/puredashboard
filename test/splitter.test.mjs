@@ -167,5 +167,22 @@ void PuredashboardSplitter;
   ok(JSON.stringify(el.sizes) === JSON.stringify(before), "no-layout drag leaves sizes unchanged");
 }
 
+// ---- the gutters still respond after a detach + re-attach ----
+// _init() runs once (re-adopting would double-insert gutters), but disconnectedCallback drops
+// the gutters' pointerdown/keydown listeners — without re-adding them on connect, a re-attached
+// splitter could no longer be resized.
+{
+  const { el } = mount(2);
+  await tick();
+  el.remove();
+  document.body.appendChild(el);
+  await tick();
+  ok(gutters(el).length === 1, "re-attach: still one gutter, not re-inserted");
+  const before0 = el.sizes[0];
+  key(gutters(el)[0], "ArrowRight");
+  await tick();
+  ok(el.sizes[0] > before0, "re-attach: ArrowRight on the gutter still resizes");
+}
+
 console.log(`splitter.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

@@ -76,6 +76,25 @@ common mistake:
 - Each component **inlines its own SVG** via a local `svg()` helper — no shared icon module.
 - Full design rules + the add-a-component recipe: `docs/DEVELOPMENT.md`.
 
+### Lifecycle: an element must survive detach + re-attach
+A custom element is disconnected and connected again whenever a parent re-renders by
+replacing children, or a keyed list re-parents a row — `connectedCallback` runs again on the
+SAME instance. One-time setup (`_wire()` / `_wrap()` / `_init()` behind a `_wired`-style
+flag, `Reactive`'s `setup()`) does NOT run again. So:
+- **Whatever `disconnectedCallback` removes, `connectedCallback` must add back** — outside
+  the once-guard. `addEventListener` with the same function reference is a no-op, so an
+  unconditional re-add is safe on the first connect too. Observers and `matchMedia`
+  listeners the same way (re-create / re-attach on connect).
+- Or don't remove it at all: a listener on the element's OWN child (trigger, gutter, inner
+  `<form>`) travels with the element and leaks nothing. Only `document`/`window` listeners,
+  observers and timers must come off on disconnect.
+- **Every component with a `disconnectedCallback` needs a test that appends, removes,
+  appends again, then drives the real interaction** (click, key, submit) — not just state.
+  v0.4.0 shipped popconfirm, popover, form, gallery and splitter dead after re-attach because
+  only first-mount was tested (pad `default-6mfhfk`).
+- An already-OPEN overlay that is relocated is a separate concern: re-assert the panel,
+  don't close it (see the comments in `popover.js` / `tooltip.js` connectedCallback).
+
 ### Test gotcha
 The parts engine preserves whitespace exactly (like lit-html). When a test asserts
 `textContent` with an exact `===`, keep the template's inner text on **one line** — a

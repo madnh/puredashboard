@@ -4,7 +4,7 @@
 import { JSDOM } from "jsdom";
 const dom = new JSDOM("<!doctype html><body></body>", { runScripts: "outside-only" });
 const w = dom.window;
-for (const k of ["document", "HTMLElement", "customElements", "NodeFilter", "CustomEvent", "Node", "Event", "MouseEvent", "KeyboardEvent"])
+for (const k of ["document", "HTMLElement", "customElements", "NodeFilter", "CustomEvent", "Node", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver"])
   global[k] = w[k];
 global.window = w;
 global.queueMicrotask = queueMicrotask;
@@ -261,6 +261,44 @@ const DATA = { name: "web-01", up: true, ports: [80, 443], meta: null, count: 3 
   neg.data = deep(70);
   await tick();
   ok(neg.querySelectorAll(".js-puredashboard-json-view__toggle").length === 64 && neg.querySelectorAll(".puredashboard-json-view__row--depth-cap").length === 1, "a negative maxDepth falls back to the default 64");
+}
+
+// ---- theme=auto follows the APP theme (<html data-theme>) before the OS ----
+// src/theme forces a mode with <html data-theme="light|dark">; every token-driven component
+// follows it. json-view carries its own palette, so "auto" must read the same switch — before,
+// it read only prefers-color-scheme and showed a dark tree on a forced-light page.
+{
+  const root = document.documentElement;
+  w.matchMedia = (q) => ({ matches: /dark/.test(q), addEventListener() {}, removeEventListener() {} });   // dark OS
+  root.setAttribute("data-theme", "light");
+  const el = mount("puredashboard-json-view");
+  el.data = { a: 1 };
+  await tick();
+  ok(el.dataset.mode === "light", `auto: html[data-theme=light] wins over a dark OS — got ${el.dataset.mode}`);
+  root.setAttribute("data-theme", "dark");
+  await tick(); await tick();
+  ok(el.dataset.mode === "dark", `auto: switching html[data-theme] re-colours live — got ${el.dataset.mode}`);
+  root.setAttribute("data-theme", "light");   // against the dark OS, so only the live switch can produce light
+  await tick(); await tick();
+  ok(el.dataset.mode === "light", `auto: …and back to light, live — got ${el.dataset.mode}`);
+  root.removeAttribute("data-theme");
+  await tick(); await tick();
+  ok(el.dataset.mode === "dark", `auto: no data-theme falls back to the OS — got ${el.dataset.mode}`);
+  el.theme = "dracula";
+  root.setAttribute("data-theme", "light");
+  await tick(); await tick();
+  ok(el.dataset.mode === "dracula", `a pinned theme ignores html[data-theme] — got ${el.dataset.mode}`);
+  // still live after a detach + re-attach
+  el.theme = "auto";
+  el.remove(); document.body.appendChild(el);
+  root.setAttribute("data-theme", "dark");
+  await tick(); await tick();
+  root.setAttribute("data-theme", "light");
+  await tick(); await tick();
+  ok(el.dataset.mode === "light", `re-attach: html[data-theme] still tracked — got ${el.dataset.mode}`);
+  el.remove();
+  root.removeAttribute("data-theme");
+  w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
 }
 
 console.log(`\njson-view: ${pass} passed, ${fail} failed`);

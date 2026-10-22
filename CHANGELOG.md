@@ -12,10 +12,15 @@ the API may still change between minor versions.
 ### Fixed
 - **Detach + re-attach no longer leaves an element dead.** `<puredashboard-popconfirm>` and
   `<puredashboard-popover>` stopped opening on a trigger click, `<puredashboard-form>` let the
-  browser submit natively (navigation, no `submit` event), and `<puredashboard-gallery>` lost
-  its `/` shortcut, once the element was removed and inserted again (a parent re-rendering by
+  browser submit natively (navigation, no `submit` event), `<puredashboard-splitter>` gutters
+  stopped resizing (pointer and keyboard), and `<puredashboard-gallery>` lost its `/`
+  shortcut, once the element was removed and inserted again (a parent re-rendering by
   replacing children). `disconnectedCallback` removed the listeners; the run-once wiring never
   added them back. `connectedCallback` now re-adds them.
+- **`<puredashboard-json-view theme="auto">` follows the app theme.** It read only
+  `prefers-color-scheme`, so a page forced to `<html data-theme="light">` on a dark OS (or the
+  reverse) showed a tree in the opposite mode to everything around it. `auto` now uses
+  `<html data-theme="light|dark">` when set, else the OS, and tracks both live.
 
 ## [0.4.0] - 2026-10-12
 
