@@ -104,8 +104,8 @@ class PuredashboardSlider extends Reactive {
     // the owning <form>, the value bubble and the fill percent stay in sync. No
     // re-dispatch — that would double-deliver the event under its native name.
     const sync = (e, el) => { this.value = el.value; };
-    this.on("input", ".js-puredashboard-slider__field", sync);
-    this.on("change", ".js-puredashboard-slider__field", sync);
+    this.on("input", ".js-puredashboard-slider__field", sync, { capture: true });
+    this.on("change", ".js-puredashboard-slider__field", sync, { capture: true });
   }
 
   // Form-associated lifecycle.

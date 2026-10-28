@@ -48,7 +48,7 @@ let uid = 0;
  * @prop {string}  value    - Value of the selected option (get/set). Default `""` (none selected).
  * @prop {boolean} disabled - Disable the whole group. Default `false`.
  * @prop {boolean} required - A selection is required (none → `valueMissing`). Default `false`.
- * @prop {string}  error    - Inline error message; shown below and set as a custom validity. Default `""`.
+ * @prop {string}  error    - Inline error message; shown below and set as a custom validity. Cleared when the user changes the value (the message is stale then); set it again in your `input`/`change` handler to keep it. Default `""`.
  * @prop {Object}  labels   - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name     - Field name for native `<form>` submission.
  * @attr {string}  aria-label      - Accessible name for the group (mirrored to the radiogroup).
@@ -114,6 +114,9 @@ class PuredashboardRadioGroup extends Reactive {
   // Indices of enabled options (group not disabled AND option not disabled).
   _enabled() { const o = this._opts(); const out = []; for (let i = 0; i < o.length; i++) if (!this.disabled && !o[i].disabled) out.push(i); return out; }
 
+  // A user change: a server-set `error` is stale once the value moves, so drop it before the
+  // consumer's `change` handler runs (which may set a new one).
+  _changed(value) { if (this.error) this.error = ""; this.emit("change", { value }); }
   // Select the option at index i (if enabled), move focus to it, and emit `change`
   // when the value actually changes. Central to both click and keyboard handling.
   _select(i) {
@@ -123,7 +126,7 @@ class PuredashboardRadioGroup extends Reactive {
     this.value = o.value;
     // Re-render happens on the microtask; focus the option once it exists.
     queueMicrotask(() => this.$(`[data-idx="${i}"]`)?.focus());
-    if (changed) this.emit("change", { value: o.value });
+    if (changed) this._changed(o.value);
   }
 
   // Keyboard: implements the WAI-ARIA APG Radio Group map. Down/Right → next

@@ -96,6 +96,12 @@ f.addEventListener("invalid", () => {/* first bad field is focused */});
 - Any input alone also works inside a native `<form>`; it submits under its `name`.
 - Read/set the value via the element's `.value` (checkbox/switch: `.checked`).
 - Native `input`/`change` events **bubble** from inputs — listen on the element.
+  Inside the handler `.value`/`.checked` is already the new value, whenever the listener
+  was attached (before or after the element connected).
+- **Server-side errors:** set `el.error = "message"` — it shows below the control and
+  blocks submit (custom validity). It is **cleared automatically when the user changes the
+  value**, so the form can be submitted again; to keep an error while the user types (live
+  validation), set it again in your `input`/`change` handler.
 
 ### Overlays (call & await; they use the native top layer)
 ```js

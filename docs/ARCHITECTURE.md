@@ -155,9 +155,12 @@ base for the input-bearing custom elements. The lifecycle is intentionally tiny:
   `renderResult` (in-place diff against the element's own children) and then calls the
   optional `firstUpdated(changed)` / `updated(changed)` hooks.
 - **Events:** `emit(name, detail)` dispatches a bubbling `CustomEvent`. `on(type, sel,
-  fn)` registers **delegated** listeners — one listener per type on the host, so they
+  fn, opts?)` registers **delegated** listeners — one listener per type on the host, so they
   survive re-renders — though inline `@event` bindings in the template are usually
-  nicer. `$()`/`$$()` are `querySelector` shorthands.
+  nicer. `{ capture: true }` runs the handler in the capture phase, before every bubble
+  listener on the host; value controls sync their property that way, so a consumer
+  listener added before connect still reads the new value. `$()`/`$$()` are
+  `querySelector` shorthands.
 
 That's the whole framework. No virtual DOM kept in JS, no diff of an old vtree — the
 *live DOM* is the state, and the parts engine reconciles into it.

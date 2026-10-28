@@ -9,6 +9,22 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Fixed
+- **A host `input`/`change` listener reads the new value.** In input, textarea, number,
+  select, date, time, datetime, color, slider, checkbox and switch, a listener the app added
+  on the element BEFORE it connected ran ahead of the element's own value sync, so `.value`
+  (or `.checked`) was one edit behind. The sync now runs in the capture phase
+  (`Reactive.on(type, sel, fn, { capture: true })`). Reported from ribeto-sync.
+- **`error` no longer blocks the form for good.** Once set, `error` stayed a custom validity
+  until the app cleared it, so a native `<form>` never fired `submit` again and the app had
+  no event to clear it on. Input, textarea, number, select, date, time, datetime, checkbox,
+  switch, radio-group and combobox now clear `error` when the user changes the value, before
+  the app's `input`/`change` handler runs (which may set it again).
+- **`theme/shell.css`: cards in a grid/flex line up.** `.card + .card` added a top margin to
+  every later card, on top of the container's `gap`. The rule is now `.page > .card + .card`
+  (cards stacked directly in the page). Cards stacked inside another wrapper no longer get
+  that margin; space them with the wrapper's `gap`.
+
 ## [0.4.1] - 2026-10-22
 
 ### Fixed

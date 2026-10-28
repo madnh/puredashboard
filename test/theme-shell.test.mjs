@@ -36,5 +36,23 @@ document.head.appendChild(style);
   ok(w.getComputedStyle(plain).display === "block", "a wrapper without the class is unaffected");
 }
 
+// ---- .card + .card stacks only in the page's normal flow, not inside a grid/flex container ----
+{
+  const page = document.createElement("div");
+  page.className = "page";
+  const card = () => { const c = document.createElement("div"); c.className = "card"; return c; };
+  const a = card(), b = card();
+  const grid = document.createElement("div");
+  const g1 = card(), g2 = card();
+  grid.append(g1, g2);
+  page.append(a, b, grid);
+  document.body.appendChild(page);
+  const mt = (el) => w.getComputedStyle(el).marginTop;
+  const none = (el) => ["", "0", "0px"].includes(mt(el));
+  ok(!none(b), `a card after a card directly in .page gets a top margin (got ${JSON.stringify(mt(b))})`);
+  ok(none(a), `the first card in .page gets none (got ${JSON.stringify(mt(a))})`);
+  ok(none(g2), `a later card inside a nested container (grid) gets no margin (got ${JSON.stringify(mt(g2))})`);
+}
+
 console.log(`theme-shell.test.mjs: ${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

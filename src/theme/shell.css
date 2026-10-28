@@ -79,7 +79,9 @@ main { flex: 1; min-height: 0; overflow: auto; }
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
   padding: var(--sp-4);
 }
-.card + .card { margin-top: var(--sp-4); }
+/* Stacked cards in the page's normal flow get a gap. Scoped to direct children of .page: inside a grid/flex container the
+   container's `gap` already spaces them, and a margin on every later sibling would push them below the first one. */
+.page > .card + .card { margin-top: var(--sp-4); }
 
 /* a horizontal toolbar (title left, actions right) */
 .toolbar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }

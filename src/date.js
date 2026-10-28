@@ -44,7 +44,7 @@ let uid = 0;
  * @prop {boolean} readonly - Read-only. Default `false`.
  * @prop {string}  size     - `"sm"` | `"md"` | `"lg"`. Default `"md"`.
  * @prop {boolean} invalid  - Force the invalid visual state. Default `false`.
- * @prop {string}  error    - Inline error message; shown below and set as a custom validity. Default `""`.
+ * @prop {string}  error    - Inline error message; shown below and set as a custom validity. Cleared when the user changes the value (the message is stale then); set it again in your `input`/`change` handler to keep it. Default `""`.
  * @prop {Object}  labels   - Override UI strings. Keys: `required`. Unset keys keep the English default.
  * @attr {string}  name     - Field name for native `<form>` submission.
  * @attr {string}  aria-label - Accessible name for the control. The host has no role of its own, so it is MIRRORED onto the inner native control (as is `aria-labelledby`, and any `<label>` associated with the host) — that mirrored value is what a screen reader announces.
@@ -104,9 +104,9 @@ class PuredashboardDate extends Reactive {
     // or `event.target.value`). We only mirror the value into our state so the
     // property, the owning <form>, and validity stay in sync. No re-dispatch — that
     // would double-deliver the event under its native name.
-    const sync = (e, el) => { this.value = el.value; };
-    this.on("input", ".js-puredashboard-date__field", sync);
-    this.on("change", ".js-puredashboard-date__field", sync);
+    const sync = (e, el) => { this.value = el.value; if (this.error) this.error = ""; };
+    this.on("input", ".js-puredashboard-date__field", sync, { capture: true });
+    this.on("change", ".js-puredashboard-date__field", sync, { capture: true });
   }
 
   // Form-associated lifecycle.

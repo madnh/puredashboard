@@ -451,18 +451,27 @@ export class Reactive extends HTMLElement {
 
   // Optional delegated events (one host listener/type, survives re-renders). Inline
   // @event bindings are usually nicer now, but on() stays for dynamic/global wiring.
-  on(type, sel, fn) {
-    if (typeof sel === "function") { fn = sel; sel = null; }
-    if (!this.#deleg.has(type)) { this.#deleg.set(type, []); this.addEventListener(type, this.#fire); }
-    this.#deleg.get(type).push({ sel, fn });
+  // `{ capture: true }` runs the handler in the capture phase, i.e. before ANY bubble
+  // listener on the host — including one a consumer added before connect, which a
+  // bubble-phase on() (registered in setup(), at connect) would otherwise follow. Value
+  // controls sync their property this way, so a consumer `input` listener reads the new
+  // `.value` whenever it was attached.
+  on(type, sel, fn, opts) {
+    if (typeof sel === "function") { opts = fn; fn = sel; sel = null; }
+    const capture = !!(opts && opts.capture);
+    const key = capture ? `${type}:capture` : type;
+    if (!this.#deleg.has(key)) { this.#deleg.set(key, []); this.addEventListener(type, capture ? this.#fireCapture : this.#fire, capture); }
+    this.#deleg.get(key).push({ sel, fn });
     return this;
   }
-  #fire = (e) => {
-    for (const { sel, fn } of this.#deleg.get(e.type) || []) {
+  #fireCapture = (e) => this.#dispatch(e, `${e.type}:capture`);
+  #fire = (e) => this.#dispatch(e, e.type);
+  #dispatch(e, key) {
+    for (const { sel, fn } of this.#deleg.get(key) || []) {
       const el = sel ? e.target.closest(sel) : this;
       if (el && this.contains(el)) fn.call(this, e, el);
     }
-  };
+  }
   emit(name, detail) { this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true })); }
 
   $(s) { return this.querySelector(s); }

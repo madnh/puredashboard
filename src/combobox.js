@@ -74,7 +74,7 @@ let uid = 0;
  * @prop {boolean} loading     - Show only a "Loading…" row (the old options are hidden and cannot be committed) while the app fetches `options` (after `comboboxopen` / `comboboxsearch`). Default `false`.
  * @prop {boolean} clearable   - Show a clear button while a value is set (emits `change` with `""`). Default `false`.
  * @prop {boolean} multiple    - Multi-select: `value` is a `string[]`; chosen options show as removable `puredashboard-tag` chips before the text box, the list stays open after a pick (a pick toggles), chosen options are `aria-selected`, Backspace on an empty text box removes the last chip, the form value is `name` repeated once per value, and `change` carries the array. `allowCustom` does not apply. Default `false`.
- * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Default `""`.
+ * @prop {string}  error       - Inline error message; shown below and set as a custom validity. Cleared when the user changes the value (the message is stale then); set it again in your `input`/`change` handler to keep it. Default `""`.
  * @prop {Object}  labels      - Override UI strings. Keys: `noResults`, `loading`, `clear` (the clear button's aria-label), `required`, `remove` (chip close button, `(label) => string`). Unset keys keep the English default.
  * @attr {string}  name        - Field name for native `<form>` submission (on the host).
  * @attr {boolean} multiple    - Declarative form of `multiple`.
@@ -162,12 +162,12 @@ class PuredashboardCombobox extends Reactive {
     const vals = this._values();
     const next = vals.includes(o.value) ? vals.filter((v) => v !== o.value) : [...vals, o.value];
     this.value = next;
-    this.emit("change", { value: [...next] });
+    this._changed([...next]);
   }
   _removeValue(v) {
     const next = this._values().filter((x) => x !== v);
     this.value = next;
-    this.emit("change", { value: [...next] });
+    this._changed([...next]);
   }
   // multiple, a chip's close button: remove the value, then keep keyboard focus in the control, since the focused button
   // leaves with its chip: the next chip's close button, else the previous one, else the text box WITHOUT opening the list.
@@ -252,7 +252,7 @@ class PuredashboardCombobox extends Reactive {
     const q = (this._query ?? "").trim();
     const exact = this._options().find((o) => o.label.toLowerCase() === q.toLowerCase() && !o.disabled);
     const next = exact ? exact.value : q;
-    if (this.value !== next) { this.value = next; this.emit("change", { value: next }); }
+    if (this.value !== next) { this.value = next; this._changed(next); }
   }
   _onOutside = (e) => { if (!this.contains(e.target)) { this._commitTyped(); this._close(); this.requestUpdate(); } };
 
@@ -275,6 +275,9 @@ class PuredashboardCombobox extends Reactive {
 
   // ---- selection / commit --------------------------------------------------
   // Commit an option: set the value, fill the input with its label, close, and emit
+  // A user change: a server-set `error` is stale once the value moves, so drop it before the
+  // consumer's `change` handler runs (which may set a new one).
+  _changed(value) { if (this.error) this.error = ""; this.emit("change", { value }); }
   // `change` when the value actually changed.
   _commit(o) {
     if (this.multiple) { this._toggle(o); return; }
@@ -282,7 +285,7 @@ class PuredashboardCombobox extends Reactive {
     const changed = this.value !== o.value;
     this.value = o.value;
     this._close();
-    if (changed) this.emit("change", { value: o.value });
+    if (changed) this._changed(o.value);
   }
 
   // Commit whatever the input currently holds. With an active option, commit it. Else,
@@ -299,7 +302,7 @@ class PuredashboardCombobox extends Reactive {
       if (this.allowCustom && !this.multiple) {
         const changed = this.value !== q;
         this.value = q; this._close();
-        if (changed) this.emit("change", { value: q });
+        if (changed) this._changed(q);
         return;
       }
     }
@@ -374,12 +377,12 @@ class PuredashboardCombobox extends Reactive {
     if (this.multiple) {
       if (!this._values().length) return;
       this.value = []; this._query = "";
-      this.emit("change", { value: [] });
+      this._changed([]);
       return;
     }
     if (!this.value) return;
     this.value = ""; this._query = "";
-    this.emit("change", { value: "" });
+    this._changed("");
   }
 
   // Push the current value + validity into the owning <form> after every render.

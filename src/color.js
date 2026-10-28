@@ -87,8 +87,8 @@ class PuredashboardColor extends Reactive {
     // into our state so the property, the owning <form>, and the hex label stay
     // in sync. No re-dispatch — that would double-deliver the native event.
     const sync = (e, el) => { this.value = el.value; };
-    this.on("input", ".js-puredashboard-color__input", sync);
-    this.on("change", ".js-puredashboard-color__input", sync);
+    this.on("input", ".js-puredashboard-color__input", sync, { capture: true });
+    this.on("change", ".js-puredashboard-color__input", sync, { capture: true });
   }
 
   // Form-associated lifecycle.
