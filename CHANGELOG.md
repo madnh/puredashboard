@@ -9,6 +9,8 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-10-29
+
 ### Fixed
 - **A host `input`/`change` listener reads the new value.** In input, textarea, number,
   select, date, time, datetime, color, slider, checkbox and switch, a listener the app added
@@ -965,7 +967,8 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/madnh/puredashboard/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/madnh/puredashboard/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/madnh/puredashboard/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/madnh/puredashboard/compare/v0.3.1...v0.3.2
