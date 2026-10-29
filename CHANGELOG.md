@@ -9,6 +9,8 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-29
+
 ### Changed — BREAKING
 - **The router no longer sets `aria-current` on links.** Until v0.4.2, after every
   navigation `Router` scanned EVERY `a[href]` in the document and set
@@ -1008,7 +1010,8 @@ First public release — extracted into a standalone, zero-dependency, no-build 
 - Toasts now use the elevated `--panel` surface (consistent with `menu` / `dialog`), so
   they read as crisp cards instead of relying on a low-contrast background.
 
-[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/madnh/puredashboard/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/madnh/puredashboard/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/madnh/puredashboard/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/madnh/puredashboard/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/madnh/puredashboard/compare/v0.3.2...v0.4.0
