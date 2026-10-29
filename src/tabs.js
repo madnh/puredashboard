@@ -17,6 +17,7 @@
 // tab; disabled tabs are skipped. Roving tabindex: the selected tab is 0, the rest
 // are -1. See docs/DEVELOPMENT.md → "Definition of Done".
 import { Reactive, html } from "./reactive.js";
+import { bestLink, currentRoute } from "./active-link.js";
 
 // All user-facing strings (English defaults). Override any subset via the `labels`
 // property to localise — e.g. tabs.labels = { tablist: "Phần" }. The tab labels
@@ -46,6 +47,8 @@ let uid = 0;
  * are no tab roles, no roving tabindex, no arrow-key handling and no panels (`panelId` is ignored), and no `tabchange` is fired; navigation
  * is the browser's. A tab that is `disabled` or has no `href` renders as a non-link `<span aria-disabled="true">`.
  *
+ * @attr {string}  follow-route - Link mode only: follow `router.js`. On every `routechange` (and on connect, and when `tabs` change) set `value` to the tab whose `href` best matches the committed route — its path equals the route or is a segment prefix of it, the longest match wins, the root `#/` matches only itself; no match → `""` (no tab current). `follow-route="exact"` turns prefix matching off. Without a router it does nothing; set `value` yourself.
+ *
  * @attr {string}  aria-label - Accessible name, applied to the element that carries the component's role (the host has no role of its own). Overrides the built-in `LABELS` name.
  * @fires tabchange - Bubbling `CustomEvent`; `detail`: `{ value }` — fired when the active tab changes.
  *
@@ -74,6 +77,24 @@ class PuredashboardTabs extends Reactive {
 
   // _label(key, …args) → localised string: this.labels override, else the English default.
   _label(key, ...a) { const v = (this.labels && this.labels[key]) ?? LABELS[key]; return typeof v === "function" ? v(...a) : v; }
+
+  // `follow-route` (link mode): derive `value` from the router (see active-link.js). The listener is on
+  // `document`, so it comes off on disconnect and goes back on every connect, outside the run-once setup().
+  static observedAttributes = ["follow-route"];
+  attributeChangedCallback() { this._follow(); }
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("routechange", this._onRoute);
+    this._follow();
+  }
+  disconnectedCallback() { document.removeEventListener("routechange", this._onRoute); }
+  _onRoute = () => this._follow();
+  _follow() {
+    if (!this.hasAttribute("follow-route") || !currentRoute() || !this._links()) return;
+    const tabs = (this.tabs || []).filter((t) => t && t.href && !t.disabled);
+    const i = bestLink(tabs.map((t) => t.href), { exact: this.getAttribute("follow-route") === "exact" });
+    this.value = i >= 0 ? tabs[i].id : "";
+  }
 
   setup() {
     this.on("click", "[data-tab]", (e, el) => this._activate(el.dataset.tab));
@@ -135,7 +156,8 @@ class PuredashboardTabs extends Reactive {
   // role, aria-labelledby, and hidden (only the active panel is shown). Panels are
   // located by document.getElementById(panelId) — guard null (a panel may be
   // absent or not yet in the DOM).
-  updated() {
+  updated(changed) {
+    if (changed && changed.has("tabs")) this._follow();
     if (this._links()) return;   // link mode has no panels: nothing to manage
     const active = this._current();
     if (this._refocus) { this._refocus = false; this.$('[role="tab"][aria-selected="true"]')?.focus(); }

@@ -194,7 +194,7 @@ element and are GC'd with it, so there is no library-side leak.
 
 ## 5. Router (`router.js`)
 
-A standalone `class Router`, independent of everything else. Two modes:
+A standalone `class Router`; its only import is `active-link.js` (below). Two modes:
 
 - **`hash`** (default) — URLs like `#/nodes/web`. Needs no server config, works from
   any mount point or `file://` path — ideal for a UI embedded in a backend binary.
@@ -210,6 +210,18 @@ Each route lazy-loads its page via `load()` (typically `() => import("./pages/x.
 imported once and cached. A page's default export is either a custom-element **tag
 name** or a **mount function** `(outlet, ctx) => cleanup?`. Layouts and guards compose
 on top.
+
+**Active links are not the router's job.** After every committed navigation (guards
+passed, modules loaded) it calls `publishRoute()` from `active-link.js`, which records
+the route (`currentRoute()`) and dispatches `routechange` on `document`. Whoever renders
+links marks the current one: `<puredashboard-nav follow-route>` /
+`<puredashboard-tabs follow-route>` set their own `current` / `value`; plain links call
+`markActive(container)`. Matching is by path segments, longest match within one
+container wins, the root matches only itself. This replaced (v0.5.0) a document-wide
+scan that set `aria-current` by exact match on every `a[href]`: it missed parent
+sections on child routes, marked content links, and fought nav/tabs over the same
+attribute — the parts engine does not rewrite an attribute whose bound value did not
+change, so a link the router stripped stayed stripped.
 
 ---
 
@@ -268,6 +280,7 @@ width, an overlay's computed position). That's why the recommended CSP allows
 | `menu.js` | `menu()` — imperative overlay. |
 | `toast.js` | `toast` (+ `.success/.error/.warn/.info`) — imperative overlay. |
 | `router.js` | `Router` — standalone SPA router. |
+| `active-link.js` | `routechange` / `currentRoute` / `markActive` — which link is current (used by router, nav, tabs). |
 | `md.js` | `parseMarkdown`/`renderMarkdown` + `<puredashboard-markdown>` — safe markdown. |
 | `*.css` | One self-contained stylesheet per component, themed via `--pd-*`. |
 | `theme/` | **Optional** app-level theme: `tokens.css` (palette), `base.css` (form controls), `shell.css` (dashboard frame), `dashboard.css` (all-in-one). Components work without it; it just supplies the tokens they read + a cohesive layout. |

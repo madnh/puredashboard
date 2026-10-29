@@ -13,6 +13,8 @@
  *         <a class="tab" aria-current="page" href="#/services">Services</a>
  *         <a class="tab" href="#/logs">Logs</a>
  *       </nav>
+ *       (the current tab is `.tab[aria-current="page"]` or `.tab.active`; with router.js,
+ *        `document.addEventListener("routechange", () => markActive(tabsNav))` sets it)
  *       <div class="header-right"><span class="health"><span class="dot up"></span> Online</span></div>
  *     </header>
  *     <main><div class="page">

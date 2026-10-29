@@ -13,7 +13,7 @@ process.on("unhandledRejection", (e) => { unhandled.push(e); if (process.env.DBG
 
 const dom = new JSDOM("<!doctype html><html><body><div id=\"view\"></div></body></html>", { url: "http://localhost/" });
 const w = dom.window;
-for (const k of ["window", "document", "HTMLElement", "customElements", "location", "history", "MouseEvent", "Event", "URL", "URLSearchParams", "Node"])
+for (const k of ["window", "document", "HTMLElement", "customElements", "location", "history", "MouseEvent", "Event", "CustomEvent", "URL", "URLSearchParams", "Node"])
   global[k] = w[k];
 
 const { Router } = await import("../src/router.js");

@@ -29,9 +29,9 @@
     <header>
       <div class="brand"><span class="logo">P</span> PureDashboard <small>· Demo</small></div>
       <nav class="tabs" id="tabs">
-        <a class="tab" href="#/overview" data-path="/overview">Overview</a>
-        <a class="tab" href="#/services" data-path="/services">Services</a>
-        <a class="tab" href="#/settings" data-path="/settings">Settings</a>
+        <a class="tab" href="#/overview">Overview</a>
+        <a class="tab" href="#/services">Services</a>
+        <a class="tab" href="#/settings">Settings</a>
       </nav>
       <div class="header-right">
         <puredashboard-tooltip text="Toggle light / dark">
@@ -63,7 +63,7 @@
       import "../src/popconfirm.js"; import "../src/alert.js"; import "../src/progress.js";
       import "../src/spinner.js"; import "../src/skeleton.js";
       import { toast } from "../src/toast.js";
-      import { Router } from "../src/router.js";
+      import { Router, markActive } from "../src/router.js";
 
       // tiny helper: create + assign props + append kids
       const h = (tag, props, kids) => {
@@ -275,17 +275,11 @@
             h("puredashboard-result", { status: "404", title: "Page not found", subtitle: "That page doesn't exist." }))) },
         },
       });
-      router.start();
 
-      // reflect the active top-bar tab from the hash
-      const syncTabs = () => {
-        const path = (location.hash.replace(/^#/, "") || "/overview");
-        for (const a of document.querySelectorAll("#tabs .tab")) {
-          if (path.startsWith(a.dataset.path)) a.setAttribute("aria-current", "page");
-          else a.removeAttribute("aria-current");
-        }
-      };
-      window.addEventListener("hashchange", syncTabs); syncTabs();
+      // mark the active top-bar tab after every committed navigation
+      const tabs = document.getElementById("tabs");
+      document.addEventListener("routechange", () => markActive(tabs));
+      router.start();
       if (!location.hash) location.hash = "#/overview";
 
       // light/dark toggle

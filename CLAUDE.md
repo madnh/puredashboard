@@ -58,7 +58,8 @@ common mistake:
    (not `Reactive`); builds nodes with `createElement` + `textContent` ONLY. This is the
    XSS-safety guarantee for untrusted input — never route it through `innerHTML`/`html`.
 
-`router.js` and `md.js` are standalone. `md.js` has two layers: a pure testable
+`router.js` and `md.js` are standalone (router imports only `active-link.js`, which also feeds
+`nav`/`tabs` `follow-route`; the router itself never touches links). `md.js` has two layers: a pure testable
 `parseMarkdown` (AST + href whitelist) and `renderMarkdown` (DocumentFragment, textContent-only).
 
 ## Invariants to preserve when editing (these are load-bearing)

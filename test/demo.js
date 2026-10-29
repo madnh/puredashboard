@@ -1,7 +1,7 @@
 // Demo app wiring every vendor module together: reactive components as a router
 // layout + pages, an auth guard that redirects to login, and confirm()/toast().
 import { Reactive, html, repeat } from "../src/reactive.js";
-import { Router } from "../src/router.js";
+import { Router, markActive } from "../src/router.js";
 import { confirm } from "../src/dialog.js";
 import { toast } from "../src/toast.js";
 
@@ -49,9 +49,16 @@ class DashLayout extends Reactive {
     this._t = setInterval(() => {
       this.online = this.online + 1;
     }, 1200);
+    document.addEventListener("routechange", this._mark);
   }
   disconnectedCallback() {
     clearInterval(this._t);
+    document.removeEventListener("routechange", this._mark);
+  }
+  // The router never touches links: mark the sidebar's current one ourselves.
+  _mark = () => markActive(this.querySelector("aside nav"));
+  updated() {
+    this._mark();
   }
   setup() {
     this.on("click", "#logout", () => {

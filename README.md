@@ -133,6 +133,7 @@ a few **shared modules** — the engine and the standalone utilities:
 | `menu.js`     | `menu()`                                                      | Anchored dropdown / action menu in the top layer — icons, shortcut hints, groups, checkbox & radio items, nested submenus.                                                      |
 | `toast.js`    | `toast` (+ `.success/.error/.warn/.info`)                     | Transient notifications in the top layer.                                                                                                                                      |
 | `router.js`   | `Router`                                                      | Zero-config SPA router (hash or History API, params, lazy modules, layouts, guards).                                                                                           |
+| `active-link.js` | `markActive`, `currentRoute`                              | Which link is current: `routechange` on `document` after each navigation; `markActive(container)` for plain links, `follow-route` on nav/tabs. Re-exported by `router.js`. |
 | `md.js`       | `<puredashboard-markdown>`, `renderMarkdown`, `parseMarkdown` | XSS-safe Markdown → DOM (textContent-only, href whitelist). For **untrusted** content.                                                                                         |
 
 ### The catalog, up close

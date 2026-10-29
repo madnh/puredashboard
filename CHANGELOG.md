@@ -9,6 +9,47 @@ the API may still change between minor versions.
 
 ## [Unreleased]
 
+### Changed — BREAKING
+- **The router no longer sets `aria-current` on links.** Until v0.4.2, after every
+  navigation `Router` scanned EVERY `a[href]` in the document and set
+  `aria-current="page"` on links whose path equalled the route exactly, removing it from
+  all others. That (a) dropped the parent section on a child route (`#/scans` lost it on
+  `#/scans/5`), and an app could not fix it in `afterEach` because the router ran after and
+  again in a microtask; (b) marked content links that happen to point at the current page
+  (a header status link, a link in a table); (c) fought `<puredashboard-nav>` /
+  `<puredashboard-tabs>` over the same attribute and could leave their current link
+  without it. Reported from ribeto-sync.
+
+  **Migrate** — pick what renders your links:
+  - `<puredashboard-nav>`: add the `follow-route` attribute and stop setting `current` from
+    `afterEach` (or keep setting `current` yourself; both work).
+  - `<puredashboard-tabs>` in link mode: add `follow-route`, or keep setting `value`.
+  - Plain `<a>` links (e.g. the theme shell's `<nav class="tabs">`), which got
+    `aria-current` from the router for free before:
+    ```js
+    import { Router, markActive } from "LIB/router.js";
+    document.addEventListener("routechange", () => markActive(document.querySelector("nav.tabs")));
+    router.start();   // add the listener before start() so the first navigation is caught
+    ```
+  - CSS that styles `[aria-current="page"]` needs no change.
+  - Code that relied on the exact-match rule: `markActive(container, { exact: true })` or
+    `follow-route="exact"`.
+
+### Added
+- **`routechange` event on `document`** after every committed navigation (guards passed,
+  modules loaded, before the page mounts). `detail = { path, params, query, route, mode, base }`.
+  A navigation cancelled or redirected by a guard publishes only its final route.
+- **`src/active-link.js`**: `currentRoute()` (the last committed route, for code that starts
+  after a navigation) and `markActive(container, { exact? })`, which marks the best-matching
+  link INSIDE `container` only. Both re-exported by `router.js`. Matching is by path
+  segments: equal, or a segment prefix (`#/scans` on `#/scans/5`, never `#/scansx`);
+  longest match wins within the container; the root matches only itself; queries ignored;
+  history mode strips `base`.
+- **`follow-route` on `<puredashboard-nav>` and `<puredashboard-tabs>` (link mode)**: the
+  component sets its own `current` / `value` from the router on connect, on every
+  `routechange`, and when `items` / `tabs` change; `follow-route="exact"` turns prefix
+  matching off. No match clears it (no item current). Survives detach + re-attach.
+
 ## [0.4.2] - 2026-10-29
 
 ### Fixed

@@ -15,6 +15,7 @@
 // raw() from html.js. Everything else (labels, badges) is escaped html`` interpolation.
 import { Reactive, html } from "./reactive.js";
 import { raw } from "./html.js";
+import { bestLink, currentRoute } from "./active-link.js";
 
 // All user-facing UI strings (English defaults). Override any subset via the `labels`
 // property to localise — e.g. n.labels = { ariaLabel: "Điều hướng" }. NB: item labels
@@ -39,7 +40,8 @@ let uid = 0;
  * contains the current item starts expanded. Configure entirely via JS properties.
  *
  * Not a form control — it holds no submittable value. Navigation is native (`<a href>`),
- * so the router only needs to react to URL changes; nothing is intercepted.
+ * so the router only needs to react to URL changes; nothing is intercepted. Add
+ * `follow-route` and the nav tracks the router's current route itself.
  *
  * @element puredashboard-nav
  *
@@ -58,7 +60,8 @@ let uid = 0;
  *   heading over a flat, un-indented list; `collapsible: true` makes the heading a toggle button.
  *   Sections start open and sit flush with the nav edge; in `icon-only` mode the heading is replaced
  *   by a separator line.
- * @prop {string} current - The `href` (or id) of the active item; the matching leaf gets `aria-current="page"`. Default `""`.
+ * @prop {string} current - The `href` (or id) of the active item; the matching leaf gets `aria-current="page"`. Default `""`. With `follow-route` the nav sets it itself.
+ * @attr {string}  follow-route - Follow `router.js`: on every `routechange` (and on connect, and when `items` change) set `current` to the leaf whose `href` best matches the committed route — its path equals the route or is a segment prefix of it, the longest match wins (`#/scans/new` over `#/scans` on `#/scans/new/3`), the root `#/` matches only itself; no match → `""`. `follow-route="exact"` turns prefix matching off. Without a router it does nothing; set `current` yourself.
  * @prop {number|boolean} loading - Render skeleton rows instead of `items` (`true` = 5 rows, a number = that many) and mark the nav `aria-busy`. Default `false`.
  * @prop {Object} [labels] - Override UI strings (English defaults). Keys: `ariaLabel`, `expand(group)`, `collapse(group)`, `loading`.
  *
@@ -89,14 +92,35 @@ let uid = 0;
  *   ] },
  * ];
  * nav.addEventListener("action", (e) => console.log(e.detail.item));
- * nav.current = "#/nodes/web";
+ * nav.current = "#/nodes/web";          // or <puredashboard-nav follow-route> with router.js
  * document.querySelector("aside").append(nav);
  */
 class PuredashboardNav extends Reactive {
   static properties = { items: {}, current: {}, labels: {}, loading: {} };
   // `icon-only` is author/sider-owned; re-render so the links gain/lose their title.
-  static observedAttributes = ["icon-only"];
-  attributeChangedCallback() { this.requestUpdate(); }
+  // `follow-route`: derive `current` from the router (see active-link.js).
+  static observedAttributes = ["icon-only", "follow-route"];
+  attributeChangedCallback(name) { if (name === "follow-route") this._follow(); this.requestUpdate(); }
+
+  // The routechange listener is on `document`, so it comes off on disconnect and goes back on
+  // every connect (outside Reactive's run-once setup). A nav that connects after a navigation
+  // catches up from currentRoute().
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("routechange", this._onRoute);
+    this._follow();
+  }
+  disconnectedCallback() { document.removeEventListener("routechange", this._onRoute); }
+  _onRoute = () => this._follow();
+  updated(changed) { if (changed.has("items")) this._follow(); }
+  _follow() {
+    if (!this.hasAttribute("follow-route") || !currentRoute()) return;
+    const hrefs = [];
+    const walk = (nodes) => { for (const n of nodes || []) { if (n && n.children && n.children.length) walk(n.children); else if (n && n.href != null) hrefs.push(n.href); } };
+    walk(this.items);
+    const i = bestLink(hrefs, { exact: this.getAttribute("follow-route") === "exact" });
+    this.current = i >= 0 ? hrefs[i] : "";
+  }
 
   constructor() {
     super();

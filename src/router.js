@@ -31,6 +31,9 @@
 //   });
 //   router.start();
 
+import { publishRoute } from "./active-link.js";
+export { markActive, currentRoute } from "./active-link.js";
+
 export class Router {
   constructor(opts) {
     this.outletSel = opts.outlet;
@@ -162,13 +165,12 @@ export class Router {
       try { this.afterEach(ctx, hit); }
       catch (e) { if (this.onError) this.onError(e, hit); else console.error(e); }
     }
+    // Tell whoever renders links: `routechange` on document (see active-link.js). The router
+    // itself never touches links — nav/tabs follow it with `follow-route`, plain links via markActive().
+    publishRoute({ path: hit.path, params: hit.params, query: hit.query, route: hit.route, mode: this.mode, base: this.base });
     const swap = () => this._mountWithLayout(hit, pageMod, layoutMod, ctx);
     if (this.useTransition && document.startViewTransition) this._transition(swap, token);
     else swap();
-    this._setActiveLinks(hit.path);
-    // Reactive layouts/pages render their links on a microtask, after this point —
-    // re-run once the queue drains so their <a> links also get aria-current.
-    if (typeof queueMicrotask === "function") queueMicrotask(() => this._setActiveLinks(hit.path));
   }
 
   // Run `swap` in a view transition. The browser aborts a transition when the viewport is resized while it runs or when a newer
@@ -255,23 +257,6 @@ export class Router {
     if (this.base && !url.pathname.startsWith(this.base)) return; // outside the app mount
     e.preventDefault();
     this.navigate(url.pathname.slice(this.base.length) + url.search || "/");
-  }
-
-  // Mark the in-app link whose target equals the active path with aria-current.
-  // CSS styles [aria-current="page"]; no JS click handlers are involved.
-  _setActiveLinks(path) {
-    for (const a of document.querySelectorAll("a[href]")) {
-      const href = a.getAttribute("href");
-      let lp = null;
-      if (href.startsWith("#")) lp = href.slice(1).split("?")[0] || "/";
-      else if (this.mode === "history" && href.startsWith("/")) {
-        lp = href.split("?")[0];
-        if (this.base && lp.startsWith(this.base)) lp = lp.slice(this.base.length) || "/";
-      }
-      if (lp == null) continue;
-      if (lp === path) a.setAttribute("aria-current", "page");
-      else a.removeAttribute("aria-current");
-    }
   }
 }
 

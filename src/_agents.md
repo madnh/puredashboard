@@ -204,6 +204,26 @@ router.start();
 // No page files? Inline it: load: () => Promise.resolve({ default: (o) => {…} })
 ```
 Use real `<a href="#/nodes/web">` links; the router only *reacts* to navigation.
+
+**Active links — the router never touches them.** After every committed navigation it
+dispatches `routechange` on `document` (`detail = { path, params, query, route, mode, base }`;
+`currentRoute()` returns the same, for code that starts later). Whoever renders the links
+marks the current one. A link is current when its path equals the route or is a segment
+prefix of it (`#/scans` on `#/scans/5`); among one container's links the longest match wins;
+the root `#/` matches only itself; queries are ignored.
+```js
+// sidebar / tab bar components: one attribute
+// <puredashboard-nav follow-route>  ·  <puredashboard-tabs follow-route> (link mode)
+// ("exact" turns prefix matching off: follow-route="exact")
+
+// plain links (e.g. the theme shell's <nav class="tabs">): mark them yourself
+import { Router, markActive } from "LIB/router.js";      // also exported by LIB/active-link.js
+const tabs = document.querySelector("header nav.tabs");
+document.addEventListener("routechange", () => markActive(tabs));  // add BEFORE router.start()
+router.start();
+```
+`markActive(container)` only touches links inside `container`; a content link that points at
+the current page keeps no `aria-current`. Do not set `aria-current` on links a nav/tabs owns.
 Hooks: `beforeEach(ctx)` (return `false` to cancel, a path to redirect) runs before the
 page module loads; `afterEach(ctx, hit)` runs once it has loaded — the navigation is
 committed, `router.current` is the new hit, the page mounts right after (before the
@@ -465,11 +485,11 @@ Each record: `tag`, `extends`, `summary`, `props[]{name,type,default,desc}`,
 ### Navigation
 | Tag | Key props | Events | Notes |
 |---|---|---|---|
-| `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId,href}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements; with `href` on the tabs = link mode: `<nav>` of real `<a>`, `value` = current page (`aria-current`), no panels/keyboard/`tabchange`; `disabled`/no-`href` tab = non-link span |
+| `puredashboard-tabs` | `tabs`([{id,label,disabled,panelId,href}]), `value` | `tabchange`{value} | APG tabs; toggles `panelId` elements; with `href` on the tabs = link mode: `<nav>` of real `<a>`, `value` = current page (`aria-current`; attr `follow-route` sets it from the router), no panels/keyboard/`tabchange`; `disabled`/no-`href` tab = non-link span |
 | `puredashboard-breadcrumb` | `items`([{label,href}]), `maxItems` | — | last = current; real `<a>` |
 | `puredashboard-pagination` | `page`, `total`+`pageSize` \| `pageCount`, `siblingCount`, `hasMore` | `pagechange`{page,direction} | windowed + ellipsis; `hasMore` = cursor/keyset paging (`pageCount` reached so far, one more offered); placed right after a `<puredashboard-table>` (table pager off) it sits 10px below like the built-in pager; `hidden` attr hides it |
 | `puredashboard-steps` | `steps`, `current`(0-based), `vertical`, `clickable` | `stepchange`{index} | |
-| `puredashboard-nav` | `items`(tree: leaf {label,href,icon,badge,action}, group {label,children}, section {heading,children,collapsible}), `current`, `loading`; attrs `subtle`, `icon-only` | `toggle`{label,expanded}, `action`{item,label,href} | sidebar; real `<a>`, collapsible groups (indented, guide line), titled sections (flat, optional collapsible heading), row action button (hover/focus/active), skeleton rows while `loading`; `subtle` = active row as panel fill + accent start bar instead of a solid accent block; `icon-only` = rail (icons centred, labels as `title`, set by a collapsed sider); icon SVGs sized by `--pd-nav-icon-size` (16px); recolour via `--pd-nav-*` or the theme's `--sidebar-*` |
+| `puredashboard-nav` | `items`(tree: leaf {label,href,icon,badge,action}, group {label,children}, section {heading,children,collapsible}), `current`, `loading`; attrs `subtle`, `icon-only`, `follow-route` (sets `current` from the router, longest match) | `toggle`{label,expanded}, `action`{item,label,href} | sidebar; real `<a>`, collapsible groups (indented, guide line), titled sections (flat, optional collapsible heading), row action button (hover/focus/active), skeleton rows while `loading`; `subtle` = active row as panel fill + accent start bar instead of a solid accent block; `icon-only` = rail (icons centred, labels as `title`, set by a collapsed sider); icon SVGs sized by `--pd-nav-icon-size` (16px); recolour via `--pd-nav-*` or the theme's `--sidebar-*` |
 | `puredashboard-menubar` | `menus`([{label,items,icon,disabled}]), `orientation`, `disabled`, `openIndex`; methods `open(i)`/`close()` | `select`{value,menu,index}, `openchange`{open,index} | desktop app menu bar (File · Edit · View); each dropdown is a full `menu()` (icons, shortcuts, groups, checkbox/radio, submenus); APG menubar keyboard + hover-to-switch |
 
 ### Data display

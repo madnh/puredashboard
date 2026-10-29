@@ -1,6 +1,6 @@
 // Tests for ../src/router.js — hash mode + history mode. Real jsdom location /
 // history / hashchange / click events, so the matcher, lazy-load cache, catch-all,
-// title, aria-current and history-mode click interception are exercised for real.
+// title, routechange + markActive and history-mode click interception are exercised for real.
 import { JSDOM } from "jsdom";
 
 let pass = 0,
@@ -36,6 +36,7 @@ function install(url) {
     "history",
     "MouseEvent",
     "Event",
+    "CustomEvent",
     "URL",
     "URLSearchParams",
     "Node",
@@ -63,7 +64,7 @@ function loaders() {
   return { calls, make };
 }
 
-const { Router } = await import("../src/router.js");
+const { Router, markActive } = await import("../src/router.js");
 
 // ============================ hash mode =====================================
 {
@@ -84,6 +85,8 @@ const { Router } = await import("../src/router.js");
     },
   });
 
+  const seen = [];
+  document.addEventListener("routechange", (e) => seen.push(e.detail));
   w.location.hash = "#/";
   await router.start();
   ok(view.textContent === "home", "hash: home rendered: " + view.textContent);
@@ -92,8 +95,12 @@ const { Router } = await import("../src/router.js");
     "hash: title set: " + document.title,
   );
   ok(
-    document.getElementById("l-home").getAttribute("aria-current") === "page",
-    "hash: home link aria-current",
+    document.getElementById("l-home").getAttribute("aria-current") === null,
+    "hash: the router itself leaves links alone (no aria-current)",
+  );
+  ok(
+    seen.length === 1 && seen[0].path === "/" && seen[0].mode === "hash",
+    "hash: routechange on document after the navigation: " + JSON.stringify(seen.map((d) => d.path)),
   );
 
   w.location.hash = "#/nodes/web";
@@ -113,14 +120,17 @@ const { Router } = await import("../src/router.js");
     view.textContent === "nodes",
     "hash: static /nodes (not the :name route): " + view.textContent,
   );
+  const nav = document.querySelector("nav");
+  ok(markActive(nav) === document.getElementById("l-nodes"), "hash: markActive returns the nodes link");
   ok(
     document.getElementById("l-nodes").getAttribute("aria-current") === "page",
     "hash: nodes link active",
   );
   ok(
     document.getElementById("l-home").getAttribute("aria-current") === null,
-    "hash: home link no longer active",
+    "hash: home link not active (root matches only itself)",
   );
+  ok(seen.at(-1).path === "/nodes", "hash: routechange carries the new path");
 
   w.location.hash = "#/totally/unknown";
   await router.render();
@@ -184,8 +194,9 @@ const { Router } = await import("../src/router.js");
     "history: click rendered the page: " + view.textContent,
   );
   ok(
-    document.getElementById("lnk").getAttribute("aria-current") === "page",
-    "history: clicked link active",
+    markActive(document.body) === document.getElementById("lnk") &&
+      document.getElementById("lnk").getAttribute("aria-current") === "page",
+    "history: markActive marks the clicked link",
   );
 
   // a modified (⌘/Ctrl) click must NOT be intercepted (lets open-in-new-tab work)
@@ -241,8 +252,8 @@ const { Router } = await import("../src/router.js");
     "base: /admin/nodes matched /nodes: " + view.textContent,
   );
   ok(
-    document.getElementById("a").getAttribute("aria-current") === "page",
-    "base: link active under base",
+    markActive(document.body) === document.getElementById("a"),
+    "base: markActive strips the base (/admin/nodes on /nodes)",
   );
   router.stop();
 }
